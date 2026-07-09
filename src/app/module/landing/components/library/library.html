@@ -1,0 +1,56 @@
+<section class="library-section">
+  <div class="library-header">
+    <div class="library-header__text">
+      <h2 class="library-header__title">BIBLIOTHÈQUE JURIDIQUE</h2>
+      <p class="library-header__subtitle">
+        Une sélection d'ouvrages et de guides pratiques pour vous former au droit
+        qui vous concerne, gratuitement consultables depuis votre espace.
+      </p>
+    </div>
+    <button class="library-header__cta" (click)="onViewLibrary()">
+      Voir la bibliothèque
+    </button>
+  </div>
+
+  <div class="library-grid">
+    <div
+      *ngFor="let book of books"
+      class="book-card"
+      [ngClass]="'book-card--' + book.colorVariant"
+    >
+      <div class="book-card__top">
+        <span class="book-card__badge">{{ book.category }}</span>
+        <span class="book-card__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </span>
+      </div>
+
+      <h3 class="book-card__title">{{ book.title }}</h3>
+
+      <div class="book-card__body">
+        <p class="book-card__author">{{ book.author }}</p>
+        <p class="book-card__description">{{ book.description }}</p>
+      </div>
+
+      <a class="book-card__link" (click)="onReadExtract(book)">
+        Lire un extrait <span class="book-card__arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <h2 class="cta-section__title">Prêt à parler à un avocat ?</h2>
+  <p class="cta-section__subtitle">
+    Créez votre compte gratuitement et obtenez une première
+    réponse en moins de 24h
+  </p>
+  <div class="cta-section__actions">
+    <button class="btn btn--primary" (click)="onCreateAccount()">Créer mon compte client</button>
+    <button class="btn btn--outline" (click)="onLawyerSpace()">Espace Avocat</button>
+  </div>
+</section>

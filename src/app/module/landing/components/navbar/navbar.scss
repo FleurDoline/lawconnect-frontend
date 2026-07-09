@@ -1,0 +1,82 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 5%;
+  background-color: #fff;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.navbar__brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.navbar__logo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1a2b4b;
+}
+
+.navbar__tagline {
+  font-size: 0.7rem;
+  color: #8b93a3;
+}
+
+.navbar__links {
+  display: flex;
+  gap: 2rem;
+
+  a {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #2a2f3a;
+    text-decoration: none;
+
+    &:hover {
+      color: #1a2b4b;
+    }
+  }
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.navbar__signin {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #2a2f3a;
+  text-decoration: none;
+
+  &:hover {
+    color: #1a2b4b;
+  }
+}
+
+.navbar__links {
+  a {
+    cursor: pointer;
+  }
+}
+
+.navbar__cta {
+  background-color: #1a2b4b;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  text-decoration: none;
+
+  &:hover {
+    background-color: #283c69;
+  }
+}

@@ -1,0 +1,16 @@
+<header class="navbar">
+  <div class="navbar__brand">
+    <span class="navbar__logo">LawConnect</span>
+    <span class="navbar__tagline">Portail Juridique</span>
+  </div>
+  <nav class="navbar__links">
+    <a (click)="scrollTo('how-it-works')">Comment ça marche</a>
+    <a (click)="scrollTo('domain')">Domaine</a>
+    <a (click)="scrollTo('avocat')">Avocat</a>
+    <a (click)="scrollTo('bibliotheque')">Bibliotheque</a>
+  </nav>
+  <div class="navbar__actions">
+    <a class="navbar__signin" routerLink="/auth/login">Sign In</a>
+    <a class="navbar__cta" routerLink="/auth/inscription">Commencer</a>
+  </div>
+</header>

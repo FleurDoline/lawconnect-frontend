@@ -1,0 +1,156 @@
+.featured-lawyers {
+  padding: 4rem 5%;
+  background-color: #f8f9fb;
+}
+
+.featured-lawyers__header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.featured-lawyers__header-left {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.featured-lawyers__eyebrow {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #1a2b4b;
+}
+
+.featured-lawyers__subtitle {
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.6);
+  margin: 0;
+}
+
+.featured-lawyers__link {
+  grid-column: 3;
+  justify-self: end;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a2b4b;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.featured-lawyers__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.featured-lawyers__card {
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.featured-lawyers__avatar {
+  background-color: #dde3ef;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.featured-lawyers__initials {
+  background-color: #1a2b4b;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 800;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.featured-lawyers__info {
+  padding: 1rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.featured-lawyers__name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.featured-lawyers__name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a2b4b;
+  margin: 0;
+}
+
+.featured-lawyers__rating {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1a2b4b;
+  white-space: nowrap;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.featured-lawyers__meta {
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
+
+.featured-lawyers__btn {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border: 1.5px solid #1a2b4b;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1a2b4b;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background-color: #1a2b4b;
+    color: #fff;
+  }
+}

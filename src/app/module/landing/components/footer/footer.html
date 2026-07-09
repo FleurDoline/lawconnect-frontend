@@ -1,0 +1,47 @@
+<footer class="footer">
+  <div class="footer__main">
+    <div class="footer__brand">
+      <span class="footer__logo">LawConnect</span>
+    </div>
+
+    <div class="footer__col">
+      <h4 class="footer__col-title">Produit</h4>
+      <ul class="footer__links">
+        <li><a (click)="scrollTo('how-it-works')">Comment ca marche</a></li>
+        <li><a (click)="scrollTo('domaine')">Domaine</a></li>
+        <li><a (click)="scrollTo('bibliotheque')">Bibliotheque</a></li>
+      </ul>
+    </div>
+
+    <div class="footer__col">
+      <h4 class="footer__col-title">Espaces</h4>
+      <ul class="footer__links">
+        <li><a routerLink="/auth/connexion">Espace Client</a></li>
+        <li><a routerLink="/avocat/login">Espace Avocat</a></li>
+      </ul>
+    </div>
+
+    <div class="footer__col">
+      <h4 class="footer__col-title">Contact</h4>
+      <ul class="footer__links">
+        <li><a href="mailto:contact@lawconnect.com">contact&#64;lawconnect.com</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer__bottom">
+    <span class="footer__copy">
+      <svg class="footer__copy-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M14.83 14.83a4 4 0 1 1 0-5.66"/>
+      </svg>
+      2026 LawConnect. Tous droits réservés
+    </span>
+    <span class="footer__legal">
+      <a routerLink="/mentions-legales">Mention légales</a>
+      <span class="footer__dot">.</span>
+      <a routerLink="/confidentialite">Confidentialité</a>
+    </span>
+  </div>
+</footer>

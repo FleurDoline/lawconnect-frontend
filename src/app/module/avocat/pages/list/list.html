@@ -1,0 +1,98 @@
+<section class="results">
+  <div class="results__header">
+    <h1 class="results__title" *ngIf="!loading">
+      {{ totalElements }} Avocat{{ totalElements > 1 ? 's' : '' }} trouvé{{ totalElements > 1 ? 's' : '' }}
+    </h1>
+    <div class="results__filters" *ngIf="filters.specialite || filters.ville">
+      <span class="results__filter-chip" *ngIf="filters.specialite">{{ filters.specialite }}</span>
+      <span class="results__filter-chip" *ngIf="filters.ville">{{ filters.ville }}</span>
+    </div>
+  </div>
+
+  <div class="results__loading" *ngIf="loading">Chargement des avocats...</div>
+
+  <div class="results__error" *ngIf="error">
+    Une erreur est survenue. Veuillez réessayer.
+  </div>
+
+  <div class="results__empty" *ngIf="!loading && !error && avocats.length === 0">
+    Aucun avocat ne correspond à votre recherche.
+  </div>
+
+  <div class="results__list" *ngIf="!loading && !error">
+  <div class="avocat-card" *ngFor="let a of avocats">
+  <img
+    class="avocat-card__photo"
+    [src]="(a.photo && a.photo !== 'string') ? a.photo : defaultAvatar"
+    [alt]="nomComplet(a)"
+    (error)="onImageError($event)"
+  />
+
+  <div class="avocat-card__body">
+    <h3 class="avocat-card__name">Maître {{ nomComplet(a) }}</h3>
+    <p class="avocat-card__location" *ngIf="a.ville">Avocat {{ a.ville }}</p>
+
+    <div class="avocat-card__badges">
+      <span class="badge badge--rating" *ngIf="a.noteMoyenne && a.noteMoyenne > 0">
+        <span class="stars-row">
+          <span class="star-wrap" *ngFor="let type of getStars(a.noteMoyenne)">
+            <span class="star star--base">★</span>
+            <span
+              class="star star--fill"
+              [class.star--full-fill]="type === 'full'"
+              [class.star--half-fill]="type === 'half'"
+            >★</span>
+          </span>
+        </span>
+        {{ a.noteMoyenne | number:'1.1-1' }} ({{ getAvisCount(a) }} avis)
+      </span>
+      <span class="badge badge--rating badge--empty" *ngIf="!a.noteMoyenne || a.noteMoyenne === 0">
+        Pas encore d'avis
+      </span>
+      <span class="badge badge--experience" *ngIf="a.experience !== null && a.experience !== undefined">
+           🕐 {{ a.experience }} an{{ a.experience > 1 ? 's' : '' }} d'expérience
+      </span>
+    </div>
+
+    <p class="avocat-card__domaines" *ngIf="a.specialites && a.specialites.length">
+      <strong>Domaine{{ a.specialites.length > 1 ? 's' : '' }} de droit :</strong>
+      {{ a.specialites.join(', ') }}
+    </p>
+
+    <p class="avocat-card__bio" *ngIf="a.bio" [class.avocat-card__bio--expanded]="expandedBios.has(a.id)">
+      <strong>À propos :</strong> {{ a.bio }}
+    </p>
+    <button
+      class="avocat-card__bio-toggle"
+      *ngIf="isBioLong(a.bio)"
+      (click)="toggleBio(a.id)"
+    >
+      {{ expandedBios.has(a.id) ? 'Réduire' : 'Lire plus' }}
+    </button>
+
+    <button class="avocat-card__cta" (click)="onContacter(a)">
+      Contacter cet avocat
+    </button>
+  </div>
+</div>
+  </div>
+
+  <div class="pagination" *ngIf="!loading && totalPages > 1">
+    <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">Précédent</button>
+    <button
+      *ngFor="let p of pages"
+      [class.active]="p === currentPage"
+      (click)="goToPage(p)"
+    >
+      {{ p + 1 }}
+    </button>
+    <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages - 1">Suivant</button>
+  </div>
+
+  <app-contact-avocat-modal
+    *ngIf="modalOuvert && avocatSelectionne"
+    [avocatId]="avocatSelectionne.id"
+    [avocatNom]="nomComplet(avocatSelectionne)"
+    (close)="fermerModal()"
+  ></app-contact-avocat-modal>
+</section>

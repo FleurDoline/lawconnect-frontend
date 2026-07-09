@@ -1,0 +1,47 @@
+<section class="hero">
+  <div class="hero__overlay"></div>
+
+  <div class="hero__content">
+    <h1 class="hero__title">
+      Accéder à la justice<br />en un clic
+    </h1>
+    <p class="hero__subtitle">
+      Trouvez l'avocat idéal pour vos besoins juridiques en Afrique.
+      Réservation rapide, paiements sécurisés et experts vérifiés.
+    </p>
+    <div class="hero__actions">
+      <a class="btn btn--primary" (click)="openModal()">
+        Trouver un avocat
+        <svg class="btn__icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+      <a class="btn btn--secondary" [routerLink]="['/auth/inscription']" [queryParams]="{ role: 'avocat' }">
+         Je suis un avocat
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stats__grid">
+    <div class="stats__item">
+      <span class="stats__number">500+</span>
+      <span class="stats__label">Consultations réussies</span>
+    </div>
+    <div class="stats__item">
+      <span class="stats__number">180</span>
+      <span class="stats__label">Avocats vérifiés</span>
+    </div>
+    <div class="stats__item">
+      <span class="stats__number">98%</span>
+      <span class="stats__label">Satisfaction client</span>
+    </div>
+  </div>
+</section>
+
+<app-search-modal
+  [isOpen]="isModalOpen"
+  (closed)="closeModal()">
+</app-search-modal>

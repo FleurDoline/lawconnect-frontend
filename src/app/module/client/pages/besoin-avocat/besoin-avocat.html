@@ -1,0 +1,83 @@
+<div class="besoin-page" *ngIf="!isLoading; else loadingTpl">
+  <div class="besoin-page__card">
+    <div class="avocat-card">
+      <div class="avocat-card__avatar">
+        <img
+          *ngIf="hasValidPhoto()"
+          [src]="avocat.photo"
+          alt="{{ avocat?.nom }}"
+        />
+        <img
+          *ngIf="!hasValidPhoto()"
+          src="images/images.jpeg"
+          alt="{{ avocat?.nom }}"
+        />
+      </div>
+
+      <h2 class="avocat-card__name">Maître {{ avocat?.nom }}</h2>
+
+      <div class="avocat-card__badges">
+        <span class="badge badge--rating">⭐ {{ avocat?.noteMoyenne || 5 }}</span>
+        <span class="badge badge--fast">🕐 Répond rapidement</span>
+      </div>
+
+      <div class="avocat-card__meta">
+        <p><span class="icon">📍</span> {{ avocat?.ville }}</p>
+        <p><span class="icon">⚖️</span> N'accepte pas l'aide juridictionnelle</p>
+      </div>
+
+      <div class="avocat-card__section">
+        <h3>Domaines de droit</h3>
+        <div class="tag-list">
+          <span class="tag" *ngFor="let domaine of avocat?.specialites">{{ domaine }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="besoin-page__selection">
+  <h2 class="besoin-page__title">Êtes-vous éligible à l'aide juridictionnelle ?</h2>
+
+  <div class="eligibilite-choices">
+    <button
+      class="eligibilite-btn"
+      [class.eligibilite-btn--active]="eligibiliteChoice === 'oui'"
+      (click)="onSelectEligibilite('oui')">
+      Oui
+    </button>
+    <button
+      class="eligibilite-btn"
+      [class.eligibilite-btn--active]="eligibiliteChoice === 'non'"
+      (click)="onSelectEligibilite('non')">
+      Non
+    </button>
+    <button
+      class="eligibilite-btn"
+      [class.eligibilite-btn--active]="eligibiliteChoice === 'inconnu'"
+      (click)="onSelectEligibilite('inconnu')">
+      Je ne sais pas
+    </button>
+  </div>
+
+  <p class="eligibilite-warning">
+    L'avocat se réserve le droit d'accepter en fonction du domaine de droit concerné.
+  </p>
+
+  <div class="eligibilite-info">
+    L'aide juridictionnelle (AJ) est la prise en charge par l'État des frais liés à une
+    procédure judiciaire. Elle est accordée si vos revenus et la valeur de votre patrimoine
+    sont inférieurs à certains plafonds, et selon le type de procédure engagée.
+  </div>
+
+  <button class="eligibilite-precedent" (click)="onPrecedent()">
+    Précédent
+  </button>
+</div>
+</div>
+
+
+<ng-template #loadingTpl>
+  <div class="besoin-page__loading">
+    Chargement...
+  </div>
+</ng-template>

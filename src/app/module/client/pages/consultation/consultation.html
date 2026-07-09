@@ -1,0 +1,101 @@
+<!-- Assumes this renders inside the existing client shell (topbar + sidebar already present) -->
+<section class="consultation-page">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Consultation</h1>
+      <p class="page-subtitle">Historique et rendez vous a venir avec vos avocats</p>
+    </div>
+    <button class="btn btn--primary" (click)="openNouvelleConsultation()">
+      <svg class="icon" width="16" height="16"><use href="#i-plus"></use></svg>
+      Nouvelle Consultation
+    </button>
+  </div>
+
+  <div class="tabs">
+    <button
+      class="tab"
+      [class.tab--active]="activeTab === 'upcoming'"
+      (click)="selectTab('upcoming')">
+      A venir
+    </button>
+    <button
+      class="tab"
+      [class.tab--active]="activeTab === 'past'"
+      (click)="selectTab('past')">
+      Passees
+    </button>
+  </div>
+
+  <div class="table-card">
+    <table class="consultation-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Heure</th>
+          <th>Avocat</th>
+          <th>Specialite</th>
+          <th>Mode</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of filteredConsultations">
+          <td>{{ c.date }}</td>
+          <td>{{ c.heure }}</td>
+          <td>
+            <div class="avocat-cell">
+              <span class="avatar avatar--sm">{{ c.avocatInitiales }}</span>
+              <span>{{ c.avocatNom }}</span>
+            </div>
+          </td>
+          <td>{{ c.specialite }}</td>
+          <td>
+            <span class="mode-pill">
+              <svg class="icon" width="14" height="14"><use [attr.href]="modeIcon(c.mode)"></use></svg>
+              {{ c.mode }}
+            </span>
+          </td>
+          <td>
+            <span [class]="statutClass(c.statut)">{{ c.statut }}</span>
+          </td>
+          <td>
+            <button
+              class="btn-action"
+              [class.btn-action--primary]="actionLabel(c) === 'Rejoindre'"
+              (click)="onAction(c)">
+              {{ actionLabel(c) }}
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="filteredConsultations.length === 0">
+          <td colspan="7" class="empty-row">
+            Aucune consultation {{ activeTab === 'upcoming' ? 'a venir' : 'passee' }} pour le moment.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <span class="pagination__info">Page {{ currentPage }} sur {{ totalPages }} . 5 resultat(s)</span>
+      <div class="pagination__controls">
+        <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+          &lt; Precedent
+        </button>
+        <button
+          *ngFor="let p of [1,2,3]"
+          class="page-btn page-btn--num"
+          [class.page-btn--active]="currentPage === p"
+          (click)="goToPage(p)">
+          {{ p }}
+        </button>
+        <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+          Suivant &gt;
+        </button>
+      </div>
+    </div>
+  </div>
+
+</section>

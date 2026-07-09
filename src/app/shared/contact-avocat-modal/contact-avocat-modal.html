@@ -1,0 +1,26 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="onClose()">&times;</button>
+
+    <h2 class="modal-title">Contacter Maître {{ avocatNom }}</h2>
+    <p class="modal-subtitle">Choisissez comment vous souhaitez procéder</p>
+
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn--message" (click)="envoyerMessage()">
+        <span class="modal-btn__icon">💬</span>
+        <span>
+          <strong>Envoyer un message</strong>
+          <small>Discutez directement avec l'avocat</small>
+        </span>
+      </button>
+
+      <button class="modal-btn modal-btn--consultation" (click)="demanderConsultation()">
+        <span class="modal-btn__icon">📅</span>
+        <span>
+          <strong>Demander une consultation</strong>
+          <small>Planifiez un rendez-vous formel</small>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>

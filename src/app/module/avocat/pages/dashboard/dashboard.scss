@@ -1,0 +1,337 @@
+$navy: #0f1f3d;
+$navy-light: #1a2f54;
+$bg: #f5f6fa;
+$border: #e5e7eb;
+$text: #111827;
+$muted: #6b7280;
+$orange: #f59e42;
+$green: #10b981;
+$danger: #dc2626;
+
+* { box-sizing: border-box; }
+
+:host {
+  display: block;
+  background: $bg;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: $text;
+}
+
+.main { padding: 24px 32px; width: 100%; }
+
+.topbar {
+  display: flex; align-items: center; gap: 24px;
+  background: #fff; padding: 12px 20px; border-radius: 12px;
+  margin-bottom: 24px; border: 1px solid $border;
+
+  .brand .logo { font-weight: 700; font-size: 19px; color: $navy; letter-spacing: -0.01em; }
+  .brand .tagline { font-size: 12px; color: $muted; }
+
+  .search { flex: 1;
+    input {
+      width: 100%; padding: 10px 14px;
+      border: 1px solid $border; border-radius: 8px;
+      background: #f9fafb; font-size: 14px;
+    }
+  }
+
+  .user { display: flex; align-items: center; gap: 12px;
+    .icon-btn { color: $muted; cursor: pointer; }
+  }
+}
+
+.user-menu { position: relative; }
+
+.user-trigger {
+  display: flex; align-items: center; gap: 10px;
+  background: transparent; border: 1px solid $border;
+  padding: 6px 10px; border-radius: 10px; cursor: pointer;
+
+  &:hover { background: #f9fafb; }
+
+  .user-info { text-align: right;
+    .name { font-size: 13px; font-weight: 600; }
+    .plan { font-size: 10px; color: $muted; }
+  }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: #d1d5db; }
+}
+
+.dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  min-width: 220px; background: #fff;
+  border: 1px solid $border; border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  list-style: none; margin: 0; padding: 6px; z-index: 50;
+
+  li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 6px;
+    font-size: 14px; color: $text; cursor: pointer;
+    &:hover { background: #f3f4f6; color: $navy; }
+  }
+}
+
+.greeting {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 24px;
+  h1 { font-size: 26px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+}
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: $navy; color: #fff; border: none;
+  padding: 10px 18px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  &:hover { background: $navy-light; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; &:hover { background: $navy; } }
+}
+
+.btn-outline {
+  background: #fff; color: $text; border: 1px solid $border;
+  padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer;
+  &:hover { background: #f9fafb; }
+}
+
+.stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-bottom: 32px;
+
+  .stat-card {
+    background: #fff; border: 1px solid $border;
+    border-radius: 14px; padding: 22px 24px;
+
+    .tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+      padding: 4px 10px; border-radius: 5px; margin-bottom: 16px;
+      background: #e5e7eb; color: $muted;
+      &.orange { background: $orange; color: #fff; }
+      &.green { background: #d1fae5; color: $green; }
+    }
+    .label { font-size: 14px; color: $muted; margin-bottom: 8px; }
+    .value { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; }
+
+    &.dark {
+      background: $navy; color: #fff;
+      .label { color: rgba(255,255,255,0.7); }
+      .tag { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.85); }
+    }
+  }
+}
+
+.section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+  h2 { font-size: 17px; font-weight: 700; margin: 0; }
+  a { font-size: 13px; color: $navy; font-weight: 500; text-decoration: none; &:hover { text-decoration: underline; } }
+}
+
+.appointments { margin-bottom: 28px; }
+
+.appt {
+  display: flex; align-items: center; gap: 20px;
+  background: #fff; border: 1px solid $border;
+  border-radius: 14px; padding: 18px 20px; margin-bottom: 12px;
+
+  .when {
+    text-align: center; min-width: 76px;
+    padding: 10px 8px; background: #f3f4f6; border-radius: 8px;
+    .day { font-size: 11px; color: $muted; font-style: italic; }
+    .time { font-size: 18px; font-weight: 700; }
+  }
+  .info { flex: 1; display: flex; flex-direction: column; gap: 3px;
+    .name { font-weight: 700; font-size: 15px; }
+    .matter, .type { font-size: 13px; color: $muted; }
+  }
+  .actions { display: flex; gap: 8px; }
+}
+
+.availability {
+  background: #fff; border: 1px solid $border;
+  border-radius: 12px; padding: 20px;
+
+  .days {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 12px; margin-bottom: 18px;
+  }
+  .day-card {
+    text-align: center; padding: 16px 10px;
+    border: 1px solid $border; border-radius: 10px;
+    .day { font-weight: 700; font-size: 14px; margin-bottom: 8px; color: $navy; }
+    .hours { font-size: 13px; color: $muted; }
+  }
+  .notes {
+    display: flex; gap: 24px; list-style: disc inside;
+    margin: 0; padding: 0; font-size: 13px; color: $muted;
+  }
+
+  .icon {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+}
+
+// ---- Nouveau Dossier Modal ----
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 31, 61, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  animation: modal-in 0.18s ease-out;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid $border;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: $navy;
+  }
+}
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: $muted;
+  border-radius: 8px;
+  cursor: pointer;
+
+  &:hover {
+    background: #f3f4f6;
+    color: $navy;
+  }
+}
+
+.modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+
+  .form-field { flex: 1; }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: $text;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    border: 1px solid $border;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: $text;
+    background: #fff;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:focus {
+      border-color: $navy;
+      box-shadow: 0 0 0 3px rgba(15, 31, 61, 0.12);
+    }
+
+    &.invalid {
+      border-color: $danger;
+    }
+  }
+
+  textarea { resize: vertical; }
+}
+
+.field-error {
+  font-size: 12px;
+  color: $danger;
+}
+
+.mode-options {
+  display: flex;
+  gap: 10px;
+
+  &.invalid .radio-pill { border-color: $danger; }
+}
+
+.radio-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid $border;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: $text;
+  cursor: pointer;
+  flex: 1;
+  justify-content: center;
+
+  input[type="radio"] { accent-color: $navy; }
+
+  &:has(input:checked) {
+    border-color: $navy;
+    background: rgba(15, 31, 61, 0.06);
+    color: $navy;
+    font-weight: 600;
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+
+  button { min-width: 110px; }
+}
+
+@media (max-width: 480px) {
+  .form-row { flex-direction: column; }
+}

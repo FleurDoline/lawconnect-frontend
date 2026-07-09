@@ -1,0 +1,359 @@
+// ── Tokens ────────────────────────────────────────────────────────────────────
+$navy:        #1a2744;
+$navy-light:  #243358;
+$gold:        #c9a84c;
+$white:       #ffffff;
+$input-border: #d0d5dd;
+$input-focus:  #3d5a8a;
+$text-muted:   #667085;
+$font-sans:    'Inter', 'Segoe UI', sans-serif;
+$radius-card:  14px;
+$radius-input: 8px;
+$radius-btn:   8px;
+
+// ── Page wrapper ─────────────────────────────────────────────────────────────
+// Plain neutral background behind the whole contained block
+.auth-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f5f7;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+.auth-layout {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  min-height: 640px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-family: $font-sans;
+  overflow: hidden;
+  border-radius: $radius-card;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+  padding: 40px 64px;
+  box-sizing: border-box;
+
+  background:
+    linear-gradient(rgba(20, 30, 60, 0.5), rgba(20, 30, 60, 0.5)),
+    url('/images/auth-bg.png') center/cover no-repeat;
+
+  @media (max-width: 860px) {
+    align-items: flex-end;
+    justify-content: center;
+    padding: 24px 16px 40px;
+    border-radius: $radius-card;
+  }
+}
+
+// Hero text — absolutely positioned over the image, bottom-left
+.auth-layout__left-content {
+  position: absolute;
+  left: 48px;
+  bottom: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 380px;
+
+  @media (max-width: 860px) {
+    display: none;
+  }
+}
+
+.auth-layout__brand {
+  font-size: 26px;
+  font-weight: 900;
+  color: $white;
+  letter-spacing: 0.02em;
+}
+
+.auth-layout__tagline {
+  font-size: 36px;
+  font-weight: 700;
+  color: $white;
+  line-height: 1.2;
+  margin: 0;
+
+  &--accent {
+    color: $gold;
+  }
+}
+
+.auth-layout__quote {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+}
+
+// Right — the card sits ON the image, not in its own panel
+.auth-layout__right {
+  width: 460px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+
+  @media (max-width: 860px) {
+    width: 100%;
+    max-width: 420px;
+  }
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+.auth-card {
+  background: $white;
+  border-radius: $radius-card;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  &__eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: $text-muted;
+    margin: 0 0 4px;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    font-size: 22px;
+    font-weight: 700;
+    color: $navy;
+    margin: 0 0 16px;
+  }
+
+  &__footer {
+    font-size: 13px;
+    color: $text-muted;
+    text-align: center;
+    margin: 12px 0 0;
+  }
+
+  &__footer-link {
+    color: $input-focus;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  &__back {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 13px;
+    color: $text-muted;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover { color: $navy; }
+  }
+}
+
+// ── Toggle ────────────────────────────────────────────────────────────────────
+.auth-toggle {
+  display: flex;
+  background: #eef0f4;
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 20px;
+
+  &__btn {
+    flex: 1;
+    padding: 8px 0;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: $text-muted;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+
+    &--active {
+      background: $navy;
+      color: $white;
+      font-weight: 600;
+    }
+
+    &:not(&--active):hover {
+      color: $navy;
+    }
+  }
+}
+
+// ── Form ──────────────────────────────────────────────────────────────────────
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-row-double {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #344054;
+}
+
+.form-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid $input-border;
+  border-radius: $radius-input;
+  font-size: 14px;
+  font-family: $font-sans;
+  color: #101828;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus {
+    border-color: $input-focus;
+    box-shadow: 0 0 0 3px rgba($input-focus, 0.12);
+  }
+}
+
+.form-input-wrapper {
+  position: relative;
+
+  .form-input {
+    padding-right: 40px;
+  }
+}
+
+.form-input-eye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  padding: 0;
+
+  &:hover { color: $navy; }
+}
+
+.form-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.form-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 12px;
+  color: #344054;
+  cursor: pointer;
+  flex: 1;
+  line-height: 1.4;
+
+  input[type='checkbox'] {
+    margin-top: 2px;
+    accent-color: $navy;
+    flex-shrink: 0;
+  }
+}
+
+.form-link {
+  font-size: 12px;
+  color: $input-focus;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; }
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+.btn-primary {
+  width: 100%;
+  padding: 11px;
+  background-color: $input-focus;
+  color: $white;
+  border: none;
+  border-radius: $radius-btn;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: $font-sans;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: darken($input-focus, 8%);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.auth-or {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: $text-muted;
+  font-size: 13px;
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e4e7ec;
+  }
+}
+
+.btn-google {
+  width: 100%;
+  padding: 10px;
+  background: $white;
+  border: 1px solid $input-border;
+  border-radius: $radius-btn;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: $font-sans;
+  color: #344054;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #f9fafb;
+  }
+}

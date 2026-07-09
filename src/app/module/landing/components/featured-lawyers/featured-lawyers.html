@@ -1,0 +1,30 @@
+<section class="featured-lawyers">
+  <div class="featured-lawyers__header">
+    <div class="featured-lawyers__header-left">
+      <span class="featured-lawyers__eyebrow">Avocat vedettes</span>
+      <p class="featured-lawyers__subtitle">Des praticiens reconnus a votre ecoute</p>
+    </div>
+    <a class="featured-lawyers__link" (click)="scrollTo('avocat')">Voir tous les avocats</a>
+  </div>
+
+  <div class="featured-lawyers__grid">
+    <div class="featured-lawyers__card" *ngFor="let lawyer of lawyers">
+      <div class="featured-lawyers__avatar">
+        <span class="featured-lawyers__initials">{{ lawyer.initials }}</span>
+      </div>
+      <div class="featured-lawyers__info">
+        <div class="featured-lawyers__name-row">
+          <h3 class="featured-lawyers__name">{{ lawyer.name }}</h3>
+          <span class="featured-lawyers__rating">
+            <svg viewBox="0 0 16 16" fill="#c9a227" aria-hidden="true">
+              <path d="M8 1l1.85 3.75L14 5.5l-3 2.92.71 4.13L8 10.4l-3.71 2.15L5 8.42 2 5.5l4.15-.75L8 1z"/>
+            </svg>
+            {{ lawyer.rating }}
+          </span>
+        </div>
+        <p class="featured-lawyers__meta">{{ lawyer.specialite }} . {{ lawyer.avis }} avis</p>
+        <a class="featured-lawyers__btn" routerLink="/avocat/{{ lawyer.id }}">Voir le profil</a>
+      </div>
+    </div>
+  </div>
+</section>

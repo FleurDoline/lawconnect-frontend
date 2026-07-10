@@ -7,6 +7,8 @@ import { DashboardComponent } from './module/avocat/pages/dashboard/dashboard';
 import { ListeAvocatsComponent } from './module/avocat/pages/list/list';
 import { ClientDashboardComponent } from './module/client/pages/dashboard/dashboard';
 import { BesoinAvocatComponent } from './module/client/pages/besoin-avocat/besoin-avocat';
+import { AvocatProfileComponent } from './module/avocat/pages/profile/profile';
+
 /*import { Consultation } from './module/client/pages/consultation/consultation';*/
 
 const routes: Routes = [
@@ -18,6 +20,14 @@ const routes: Routes = [
   { path: 'avocat/dashboard', component: DashboardComponent },
   { path: 'client/dashboard', component: ClientDashboardComponent },
   { path: 'client/besoin-avocat/:id', component: BesoinAvocatComponent },
+  {
+    path: 'domaines',
+    loadComponent: () => import('./module/landing/pages/domaines/domaines').then(m => m.DomainesPage)
+  },
+  {
+  path: 'avocat/:id',
+  loadComponent: () => import('./module/avocat/pages/profile/profile').then(m => m.AvocatProfileComponent)
+}
   /*{ path: 'consultation/nouvelle', component: Consultation },*/
 ];
 

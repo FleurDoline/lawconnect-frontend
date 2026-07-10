@@ -90,10 +90,11 @@ $text-muted: #6b7280;
 }
 
 .stat-card {
-  background: $navy-dark;
+  background: #fff;
+  border: 1px solid #e5e7eb;
   border-radius: 14px;
   padding: 18px 20px;
-  color: #fff;
+  color: $navy-dark;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   animation: fadeInUp 0.45s ease backwards;
@@ -103,16 +104,27 @@ $text-muted: #6b7280;
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(15, 31, 61, 0.25);
+    box-shadow: 0 8px 20px rgba(15, 31, 61, 0.1);
   }
 
+  // Only "Prochaine consultation" keeps the navy background
   &--highlight {
     background: linear-gradient(135deg, $navy-dark, $navy);
+    border: none;
+    color: #fff;
+
+    .stat-card__label {
+      color: rgba(255,255,255,0.6);
+    }
+
+    .stat-card__sub {
+      color: rgba(255,255,255,0.7);
+    }
   }
 
   &__label {
     font-size: 0.8rem;
-    color: rgba(255,255,255,0.6);
+    color: $text-muted;
     margin: 0 0 10px;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -128,6 +140,7 @@ $text-muted: #6b7280;
     font-size: 1.1rem;
     font-weight: 600;
     margin: 0;
+    color: $navy-dark;
 
     &--big {
       font-size: 2rem;
@@ -136,17 +149,17 @@ $text-muted: #6b7280;
 
   &__sub {
     font-size: 0.8rem;
-    color: rgba(255,255,255,0.7);
+    color: $text-muted;
     margin: 2px 0 0;
   }
 
   &__link {
     font-size: 0.8rem;
-    color: $gold;
+    color: $navy;
+    font-weight: 600;
     margin: 8px 0 0;
   }
 }
-
 .avatar-badge {
   width: 40px;
   height: 40px;
@@ -245,6 +258,29 @@ $text-muted: #6b7280;
     gap: 8px;
     margin-top: 14px;
     flex-wrap: wrap;
+  }
+}
+
+.mode-badge {
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &--visio {
+    background: #e6e9fb;
+    color: #4c51bf;
+  }
+  &--telephone {
+    background: #d4f5e2;
+    color: #22863a;
+  }
+  &--cabinet {
+    background: #fdeacb;
+    color: #b7791f;
   }
 }
 

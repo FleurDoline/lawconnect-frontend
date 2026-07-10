@@ -1,83 +1,249 @@
-<div class="besoin-page" *ngIf="!isLoading; else loadingTpl">
-  <div class="besoin-page__card">
-    <div class="avocat-card">
-      <div class="avocat-card__avatar">
-        <img
-          *ngIf="hasValidPhoto()"
-          [src]="avocat.photo"
-          alt="{{ avocat?.nom }}"
-        />
-        <img
-          *ngIf="!hasValidPhoto()"
-          src="images/images.jpeg"
-          alt="{{ avocat?.nom }}"
-        />
-      </div>
+<div *ngIf="!isLoading; else loadingTpl">
 
-      <h2 class="avocat-card__name">Maître {{ avocat?.nom }}</h2>
+  <!-- Barre de progression -->
+  <div class="besoin-progress" *ngIf="step !== 'confirmation'">
+    <div class="besoin-progress__bar" [style.width.%]="progressPercent"></div>
+  </div>
 
-      <div class="avocat-card__badges">
-        <span class="badge badge--rating">⭐ {{ avocat?.noteMoyenne || 5 }}</span>
-        <span class="badge badge--fast">🕐 Répond rapidement</span>
-      </div>
-
-      <div class="avocat-card__meta">
-        <p><span class="icon">📍</span> {{ avocat?.ville }}</p>
-        <p><span class="icon">⚖️</span> N'accepte pas l'aide juridictionnelle</p>
-      </div>
-
-      <div class="avocat-card__section">
-        <h3>Domaines de droit</h3>
-        <div class="tag-list">
-          <span class="tag" *ngFor="let domaine of avocat?.specialites">{{ domaine }}</span>
+  <div class="besoin-page">
+    <div class="besoin-page__card">
+      <div class="avocat-card">
+        <div class="avocat-card__avatar">
+  <img *ngIf="hasValidPhoto()" [src]="avocat.photo" alt="{{ avocat?.nom }}" (error)="onImageError($event)" />
+  <img *ngIf="!hasValidPhoto()" [src]="fallbackPhoto" alt="{{ avocat?.nom }}" />
+</div>
+        <h2 class="avocat-card__name">Maître {{ avocat?.nom }}</h2>
+        <div class="avocat-card__badges">
+          <span class="badge badge--rating">⭐ {{ avocat?.noteMoyenne || 5 }}</span>
+          <span class="badge badge--fast">🕐 Répond rapidement</span>
+        </div>
+        <div class="avocat-card__meta">
+          <p><span class="icon">📍</span> {{ avocat?.ville }}</p>
+          <p><span class="icon">⚖️</span> N'accepte pas l'aide juridictionnelle</p>
+        </div>
+        <div class="avocat-card__section">
+          <h3>Domaines de droit</h3>
+          <div class="tag-list">
+            <span class="tag" *ngFor="let domaine of avocat?.specialites">{{ domaine }}</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="besoin-page__selection">
-  <h2 class="besoin-page__title">Êtes-vous éligible à l'aide juridictionnelle ?</h2>
+    <!-- ÉTAPE 1 : Éligibilité -->
+    <div class="besoin-page__selection" *ngIf="step === 'eligibilite'">
+      <h2 class="besoin-page__title">Êtes-vous éligible à l'aide juridictionnelle ?</h2>
+      <div class="eligibilite-choices">
+        <button class="eligibilite-btn" [class.eligibilite-btn--active]="eligibiliteChoice === 'oui'" (click)="onSelectEligibilite('oui')">Oui</button>
+        <button class="eligibilite-btn" [class.eligibilite-btn--active]="eligibiliteChoice === 'non'" (click)="onSelectEligibilite('non')">Non</button>
+        <button class="eligibilite-btn" [class.eligibilite-btn--active]="eligibiliteChoice === 'inconnu'" (click)="onSelectEligibilite('inconnu')">Je ne sais pas</button>
+      </div>
+      <p class="eligibilite-warning">L'avocat se réserve le droit d'accepter en fonction du domaine de droit concerné.</p>
+      <div class="eligibilite-info">
+        L'aide juridictionnelle (AJ) est la prise en charge par l'État des frais liés à une procédure judiciaire. Elle est accordée si vos revenus et la valeur de votre patrimoine sont inférieurs à certains plafonds, et selon le type de procédure engagée.
+      </div>
+      <button class="eligibilite-precedent" (click)="onPrecedent()">Précédent</button>
+    </div>
 
-  <div class="eligibilite-choices">
-    <button
-      class="eligibilite-btn"
-      [class.eligibilite-btn--active]="eligibiliteChoice === 'oui'"
-      (click)="onSelectEligibilite('oui')">
-      Oui
+    <!-- ÉTAPE 2 : Formulaire du dossier -->
+    <div class="besoin-page__form" *ngIf="step === 'formulaire'">
+      <h2 class="besoin-page__title">En quelques étapes, aidez-nous à préparer l'étude de votre dossier.</h2>
+
+      <div class="form-group">
+        <label class="form-label">Je suis : *</label>
+        <div class="radio-row">
+          <label class="radio-option">
+            <input type="radio" name="typePersonne" value="particulier" [(ngModel)]="typePersonne" />
+            Un particulier
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="typePersonne" value="professionnel" [(ngModel)]="typePersonne" />
+            Un professionnel
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="mission">Quelle mission souhaitez-vous confier à cet avocat ? *</label>
+        <select id="mission" class="form-select" [(ngModel)]="mission" name="mission">
+          <option value="" disabled selected>Veuillez sélectionner un choix</option>
+          <option *ngFor="let option of missionOptions" [value]="option">{{ option }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Vous attendez de votre avocat qu'il soit surtout : <em>(2 choix possibles)</em></label>
+        <div class="checkbox-list">
+          <label class="checkbox-option" *ngFor="let option of attentesOptions">
+            <input
+              type="checkbox"
+              [checked]="isAttenteSelected(option)"
+              [disabled]="isAttenteDisabled(option)"
+              (change)="toggleAttente(option)"
+            />
+            {{ option }}
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Votre demande est-elle urgente ?</label>
+        <div class="radio-row">
+          <label class="radio-option">
+            <input type="radio" name="urgent" value="oui" [(ngModel)]="urgent" />
+            Oui
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="urgent" value="non" [(ngModel)]="urgent" />
+            Non
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-precedent" (click)="onPrecedent()">Précédent</button>
+        <button class="btn-suivant" [disabled]="!isFormValid()" (click)="onSuivant()">Suivant</button>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 3 : Situation -->
+    <div class="besoin-page__situation" *ngIf="step === 'situation'">
+      <h2 class="besoin-page__title">Quelle est votre situation ?</h2>
+
+      <textarea
+        class="situation-textarea"
+        [(ngModel)]="situation"
+        name="situation"
+        rows="6"
+        placeholder="Afin d'obtenir une réponse adaptée, merci de décrire votre situation : type de problème, faits importants et actions déjà engagées. Pensez à préciser si vous avez une convocation, une audience ou un dossier en cours."
+      ></textarea>
+      <div class="situation-counter" [class.situation-counter--ok]="isSituationValid()">
+        {{ situationLength }} caractères (min {{ SITUATION_MIN_LENGTH }} caractères)
+      </div>
+
+      <p class="situation-note">Vos coordonnées vous seront demandées sur la prochaine page, merci de ne pas les indiquer dans cet espace.</p>
+
+      <div class="form-actions">
+        <button class="btn-precedent" (click)="onPrecedent()">Précédent</button>
+        <button class="btn-suivant" [disabled]="!isSituationValid()" (click)="onSuivantSituation()">Suivant</button>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 4 : Coordonnées -->
+    <div class="besoin-page__coordonnees" *ngIf="step === 'coordonnees'">
+      <h2 class="besoin-page__title">Vos coordonnées</h2>
+
+      <div class="form-group">
+        <input
+          type="text"
+          class="coordonnees-input"
+          [(ngModel)]="nomComplet"
+          name="nomComplet"
+          placeholder="Vos prénom et nom"
+        />
+      </div>
+
+      <div class="form-group">
+  <div class="phone-input-group" (clickOutside)="closeCountryDropdown()">
+    <button type="button" class="phone-input-group__selector" (click)="toggleCountryDropdown()">
+      <span class="phone-input-group__flag">{{ selectedCountry.flag }}</span>
+      <span class="phone-input-group__caret">▾</span>
     </button>
-    <button
-      class="eligibilite-btn"
-      [class.eligibilite-btn--active]="eligibiliteChoice === 'non'"
-      (click)="onSelectEligibilite('non')">
-      Non
-    </button>
-    <button
-      class="eligibilite-btn"
-      [class.eligibilite-btn--active]="eligibiliteChoice === 'inconnu'"
-      (click)="onSelectEligibilite('inconnu')">
-      Je ne sais pas
-    </button>
+
+    <input
+      type="tel"
+      class="phone-input-group__input"
+      [(ngModel)]="telephone"
+      name="telephone"
+      placeholder="Numéro de téléphone"
+    />
+
+    <div class="country-dropdown" *ngIf="isCountryDropdownOpen">
+      <input
+        type="text"
+        class="country-dropdown__search"
+        [(ngModel)]="countrySearch"
+        name="countrySearch"
+        placeholder="Rechercher un pays"
+        autofocus
+      />
+      <ul class="country-dropdown__list">
+        <li
+          class="country-dropdown__item"
+          *ngFor="let country of filteredCountries"
+          (click)="selectCountry(country)"
+        >
+          <span class="country-dropdown__flag">{{ country.flag }}</span>
+          <span class="country-dropdown__name">{{ country.name }}</span>
+          <span class="country-dropdown__dial">({{ country.dial }})</span>
+        </li>
+      </ul>
+    </div>
   </div>
-
-  <p class="eligibilite-warning">
-    L'avocat se réserve le droit d'accepter en fonction du domaine de droit concerné.
-  </p>
-
-  <div class="eligibilite-info">
-    L'aide juridictionnelle (AJ) est la prise en charge par l'État des frais liés à une
-    procédure judiciaire. Elle est accordée si vos revenus et la valeur de votre patrimoine
-    sont inférieurs à certains plafonds, et selon le type de procédure engagée.
-  </div>
-
-  <button class="eligibilite-precedent" (click)="onPrecedent()">
-    Précédent
-  </button>
 </div>
-</div>
+      <div class="form-group">
+        <input
+          type="email"
+          class="coordonnees-input"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="Adresse e-mail"
+        />
+      </div>
 
+      <div class="form-group">
+        <label class="form-label" for="ville">Votre ville ?</label>
+        <select id="ville" class="form-select" [(ngModel)]="ville" name="ville">
+          <option value="" disabled>Sélectionnez votre ville</option>
+          <option *ngFor="let v of villesOptions" [value]="v">{{ v }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Je souhaite que Maître {{ avocat?.nom }} me contacte par :</label>
+        <div class="radio-row radio-row--contact">
+          <label class="radio-option">
+            <input type="radio" name="contactPreference" value="mail_telephone" [(ngModel)]="contactPreference" />
+            Mail ou téléphone
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="contactPreference" value="mail" [(ngModel)]="contactPreference" />
+            Mail uniquement
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="contactPreference" value="telephone" [(ngModel)]="contactPreference" />
+            Téléphone uniquement
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-precedent" (click)="onPrecedent()">Précédent</button>
+        <button class="btn-suivant" [disabled]="!isCoordonneesValid() || isSubmitting" (click)="onSuivantCoordonnees()">
+          {{ isSubmitting ? 'Envoi en cours...' : 'Suivant' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 5 : Confirmation -->
+    <div class="besoin-page__confirmation" *ngIf="step === 'confirmation'">
+      <div class="confirmation-icon">
+        <span>✓</span>
+      </div>
+      <h2 class="confirmation-title">
+        Merci, votre demande a bien été transmise à<br />
+        <strong>Maître {{ avocat?.nom }}</strong>
+      </h2>
+      <p class="confirmation-text">
+        En attendant sa réponse, vous pouvez trouver d'autres avocats à {{ avocat?.ville }}.
+      </p>
+      <button class="confirmation-btn" (click)="onContacterAutresAvocats()">
+        Contacter d'autres avocats
+      </button>
+    </div>
+  </div>
+</div>
 
 <ng-template #loadingTpl>
-  <div class="besoin-page__loading">
-    Chargement...
-  </div>
+  <div class="besoin-page__loading">Chargement...</div>
 </ng-template>

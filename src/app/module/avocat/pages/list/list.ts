@@ -21,7 +21,7 @@ export class ListeAvocatsComponent implements OnInit {
   pageSize = 10;
   loading = true;
   error = false;
-  defaultAvatar = '/images/images.jpeg';
+  defaultAvatar = '/images/dupont.jpeg';
   filters: AvocatFilters = {};
 
   // ==== Modal contact ====

@@ -1,16 +1,39 @@
 <section class="featured-lawyers">
   <div class="featured-lawyers__header">
     <div class="featured-lawyers__header-left">
-      <span class="featured-lawyers__eyebrow">Avocat vedettes</span>
-      <p class="featured-lawyers__subtitle">Des praticiens reconnus a votre ecoute</p>
+      <span class="featured-lawyers__eyebrow">Avocats vedettes</span>
+      <p class="featured-lawyers__subtitle">Des praticiens reconnus à votre écoute</p>
     </div>
     <a class="featured-lawyers__link" (click)="scrollTo('avocat')">Voir tous les avocats</a>
   </div>
 
-  <div class="featured-lawyers__grid">
+  <!-- Loading state -->
+  <div class="featured-lawyers__grid" *ngIf="isLoading">
+    <div class="featured-lawyers__card featured-lawyers__card--skeleton" *ngFor="let i of [1,2,3,4]">
+      <div class="featured-lawyers__avatar featured-lawyers__avatar--skeleton"></div>
+      <div class="featured-lawyers__info">
+        <div class="featured-lawyers__skeleton-line featured-lawyers__skeleton-line--title"></div>
+        <div class="featured-lawyers__skeleton-line featured-lawyers__skeleton-line--meta"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <p class="featured-lawyers__error" *ngIf="!isLoading && hasError">
+    Impossible de charger les avocats pour le moment. Veuillez réessayer plus tard.
+  </p>
+
+  <!-- Empty state -->
+  <p class="featured-lawyers__empty" *ngIf="!isLoading && !hasError && lawyers.length === 0">
+    Aucun avocat disponible pour le moment.
+  </p>
+
+  <!-- Data -->
+  <div class="featured-lawyers__grid" *ngIf="!isLoading && !hasError && lawyers.length > 0">
     <div class="featured-lawyers__card" *ngFor="let lawyer of lawyers">
       <div class="featured-lawyers__avatar">
-        <span class="featured-lawyers__initials">{{ lawyer.initials }}</span>
+        <img *ngIf="lawyer.photo" [src]="lawyer.photo" [alt]="lawyer.name" class="featured-lawyers__photo" />
+        <span *ngIf="!lawyer.photo" class="featured-lawyers__initials">{{ lawyer.initials }}</span>
       </div>
       <div class="featured-lawyers__info">
         <div class="featured-lawyers__name-row">
@@ -19,11 +42,11 @@
             <svg viewBox="0 0 16 16" fill="#c9a227" aria-hidden="true">
               <path d="M8 1l1.85 3.75L14 5.5l-3 2.92.71 4.13L8 10.4l-3.71 2.15L5 8.42 2 5.5l4.15-.75L8 1z"/>
             </svg>
-            {{ lawyer.rating }}
+            {{ lawyer.rating | number:'1.1-1' }}
           </span>
         </div>
-        <p class="featured-lawyers__meta">{{ lawyer.specialite }} . {{ lawyer.avis }} avis</p>
-        <a class="featured-lawyers__btn" routerLink="/avocat/{{ lawyer.id }}">Voir le profil</a>
+        <p class="featured-lawyers__meta">{{ lawyer.specialite }}</p>
+        <a class="featured-lawyers__btn" [routerLink]="['/avocat', lawyer.id]">Voir le profil</a>
       </div>
     </div>
   </div>

@@ -1,0 +1,125 @@
+.avocat-profile {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+
+  &__back {
+    display: inline-block;
+    margin-bottom: 24px;
+    color: #1a2b4b;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  &__header {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 40px;
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  }
+
+  &__photo {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  &__header-info {
+    flex: 1;
+  }
+
+  &__name {
+    font-size: 1.8rem;
+    color: #1a2b4b;
+    margin: 0 0 8px;
+  }
+
+  &__rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  &__star svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &__rating-value {
+    margin-left: 6px;
+    font-weight: 600;
+    color: #1a2b4b;
+  }
+
+  &__specialites {
+    color: #6b7280;
+    margin: 0 0 4px;
+  }
+
+  &__location {
+    color: #6b7280;
+    margin: 0 0 16px;
+  }
+
+  &__contact-btn {
+    background: #1a2b4b;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+
+  &__details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    padding: 24px 0;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 32px;
+  }
+
+  &__detail-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+
+  &__detail-value {
+    font-weight: 600;
+    color: #1a2b4b;
+  }
+
+  &__bio h2 {
+    font-size: 1.2rem;
+    color: #1a2b4b;
+    margin-bottom: 8px;
+  }
+
+  &__bio p {
+    color: #374151;
+    line-height: 1.6;
+  }
+
+  &__loading,
+  &__error {
+    text-align: center;
+    padding: 80px 24px;
+    color: #6b7280;
+  }
+}

@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
-interface domain {
-  icon: 'family' | 'building' | 'penal' | 'commercial';
+interface DomainItem {
+  icon: 'family' | 'building' | 'penal' | 'commercial' | 'travail' | 'divorce' | 'etrangers' | 'social' | 'immigration' | 'sante' | 'violences' | 'accident' | 'autre';
   title: string;
   description: string;
 }
@@ -10,32 +11,16 @@ interface domain {
 @Component({
   selector: 'app-domain',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './domain.html',
   styleUrl: './domain.scss'
 })
 export class Domain {
-  domaines: domain[] = [
-    {
-      icon: 'family',
-      title: 'Droit de Famille',
-      description: 'Divorce, garde et sucession'
-    },
-    {
-      icon: 'building',
-      title: 'Immobilier',
-      description: 'Baux, copropriete, transactions'
-    },
-    {
-      icon: 'penal',
-      title: 'Droit Penal',
-      description: 'Defense, assistance, recours'
-    },
-    {
-      icon: 'commercial',
-      title: 'Droit Commercial',
-      description: 'Contrat, societes et litiges'
-    }
+  domaines: DomainItem[] = [
+    { icon: 'family', title: 'Droit de Famille', description: 'Divorce, garde et succession' },
+    { icon: 'building', title: 'Immobilier', description: 'Baux, copropriété, transactions' },
+    { icon: 'penal', title: 'Droit Pénal', description: 'Défense, assistance, recours' },
+    { icon: 'commercial', title: 'Droit Commercial', description: 'Contrat, sociétés et litiges' }
   ];
 
   scrollTo(sectionId: string): void {

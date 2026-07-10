@@ -1,0 +1,73 @@
+<div class="avocat-profile" *ngIf="!loading && !error && avocat">
+  <a routerLink="/avocat" class="avocat-profile__back">&larr; Retour à la liste</a>
+
+  <div class="avocat-profile__header">
+    <img
+      [src]="avocat.photo || defaultAvatar"
+      [alt]="nomComplet()"
+      class="avocat-profile__photo"
+      (error)="onImageError($event)"
+    />
+
+    <div class="avocat-profile__header-info">
+      <h1 class="avocat-profile__name">Maître {{ nomComplet() }}</h1>
+
+      <div class="avocat-profile__rating" *ngIf="avocat.noteMoyenne">
+        <span *ngFor="let star of getStars(avocat.noteMoyenne)" class="avocat-profile__star">
+          <svg *ngIf="star === 'full'" viewBox="0 0 16 16" fill="#c9a227" aria-hidden="true">
+            <path d="M8 1l1.85 3.75L14 5.5l-3 2.92.71 4.13L8 10.4l-3.71 2.15L5 8.42 2 5.5l4.15-.75L8 1z"/>
+          </svg>
+          <svg *ngIf="star === 'empty'" viewBox="0 0 16 16" fill="none" stroke="#c9a227" stroke-width="1" aria-hidden="true">
+            <path d="M8 1l1.85 3.75L14 5.5l-3 2.92.71 4.13L8 10.4l-3.71 2.15L5 8.42 2 5.5l4.15-.75L8 1z"/>
+          </svg>
+        </span>
+        <span class="avocat-profile__rating-value">{{ avocat.noteMoyenne | number:'1.1-1' }}</span>
+      </div>
+
+      <p class="avocat-profile__specialites" *ngIf="avocat.specialites?.length">
+        {{ avocat.specialites.join(' · ') }}
+      </p>
+
+      <p class="avocat-profile__location" *ngIf="avocat.ville">{{ avocat.ville }}</p>
+
+      <button class="avocat-profile__contact-btn" (click)="onContacter()">Contacter</button>
+    </div>
+  </div>
+
+  <div class="avocat-profile__details">
+    <div class="avocat-profile__detail-item" *ngIf="avocat.experience != null">
+      <span class="avocat-profile__detail-label">Expérience</span>
+      <span class="avocat-profile__detail-value">{{ avocat.experience }} ans</span>
+    </div>
+
+    <div class="avocat-profile__detail-item" *ngIf="avocat.tarif != null">
+      <span class="avocat-profile__detail-label">Tarif</span>
+      <span class="avocat-profile__detail-value">{{ avocat.tarif }} FCFA</span>
+    </div>
+
+    <div class="avocat-profile__detail-item" *ngIf="avocat.adresseCabinet">
+      <span class="avocat-profile__detail-label">Cabinet</span>
+      <span class="avocat-profile__detail-value">{{ avocat.adresseCabinet }}</span>
+    </div>
+  </div>
+
+  <div class="avocat-profile__bio" *ngIf="avocat.bio">
+    <h2>À propos</h2>
+    <p>{{ avocat.bio }}</p>
+  </div>
+</div>
+
+<div class="avocat-profile__loading" *ngIf="loading">
+  <p>Chargement du profil...</p>
+</div>
+
+<div class="avocat-profile__error" *ngIf="!loading && error">
+  <p>Impossible de charger ce profil. <a routerLink="/avocat">Retour à la liste des avocats</a></p>
+</div>
+
+<app-contact-avocat-modal
+  *ngIf="modalOuvert && avocat"
+  [avocatId]="avocat.id"
+  [avocatNom]="nomComplet()"
+  (close)="fermerModal()"
+></app-contact-avocat-modal>

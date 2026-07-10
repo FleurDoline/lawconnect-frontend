@@ -1,14 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { AvocatService } from '../../../../core/services/avocat.service';
+import { Avocat, StatutAvocatEnum } from '../../../../core/models/avocat.model';
 
-interface Lawyer {
+interface FeaturedLawyer {
   id: number;
   initials: string;
   name: string;
   rating: number;
   specialite: string;
-  avis: number;
+  photo: string | null;
 }
 
 @Component({
@@ -18,41 +20,67 @@ interface Lawyer {
   templateUrl: './featured-lawyers.html',
   styleUrl: './featured-lawyers.scss'
 })
-export class FeaturedLawyers {
-  lawyers: Lawyer[] = [
-    {
-      id: 1,
-      initials: 'AV',
-      name: 'Maitre Aicha Vance',
-      rating: 4.9,
-      specialite: 'Droit de famille',
-      avis: 128
-    },
-    {
-      id: 2,
-      initials: 'TD',
-      name: 'Maitre Thomas Durand',
-      rating: 4.8,
-      specialite: 'Droit de commercial',
-      avis: 92
-    },
-    {
-      id: 3,
-      initials: 'NP',
-      name: 'Maitre Nathalie Petit',
-      rating: 5.0,
-      specialite: 'Droit de immobilier',
-      avis: 76
-    },
-    {
-      id: 4,
-      initials: 'SC',
-      name: 'Maitre Sarah Cohen',
-      rating: 3.9,
-      specialite: 'Droit penal',
-      avis: 100
-    }
-  ];
+export class FeaturedLawyers implements OnInit {
+  lawyers: FeaturedLawyer[] = [];
+  isLoading = true;
+  hasError = false;
+
+  constructor(
+    private avocatService: AvocatService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.loadFeaturedLawyers();
+  }
+
+  private loadFeaturedLawyers(): void {
+    this.isLoading = true;
+    this.hasError = false;
+
+    this.avocatService.rechercher({}, 0, 20).subscribe({
+      next: (response) => {
+        const avocats: Avocat[] = response.content ?? [];
+
+        this.lawyers = avocats
+          .filter(a => a.statut === StatutAvocatEnum.VALIDE && a.noteMoyenne != null)
+          .sort((a, b) => (b.noteMoyenne ?? 0) - (a.noteMoyenne ?? 0))
+          .slice(0, 4)
+          .map(a => this.toFeaturedLawyer(a));
+
+        this.isLoading = false;
+        this.cdr.detectChanges(); // force repaint regardless of zone/OnPush timing
+      },
+      error: () => {
+        this.hasError = true;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private toFeaturedLawyer(a: Avocat): FeaturedLawyer {
+    return {
+      id: a.id,
+      initials: this.getInitials(a.prenom, a.nom),
+      name: this.buildName(a.prenom, a.nom),
+      rating: a.noteMoyenne ?? 0,
+      specialite: a.specialites?.[0] ?? 'Spécialité non précisée',
+      photo: a.photo
+    };
+  }
+
+  private buildName(prenom: string | null, nom: string | null): string {
+    const parts = [prenom, nom].filter(p => p && p.trim().length > 0);
+    return parts.length > 0 ? `Maître ${parts.join(' ')}` : 'Maître';
+  }
+
+  private getInitials(prenom: string | null, nom: string | null): string {
+    const first = prenom?.charAt(0) ?? '';
+    const last = nom?.charAt(0) ?? '';
+    const initials = (first + last).toUpperCase();
+    return initials || '??';
+  }
 
   scrollTo(sectionId: string): void {
     const el = document.getElementById(sectionId);

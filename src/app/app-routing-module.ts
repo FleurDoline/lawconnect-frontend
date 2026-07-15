@@ -7,9 +7,10 @@ import { DashboardComponent } from './module/avocat/pages/dashboard/dashboard';
 import { ListeAvocatsComponent } from './module/avocat/pages/list/list';
 import { ClientDashboardComponent } from './module/client/pages/dashboard/dashboard';
 import { BesoinAvocatComponent } from './module/client/pages/besoin-avocat/besoin-avocat';
+import { ConsultationsComponent } from './module/client/pages/consultation/consultations';
 import { AvocatProfileComponent } from './module/avocat/pages/profile/profile';
 
-/*import { Consultation } from './module/client/pages/consultation/consultation';*/
+
 
 const routes: Routes = [
   { path: '', component: Home },
@@ -27,7 +28,9 @@ const routes: Routes = [
   {
   path: 'avocat/:id',
   loadComponent: () => import('./module/avocat/pages/profile/profile').then(m => m.AvocatProfileComponent)
-}
+},
+{ path: 'client/consultations', component: ConsultationsComponent },
+
   /*{ path: 'consultation/nouvelle', component: Consultation },*/
 ];
 

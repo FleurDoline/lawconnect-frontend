@@ -1,0 +1,201 @@
+<app-topbar
+  [userName]="clientNom"
+  userPlan="Client"
+  [navItems]="navItems"
+  (navSelect)="onNavSelect($event)">
+</app-topbar>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+    </symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+    </symbol>
+    <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="2" width="16" height="20"/><line x1="9" y1="6" x2="9" y2="6.01"/>
+      <line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/>
+      <line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/>
+      <line x1="15" y1="14" x2="15" y2="14.01"/><line x1="9" y1="18" x2="9" y2="18.01"/>
+      <line x1="15" y1="18" x2="15" y2="18.01"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="consultations-page">
+
+  <div class="page-header">
+    <div>
+      <h1>Consultation</h1>
+      <p class="subtitle">Historique et rendez-vous à venir avec vos avocats</p>
+    </div>
+    <button class="btn-primary" (click)="nouvelleConsultation()">
+      <svg class="icon" width="16" height="16"><use href="#i-plus"></use></svg>
+      Nouvelle Consultation
+    </button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'avenir'" (click)="setTab('avenir')">À venir</button>
+    <button class="tab" [class.active]="activeTab === 'passees'" (click)="setTab('passees')">Passées</button>
+  </div>
+
+  <div class="table-card">
+    <table class="consultations-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Heure</th>
+          <th>Avocat</th>
+          <th>Spécialité</th>
+          <th>Mode</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of pagedConsultations">
+          <td>{{ c.date }}</td>
+          <td>{{ c.heure }}</td>
+          <td class="avocat-cell">
+            <span class="avatar-badge" [style.background]="c.avatarColor">{{ c.avocatInitiales }}</span>
+            {{ c.avocatNom }}
+          </td>
+          <td>{{ c.specialite }}</td>
+          <td>
+            <span class="mode-pill" [ngClass]="'mode-pill--' + c.mode">
+              <svg class="icon" width="14" height="14"><use [attr.href]="'#i-' + modeIcon(c.mode)"></use></svg>
+              {{ modeLabel(c.mode) }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="'status-badge--' + c.statut.toLowerCase()">
+              {{ statutLabel(c.statut) }}
+            </span>
+          </td>
+          <td>
+            <button *ngIf="canJoin(c)" class="btn-primary btn-small" (click)="rejoindre(c)">Rejoindre</button>
+            <button *ngIf="!canJoin(c)" class="btn-outline btn-small" (click)="detail(c)">Détail</button>
+          </td>
+        </tr>
+
+        <tr *ngIf="!loading && pagedConsultations.length === 0">
+          <td colspan="7" class="empty-row">Aucune consultation à afficher.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="table-footer">
+      <span class="results-count">Page {{ currentPage }} sur {{ totalPages }} . {{ filtered.length }} résultat(s)</span>
+
+      <div class="pagination">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">&lsaquo; Précédent</button>
+        <button
+          *ngFor="let p of pageNumbers()"
+          class="page-btn page-number"
+          [class.active]="p === currentPage"
+          (click)="goToPage(p)">
+          {{ p }}
+        </button>
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Suivant &rsaquo;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nouvelle Consultation Modal -->
+<div class="modal-backdrop" *ngIf="showNouvelleModal" (click)="closeNouvelleModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="nouvelle-consultation-title" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="nouvelle-consultation-title">Nouvelle Consultation</h2>
+      <button class="modal-close" type="button" (click)="closeNouvelleModal()" aria-label="Fermer">
+        <svg class="icon" width="18" height="18"><use href="#i-x"></use></svg>
+      </button>
+    </div>
+
+    <form class="modal-body" (ngSubmit)="submitNouvelleConsultation()" novalidate>
+      <div class="form-field">
+        <label for="avocatId">Avocat</label>
+        <select
+          id="avocatId"
+          name="avocatId"
+          [(ngModel)]="form.avocatId"
+          [class.invalid]="errors.avocatId"
+        >
+          <option [ngValue]="null" disabled>Sélectionner un avocat</option>
+          <option *ngFor="let a of avocats" [ngValue]="a.id">{{ a.nom }} — {{ a.specialite }}</option>
+        </select>
+        <span class="field-error" *ngIf="errors.avocatId">{{ errors.avocatId }}</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="date">Date</label>
+          <input
+            id="date"
+            type="date"
+            name="date"
+            [(ngModel)]="form.date"
+            [min]="todayIso"
+            [class.invalid]="errors.date"
+          />
+          <span class="field-error" *ngIf="errors.date">{{ errors.date }}</span>
+        </div>
+
+        <div class="form-field">
+          <label for="heure">Heure</label>
+          <input
+            id="heure"
+            type="time"
+            name="heure"
+            [(ngModel)]="form.heure"
+            [class.invalid]="errors.heure"
+          />
+          <span class="field-error" *ngIf="errors.heure">{{ errors.heure }}</span>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label>Mode de consultation</label>
+        <div class="mode-options" [class.invalid]="errors.mode">
+          <label class="radio-pill">
+            <input type="radio" name="mode" value="visio" [(ngModel)]="form.mode" />
+            Visio
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="mode" value="telephone" [(ngModel)]="form.mode" />
+            Téléphone
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="mode" value="cabinet" [(ngModel)]="form.mode" />
+            Cabinet
+          </label>
+        </div>
+        <span class="field-error" *ngIf="errors.mode">{{ errors.mode }}</span>
+      </div>
+
+      <div class="form-field">
+        <label for="description">Description (optionnel)</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="3"
+          [(ngModel)]="form.description"
+          placeholder="Détails de la demande..."
+        ></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-outline" (click)="closeNouvelleModal()">Annuler</button>
+        <button type="submit" class="btn-primary" [disabled]="submitting">
+          {{ submitting ? 'Création...' : 'Confirmer' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+</div>

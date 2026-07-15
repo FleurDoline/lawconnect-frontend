@@ -1,10 +1,14 @@
+<app-topbar
+  [userName]="clientNom"
+  userPlan="Client"
+  [navItems]="navItems"
+  (navSelect)="onNavSelect($event)">
+</app-topbar>
+
 <div class="dashboard" *ngIf="!loading">
 
   <div class="dashboard__header">
     <h1 class="dashboard__title">Bonjour, Client {{ clientNom }}</h1>
-    <button class="btn-primary" (click)="nouvelleConsultation()">
-      <span class="btn-primary__icon">+</span> Nouvelle Consultation
-    </button>
   </div>
 
   <div class="dashboard__stats">
@@ -34,16 +38,24 @@
   <div class="panel">
     <h2 class="panel__title">Trouver un Avocat</h2>
     <div class="search-bar">
-      <div class="search-bar__field">
-        <label>Spécialité</label>
-        <select [(ngModel)]="specialite" name="specialite">
-          <option value="">Toutes spécialités</option>
-          <option value="droit du travail">Droit du travail</option>
-          <option value="immobilier">Immobilier</option>
-          <option value="famille">Famille</option>
-          <option value="fiscalite">Fiscalité</option>
-        </select>
-      </div>
+      <div class="search-bar__field search-bar__field--autocomplete">
+  <label>Spécialité</label>
+  <input
+    type="text"
+    [(ngModel)]="specialite"
+    name="specialite"
+    placeholder="ex: Droit de la famille, Droit des affaires..."
+    (input)="onSpecialiteInput()"
+    (focus)="onSpecialiteFocus()"
+    (blur)="hideSuggestionsDelayed()"
+    autocomplete="off"
+  />
+  <ul class="specialite-suggestions" *ngIf="showSuggestions">
+    <li *ngFor="let s of specialiteSuggestions" (mousedown)="selectSpecialite(s)">
+      {{ s.nom }}
+    </li>
+  </ul>
+</div>
       <div class="search-bar__field">
         <label>Ville</label>
         <input type="text" [(ngModel)]="ville" name="ville" placeholder="ex: Yaounde, Douala..." />
@@ -74,7 +86,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let c of consultationsRecentes; let i = index" [style.animation-delay.ms]="i * 60">
+        <tr *ngFor="let c of pagedConsultationsRecentes; let i = index" [style.animation-delay.ms]="i * 60">
           <td>{{ c.date }}</td>
           <td class="consultations-table__avocat">
             <span class="avatar-badge avatar-badge--small">{{ c.avocatInitiales }}</span>
@@ -87,11 +99,41 @@
             </span>
           </td>
           <td>
-            <button class="btn-outline" (click)="ouvrirDossier(c.id)">Détails</button>
-          </td>
+
+    <button
+        *ngIf="c.statut === 'CONFIRMEE'"
+        class="btn-primary"
+        (click)="rejoindreConsultation(c.id)">
+        Rejoindre
+    </button>
+
+    <button
+        *ngIf="c.statut !== 'CONFIRMEE'"
+        class="btn-outline"
+        (click)="ouvrirDetailsConsultation(c.id)">
+        Détails
+    </button>
+
+</td>
         </tr>
       </tbody>
     </table>
+
+    <div class="table-footer" *ngIf="consultationsRecentes.length > 0">
+      <span class="results-count">Page {{ currentPage }} sur {{ totalPages }} . {{ consultationsRecentes.length }} résultat(s)</span>
+
+      <div class="pagination">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">&lsaquo; Précédent</button>
+        <button
+          *ngFor="let p of pageNumbers()"
+          class="page-btn page-number"
+          [class.active]="p === currentPage"
+          (click)="goToPage(p)">
+          {{ p }}
+        </button>
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Suivant &rsaquo;</button>
+      </div>
+    </div>
   </div>
 
   <div class="help-banner">
@@ -99,6 +141,82 @@
     <div class="help-banner__actions">
       <button class="btn-outline btn-outline--light">Contacter le support</button>
       <button class="btn-gold">Centre d'aide</button>
+    </div>
+  </div>
+
+  <!-- Modal Détails Consultation -->
+  <div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <button class="modal-card__close" (click)="closeDetailsModal()">&times;</button>
+
+      <div *ngIf="loadingDetails" class="modal-card__loading">Chargement...</div>
+
+      <ng-container *ngIf="!loadingDetails && selectedConsultation as c">
+        <h2 class="modal-card__title">Détails de la consultation</h2>
+
+        <div class="modal-card__row">
+          <span class="avatar-badge">{{ c.avocatInitiales }}</span>
+          <div>
+            <p class="modal-card__avocat">Mr. {{ c.avocatNom }}</p>
+            <p class="modal-card__specialite">{{ c.specialite }}</p>
+          </div>
+        </div>
+
+        <div class="modal-card__info">
+          <div class="modal-card__field">
+            <span class="modal-card__label">Date</span>
+            <span class="modal-card__value">{{ c.date }} à {{ c.heure }}</span>
+          </div>
+          <div class="modal-card__field">
+            <span class="modal-card__label">Statut</span>
+            <span class="status-badge" [ngClass]="'status-badge--' + c.statut">
+              {{ statutLabel(c.statut) }}
+            </span>
+          </div>
+          <div class="modal-card__field">
+            <span class="modal-card__label">Type</span>
+            <span class="modal-card__value">{{ c.typePersonne === 'particulier' ? 'Particulier' : 'Professionnel' }}</span>
+          </div>
+          <div class="modal-card__field">
+            <span class="modal-card__label">Mission</span>
+            <span class="modal-card__value">{{ c.mission }}</span>
+          </div>
+          <div class="modal-card__field" *ngIf="c.attentes?.length">
+            <span class="modal-card__label">Attentes</span>
+            <span class="modal-card__value">{{ c.attentes.join(', ') }}</span>
+          </div>
+          <div class="modal-card__field">
+            <span class="modal-card__label">Urgent</span>
+            <span class="modal-card__value">{{ c.urgent === 'oui' ? 'Oui' : 'Non' }}</span>
+          </div>
+        </div>
+
+        <div class="modal-card__situation">
+          <span class="modal-card__label">Situation décrite</span>
+          <p>{{ c.situation }}</p>
+        </div>
+
+        <div class="modal-card__info">
+          <div class="modal-card__field">
+            <span class="modal-card__label">Contact</span>
+            <span class="modal-card__value">{{ c.nomComplet }}</span>
+          </div>
+          <div class="modal-card__field">
+            <span class="modal-card__label">Téléphone</span>
+            <span class="modal-card__value">{{ c.telephone }}</span>
+          </div>
+          <div class="modal-card__field">
+            <span class="modal-card__label">Email</span>
+            <span class="modal-card__value">{{ c.email }}</span>
+          </div>
+          <div class="modal-card__field">
+            <span class="modal-card__label">Ville</span>
+            <span class="modal-card__value">{{ c.ville }}</span>
+          </div>
+        </div>
+
+        <button class="btn-primary modal-card__close-btn" (click)="closeDetailsModal()">Fermer</button>
+      </ng-container>
     </div>
   </div>
 

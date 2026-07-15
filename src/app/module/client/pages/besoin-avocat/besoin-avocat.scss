@@ -613,3 +613,21 @@
     background: #16283f;
   }
 }
+
+.confirmation-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.confirmation-btn--outline {
+  background-color: transparent;
+  color: #1a2744;
+  border: 2px solid #1a2744;
+
+  &:hover {
+    background-color: rgba(26, 39, 68, 0.06); // #1a2744 in rgb
+  }
+}

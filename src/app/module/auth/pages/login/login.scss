@@ -1,4 +1,6 @@
 // ── Tokens ────────────────────────────────────────────────────────────────────
+@use 'sass:color';
+
 $navy:        #1a2744;
 $navy-light:  #243358;
 $gold:        #c9a84c;
@@ -312,7 +314,7 @@ $radius-btn:   8px;
   transition: background 0.2s;
 
   &:hover:not(:disabled) {
-    background-color: darken($input-focus, 8%);
+    background-color: color.adjust($input-focus, $lightness: -8%);
   }
 
   &:disabled {

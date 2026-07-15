@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AvocatService } from '../../../../core/services/avocat.service';
+import { ConsultationService } from '../../../../core/services/consultation.service';
 
 interface CountryCode {
   name: string;
@@ -108,6 +109,7 @@ export class BesoinAvocatComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private avocatService: AvocatService,
+    private consultationService: ConsultationService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef
   ) {}
@@ -234,7 +236,7 @@ export class BesoinAvocatComponent implements OnInit {
     if (!this.isCoordonneesValid() || this.isSubmitting) return;
 
     const payload = {
-      avocatId: this.avocatId,
+      avocatId: Number(this.avocatId),
       flowType: this.flowType,
       eligibilite: this.eligibiliteChoice,
       typePersonne: this.typePersonne,
@@ -251,15 +253,23 @@ export class BesoinAvocatComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    // TODO: remplacer par le vrai appel au backend une fois l'endpoint dispo
-    // this.avocatService.envoyerDemande(payload).subscribe({
-    //   next: () => { this.isSubmitting = false; this.step = 'confirmation'; },
-    //   error: () => { this.isSubmitting = false; /* afficher une erreur */ }
-    // });
-
-    console.log('Dossier complet:', payload);
-    this.isSubmitting = false;
-    this.step = 'confirmation';
+    this.consultationService.envoyerDemande(payload).subscribe({
+      next: () => {
+        this.ngZone.run(() => {
+          this.isSubmitting = false;
+          this.step = 'confirmation';
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        this.ngZone.run(() => {
+          console.error('Erreur envoi demande:', err);
+          this.isSubmitting = false;
+          // TODO: afficher un message d'erreur à l'utilisateur
+          this.cdr.detectChanges();
+        });
+      }
+    });
   }
 
   // --- Étape 5 : Confirmation ---
@@ -267,6 +277,10 @@ export class BesoinAvocatComponent implements OnInit {
     this.router.navigate(['/avocats'], {
       queryParams: this.ville ? { ville: this.ville } : {}
     });
+  }
+
+  onRetourDashboard(): void {
+    this.router.navigate(['/client/dashboard']);
   }
 
   // --- Navigation arrière ---

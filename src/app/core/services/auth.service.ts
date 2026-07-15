@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
@@ -12,8 +13,15 @@ export interface AuthResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private baseUrl = 'http://localhost:8081/api/auth';
+  private isBrowser: boolean;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   login(email: string, password: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/login`, { email, password })
@@ -26,32 +34,52 @@ export class AuthService {
   }
 
   private storeSession(res: AuthResponse): void {
+    if (!this.isBrowser) return;
     localStorage.setItem('accessToken', res.accessToken);
     localStorage.setItem('refreshToken', res.refreshToken);
   }
 
-  getRole(): string | null {
+  private getPayload(): any | null {
+    if (!this.isBrowser) return null;
+
     const token = localStorage.getItem('accessToken');
     if (!token) return null;
+
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const payload = JSON.parse(decodeURIComponent(
+      return JSON.parse(decodeURIComponent(
         atob(base64)
           .split('')
           .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
           .join('')
       ));
-      const rawRole: string = payload.roles || '';
-      return rawRole.replace('ROLE_', '');
     } catch (e) {
       console.error('Failed to decode token', e);
       return null;
     }
   }
 
+  getRole(): string | null {
+    const payload = this.getPayload();
+    if (!payload) return null;
+    const rawRole: string = payload.roles || '';
+    return rawRole.replace('ROLE_', '');
+  }
+
+  getFullName(): string | null {
+    const payload = this.getPayload();
+    return payload?.fullName || null;
+  }
+
+  getEmail(): string | null {
+    const payload = this.getPayload();
+    return payload?.sub || null;
+  }
+
   // ==== AJOUTS ====
   isLoggedIn(): boolean {
+    if (!this.isBrowser) return false;
     return !!localStorage.getItem('accessToken');
   }
 
@@ -74,6 +102,7 @@ export class AuthService {
   }
 
   logout(): void {
+    if (!this.isBrowser) return;
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     this.router.navigate(['/']);

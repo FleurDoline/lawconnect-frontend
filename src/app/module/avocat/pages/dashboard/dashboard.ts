@@ -32,6 +32,7 @@ interface NouveauDossier {
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss'],
 })
+
 export class DashboardComponent {
   lawyerName = 'Maître Jean Dupont';
   userName = 'Jean Dupont';

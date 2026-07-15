@@ -237,9 +237,14 @@
       <p class="confirmation-text">
         En attendant sa réponse, vous pouvez trouver d'autres avocats à {{ avocat?.ville }}.
       </p>
-      <button class="confirmation-btn" (click)="onContacterAutresAvocats()">
-        Contacter d'autres avocats
-      </button>
+      <div class="confirmation-actions">
+        <button class="confirmation-btn confirmation-btn--outline" (click)="onRetourDashboard()">
+          Retour au tableau de bord
+        </button>
+        <button class="confirmation-btn" (click)="onContacterAutresAvocats()">
+          Contacter d'autres avocats
+        </button>
+      </div>
     </div>
   </div>
 </div>

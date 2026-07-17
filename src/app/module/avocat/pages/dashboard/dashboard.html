@@ -264,3 +264,118 @@
     </form>
   </div>
 </div>
+
+<!-- Détails de la demande / Accepter le rendez-vous -->
+<div class="modal-backdrop" *ngIf="showDetailModal" (click)="closeDetailModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="detail-modal-title">Détails de la demande</h2>
+      <button class="modal-close" type="button" (click)="closeDetailModal()" aria-label="Fermer">
+        <svg class="icon" width="18" height="18"><use href="#i-x"></use></svg>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedDemande as d">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">Client</span>
+          <span class="detail-value">{{ d.nomComplet }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Téléphone</span>
+          <span class="detail-value">{{ d.telephone }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Email</span>
+          <span class="detail-value">{{ d.email }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Ville</span>
+          <span class="detail-value">{{ d.ville || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Type de personne</span>
+          <span class="detail-value">{{ d.typePersonne }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Urgent</span>
+          <span class="detail-value">{{ d.urgent === 'oui' ? 'Oui' : 'Non' }}</span>
+        </div>
+      </div>
+
+      <div class="detail-item full">
+        <span class="detail-label">Mission</span>
+        <span class="detail-value">{{ d.mission }}</span>
+      </div>
+
+      <div class="detail-item full">
+        <span class="detail-label">Situation</span>
+        <span class="detail-value">{{ d.situation }}</span>
+      </div>
+
+      <div class="detail-item full" *ngIf="d.attentes?.length">
+        <span class="detail-label">Attentes</span>
+        <ul class="detail-list">
+          <li *ngFor="let att of d.attentes">{{ att }}</li>
+        </ul>
+      </div>
+
+      <hr class="detail-divider" />
+
+      <h3 class="accept-title">Accepter et fixer le rendez-vous</h3>
+
+      <form (ngSubmit)="accepterDemande()" novalidate>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="acceptDate">Date</label>
+            <input
+              id="acceptDate"
+              type="date"
+              name="acceptDate"
+              [(ngModel)]="acceptForm.date"
+              [min]="todayIso"
+              [class.invalid]="acceptErrors.date"
+            />
+            <span class="field-error" *ngIf="acceptErrors.date">{{ acceptErrors.date }}</span>
+          </div>
+
+          <div class="form-field">
+            <label for="acceptHeure">Heure</label>
+            <input
+              id="acceptHeure"
+              type="time"
+              name="acceptHeure"
+              [(ngModel)]="acceptForm.heure"
+              [class.invalid]="acceptErrors.heure"
+            />
+            <span class="field-error" *ngIf="acceptErrors.heure">{{ acceptErrors.heure }}</span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Mode de consultation</label>
+          <div class="mode-options" [class.invalid]="acceptErrors.mode">
+            <label class="radio-pill">
+              <input type="radio" name="acceptMode" value="visioconférence" [(ngModel)]="acceptForm.mode" />
+              Visioconférence
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="acceptMode" value="présentiel" [(ngModel)]="acceptForm.mode" />
+              Présentiel
+            </label>
+          </div>
+          <span class="field-error" *ngIf="acceptErrors.mode">{{ acceptErrors.mode }}</span>
+        </div>
+
+        <p class="field-error" *ngIf="acceptApiError">{{ acceptApiError }}</p>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" (click)="closeDetailModal()">Fermer</button>
+          <button type="submit" class="btn-primary" [disabled]="acceptSubmitting">
+            {{ acceptSubmitting ? 'Confirmation...' : 'Accepter le rendez-vous' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

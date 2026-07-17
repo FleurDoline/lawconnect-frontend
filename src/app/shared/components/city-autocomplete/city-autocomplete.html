@@ -1,0 +1,22 @@
+<div class="city-autocomplete">
+  <input
+    type="text"
+    class="city-input"
+    [placeholder]="placeholder"
+    [ngModel]="query"
+    (ngModelChange)="onInput($event)"
+    (focus)="suggestions.length > 0 && (showDropdown = true)"
+    (blur)="onBlur()"
+    autocomplete="off"
+  />
+
+  <ul class="suggestions" *ngIf="showDropdown">
+    <li
+      *ngFor="let city of suggestions"
+      (mousedown)="selectCity(city)"
+    >
+      <span class="city-name">{{ city.cityName }}</span>
+      <span class="city-region">{{ city.cityRegion.replace('_', ' ') | titlecase }}</span>
+    </li>
+  </ul>
+</div>

@@ -39,28 +39,37 @@
     <h2 class="panel__title">Trouver un Avocat</h2>
     <div class="search-bar">
       <div class="search-bar__field search-bar__field--autocomplete">
-  <label>Spécialité</label>
-  <input
-    type="text"
-    [(ngModel)]="specialite"
-    name="specialite"
-    placeholder="ex: Droit de la famille, Droit des affaires..."
-    (input)="onSpecialiteInput()"
-    (focus)="onSpecialiteFocus()"
-    (blur)="hideSuggestionsDelayed()"
-    autocomplete="off"
-  />
-  <ul class="specialite-suggestions" *ngIf="showSuggestions">
-    <li *ngFor="let s of specialiteSuggestions" (mousedown)="selectSpecialite(s)">
-      {{ s.nom }}
-    </li>
-  </ul>
-</div>
+        <label>Spécialité</label>
+        <input
+          type="text"
+          [(ngModel)]="specialite"
+          name="specialite"
+          placeholder="ex: Droit de la famille, Droit des affaires..."
+          (input)="onSpecialiteInput()"
+          (focus)="onSpecialiteFocus()"
+          (blur)="hideSuggestionsDelayed()"
+          autocomplete="off"
+        />
+        <ul class="specialite-suggestions" *ngIf="showSuggestions">
+          <li *ngFor="let s of specialiteSuggestions" (mousedown)="selectSpecialite(s)">
+            {{ s.nom }}
+          </li>
+        </ul>
+      </div>
+
       <div class="search-bar__field">
         <label>Ville</label>
-        <input type="text" [(ngModel)]="ville" name="ville" placeholder="ex: Yaounde, Douala..." />
+        <app-city-autocomplete
+          placeholder="ex: Yaoundé, Douala..."
+          [initialValue]="ville"
+          (citySelected)="onVilleSelected($event)"
+        ></app-city-autocomplete>
       </div>
-      <button class="btn-search" (click)="rechercherAvocat()">🔍 Rechercher</button>
+
+      <div class="search-bar__field search-bar__field--button">
+        <label>&nbsp;</label>
+        <button class="btn-search" (click)="rechercherAvocat()">🔍 Rechercher</button>
+      </div>
     </div>
     <div class="search-bar__tags">
       <span class="tag">#Fiscalite</span>
@@ -82,7 +91,7 @@
           <th>Avocat</th>
           <th>Spécialité</th>
           <th>Statut</th>
-          <th></th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -94,7 +103,8 @@
           </td>
           <td>{{ c.specialite }}</td>
           <td>
-            <span class="status-badge" [ngClass]="'status-badge--' + c.statut">
+            <span class="status-badge" [ngClass]="'status-badge--' + c.statut.toLowerCase()">
+              <span class="status-badge__dot"></span>
               {{ statutLabel(c.statut) }}
             </span>
           </td>
@@ -169,7 +179,8 @@
           </div>
           <div class="modal-card__field">
             <span class="modal-card__label">Statut</span>
-            <span class="status-badge" [ngClass]="'status-badge--' + c.statut">
+            <span class="status-badge" [ngClass]="'status-badge--' + c.statut.toLowerCase()">
+              <span class="status-badge__dot"></span>
               {{ statutLabel(c.statut) }}
             </span>
           </div>
@@ -191,11 +202,6 @@
           </div>
         </div>
 
-        <div class="modal-card__situation">
-          <span class="modal-card__label">Situation décrite</span>
-          <p>{{ c.situation }}</p>
-        </div>
-
         <div class="modal-card__info">
           <div class="modal-card__field">
             <span class="modal-card__label">Contact</span>
@@ -213,6 +219,13 @@
             <span class="modal-card__label">Ville</span>
             <span class="modal-card__value">{{ c.ville }}</span>
           </div>
+        </div>
+
+        <!-- Situation décrite: placed last, in its own scrollable box,
+             so a long paragraph never distorts the rest of the modal -->
+        <div class="modal-card__situation" *ngIf="c.situation">
+          <span class="modal-card__label">Situation décrite</span>
+          <div class="modal-card__textbox">{{ c.situation }}</div>
         </div>
 
         <button class="btn-primary modal-card__close-btn" (click)="closeDetailsModal()">Fermer</button>

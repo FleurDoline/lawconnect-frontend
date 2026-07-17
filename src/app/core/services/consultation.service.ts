@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environnment';
+import { environment } from '../../../environments/environment';
 
 export interface ConsultationCreateRequest {
   avocatId: number;
@@ -17,7 +17,26 @@ export interface ConsultationCreateRequest {
   email: string;
   ville: string;
   contactPreference: string;
-  
+}
+
+export interface DemandeConsultation {
+  id: number;
+  nomComplet: string;
+  telephone: string;
+  email: string;
+  ville: string;
+  typePersonne: string;
+  mission: string;
+  situation: string;
+  attentes: string[];
+  urgent: string; // 'oui' | 'non'
+  statut: string; // ex: 'EN_ATTENTE', 'CONFIRMEE', 'TERMINEE', 'ANNULEE'
+  createdAt: string; // ISO string
+}
+
+export interface ConsultationAcceptRequest {
+  dateRendezVous: string; // ISO datetime string, e.g. "2026-07-20T14:30:00"
+  modeConsultation: 'visioconférence' | 'présentiel';
 }
 
 export interface ConsultationDetail {
@@ -73,5 +92,13 @@ export class ConsultationService {
 
   getDetails(id: number): Observable<ConsultationDetail> {
     return this.http.get<ConsultationDetail>(`${this.baseUrl}/${id}`);
+  }
+
+  getMesDemandes(): Observable<DemandeConsultation[]> {
+    return this.http.get<DemandeConsultation[]>(`${this.baseUrl}/mes-demandes`);
+  }
+
+  accepterDemande(id: number, payload: ConsultationAcceptRequest): Observable<ConsultationResponse> {
+    return this.http.patch<ConsultationResponse>(`${this.baseUrl}/${id}/accepter`, payload);
   }
 }

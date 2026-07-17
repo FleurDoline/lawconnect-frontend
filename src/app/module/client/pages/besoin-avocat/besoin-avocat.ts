@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AvocatService } from '../../../../core/services/avocat.service';
 import { ConsultationService } from '../../../../core/services/consultation.service';
+import { CityAutocompleteComponent } from '../../../../../app/shared/components/city-autocomplete/city-autocomplete';
+import { City } from '../../../../core/models/city.model';
 
 interface CountryCode {
   name: string;
@@ -15,7 +17,7 @@ interface CountryCode {
 @Component({
   selector: 'app-besoin-avocat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CityAutocompleteComponent],
   templateUrl: './besoin-avocat.html',
   styleUrls: ['./besoin-avocat.scss']
 })
@@ -55,6 +57,7 @@ export class BesoinAvocatComponent implements OnInit {
   readonly SITUATION_MIN_LENGTH = 30;
 
   // Données de coordonnées (étape 4)
+  
   nomComplet: string = '';
   indicatifTelephone: string = '+237';
   telephone: string = '';
@@ -90,6 +93,9 @@ export class BesoinAvocatComponent implements OnInit {
     );
   }
 
+  onCitySelected(city: City): void {
+    this.ville = city.cityName;
+  }
   toggleCountryDropdown(): void {
     this.isCountryDropdownOpen = !this.isCountryDropdownOpen;
     if (this.isCountryDropdownOpen) this.countrySearch = '';

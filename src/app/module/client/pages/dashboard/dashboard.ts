@@ -11,7 +11,8 @@ import {
   tap
 } from 'rxjs/operators';
 import { TopbarComponent, TopbarNavItem } from '../../../../shared/components/topbar/topbar';
-
+import { CityAutocompleteComponent } from '../../../../shared/components/city-autocomplete/city-autocomplete';
+import { City } from '../../../../core/models/city.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import {
   SpecialiteService,
@@ -40,7 +41,7 @@ interface SpecialiteQuery {
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, TopbarComponent],
+  imports: [CommonModule, FormsModule, TopbarComponent, CityAutocompleteComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
 })
@@ -352,6 +353,10 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
 
     return labels[statut] || statut;
 
+  }
+
+  onVilleSelected(city: City): void {
+    this.ville = city.cityName;
   }
 
 }

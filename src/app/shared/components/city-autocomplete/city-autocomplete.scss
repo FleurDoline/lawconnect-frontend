@@ -1,0 +1,56 @@
+.city-autocomplete {
+  position: relative;
+
+  .city-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+
+    &:focus {
+      outline: none;
+      border-color: #c5a45a;
+      box-shadow: 0 0 0 2px rgba(197, 164, 90, 0.2);
+    }
+  }
+
+  .suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    max-height: 240px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem 0;
+
+    li {
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      &:hover {
+        background: rgba(197, 164, 90, 0.1);
+      }
+
+      .city-name {
+        color: #1a2b4b;
+        font-weight: 500;
+      }
+
+      .city-region {
+        color: #8a8f98;
+        font-size: 0.8rem;
+      }
+    }
+  }
+}

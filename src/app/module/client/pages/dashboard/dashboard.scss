@@ -160,6 +160,7 @@ $text-muted: #6b7280;
     margin: 8px 0 0;
   }
 }
+
 .avatar-badge {
   width: 40px;
   height: 40px;
@@ -219,6 +220,14 @@ $text-muted: #6b7280;
   }
 }
 
+// ------------------------------------------------------------------
+// SEARCH BAR
+// Every column (Spécialité / Ville / Rechercher button) is wrapped in
+// the same .search-bar__field structure: a label on top + a
+// fixed-height control below. That's what keeps the button's bottom
+// edge locked to the same line as the inputs, instead of floating
+// above the row or breaking out of the panel.
+// ------------------------------------------------------------------
 .search-bar {
   display: flex;
   gap: 12px;
@@ -229,16 +238,26 @@ $text-muted: #6b7280;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    flex: 1;
-    min-width: 160px;
+    flex: 1 1 220px;   // grow to fill available space, shrink if needed, start from 220px
+    min-width: 0;      // overrides flexbox's default min-width:auto, which was letting
+                        // this field ignore its container and overlap the button
 
     label {
       font-size: 0.75rem;
       color: $text-muted;
       font-weight: 600;
+      line-height: 1.2;
+    }
+
+    select, input,
+    app-city-autocomplete {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     select, input {
+      height: 42px; // fixed height so every control lines up regardless of content
       padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid #e5e7eb;
@@ -249,6 +268,16 @@ $text-muted: #6b7280;
         outline: none;
         border-color: $navy;
         box-shadow: 0 0 0 3px rgba(26, 43, 75, 0.1);
+      }
+    }
+
+    // Wrapper for the search button: same label + fixed-height
+    // structure as the real inputs, so flex-end aligns it identically.
+    &--button {
+      flex: 0 0 auto; // fixed width, never grows or shrinks — this is what the input fields expand toward
+
+      label {
+        visibility: hidden; // reserves the same vertical space as a real label, without showing text
       }
     }
   }
@@ -263,6 +292,20 @@ $text-muted: #6b7280;
 
 .search-bar__field--autocomplete {
   position: relative;
+}
+
+// app-city-autocomplete has its own view encapsulation, so its internal
+// <input> can ignore the host's width and overflow into the next column.
+// ::ng-deep pierces that boundary so it's forced to fit the field.
+::ng-deep app-city-autocomplete {
+  width: 100%;
+  display: block;
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 42px;
+  }
 }
 
 .specialite-suggestions {
@@ -331,7 +374,11 @@ $text-muted: #6b7280;
   border-radius: 14px;
   padding: 28px;
   width: 100%;
-  max-width: 380px;
+  max-width: 420px;
+  max-height: 88vh;       // modal itself scrolls if content is too tall for the screen
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   position: relative;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
 
@@ -361,6 +408,8 @@ $text-muted: #6b7280;
     align-items: center;
     gap: 12px;
     margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f1f2f4;
   }
 
   &__avocat {
@@ -379,27 +428,57 @@ $text-muted: #6b7280;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 
   &__field {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
     font-size: 14px;
   }
 
   &__label {
     color: #667085;
+    flex-shrink: 0;
   }
 
   &__value {
     font-weight: 500;
     color: #1a2744;
+    text-align: right;
+  }
+
+  // Situation décrite section: lives at the bottom, its own bordered
+  // box with a capped height. Long paragraphs scroll inside the box
+  // instead of stretching the whole modal.
+  &__situation {
+    margin-bottom: 20px;
+
+    .modal-card__label {
+      display: block;
+      margin-bottom: 8px;
+    }
+  }
+
+  &__textbox {
+    max-height: 140px;
+    overflow-y: auto;
+    background: #f8f9fb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #1a2744;
+    white-space: pre-wrap;   // preserves line breaks the user typed
+    word-break: break-word;  // long unbroken strings (like "qazxswedc...") wrap instead of overflowing
   }
 
   &__close-btn {
     width: 100%;
+    flex-shrink: 0; // stays pinned at the bottom, doesn't get squeezed by scrolling content above
   }
 }
 
@@ -418,15 +497,20 @@ $text-muted: #6b7280;
 }
 
 .btn-search {
+  box-sizing: border-box;
+  height: 42px; // matches the input height exactly
   background: $gold;
   color: $navy-dark;
   border: none;
   border-radius: 8px;
-  padding: 10px 20px;
+  padding: 0 20px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     background: darken($gold, 8%);
@@ -466,6 +550,13 @@ $text-muted: #6b7280;
   &__avocat {
     display: flex;
     align-items: center;
+  }
+
+  // Action column: buttons line up flush right, under the "Action" header
+  th:last-child,
+  td:last-child {
+    text-align: right;
+    white-space: nowrap;
   }
 }
 
@@ -510,42 +601,73 @@ $text-muted: #6b7280;
   color: #fff;
 }
 
+// ------------------------------------------------------------------
+// STATUS BADGE
+// Class names match the exact statut values coming from the backend,
+// lowercased: CONFIRMEE -> confirmee, EN_ATTENTE -> en_attente,
+// TERMINEE -> terminee, ANNULEE -> annulee. A small dot (same color
+// as the text) sits in front of the label, matching the mockup.
+// ------------------------------------------------------------------
 .status-badge {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 999px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 
-  &--confirme {
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  &--confirmee {
     background: #dcfce7;
     color: #15803d;
   }
 
-  &--attente {
+  &--en_attente {
     background: #fef3c7;
     color: #b45309;
   }
 
-  &--nouveau {
-    background: #e0e7ff;
-    color: #3730a3;
+  &--terminee {
+    background: #e5e7eb;
+    color: #374151;
+  }
+
+  &--annulee {
+    background: #fee2e2;
+    color: #b91c1c;
   }
 }
 
+// ------------------------------------------------------------------
+// BUTTONS
+// .btn-primary (Rejoindre) = solid navy, filled.
+// .btn-outline (Détails)   = true outline: white bg, border, dark text.
+// .btn-outline--light is used on the dark navy help banner and keeps
+// its own transparent/white-border look regardless of the base style.
+// ------------------------------------------------------------------
 .btn-outline {
-  background: $navy-dark;
-  color: #fff;
-  border: none;
+  background: #fff;
+  color: $navy-dark;
+  border: 1px solid #d0d5dd;
   border-radius: 6px;
   padding: 6px 14px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 
   &:hover {
-    background: $navy;
+    background: #f5f6f8;
+    border-color: $navy;
   }
 
   &--light {
@@ -637,6 +759,10 @@ $text-muted: #6b7280;
 
     &__field {
       min-width: 100%;
+    }
+
+    &__field--button {
+      width: 100%;
     }
   }
 

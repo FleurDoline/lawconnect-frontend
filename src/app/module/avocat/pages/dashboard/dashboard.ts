@@ -7,6 +7,7 @@ import {
   DemandeConsultation,
   ConsultationAcceptRequest,
 } from '../../../../core/services/consultation.service';
+import { Router } from '@angular/router';
 
 interface Appointment {
   id: number;
@@ -21,6 +22,7 @@ interface Appointment {
 interface NavItem {
   label: string;
   icon: string;
+  route?: string;
 }
 
 interface NouveauDossier {
@@ -35,7 +37,7 @@ interface NouveauDossier {
 interface AcceptForm {
   date: string;
   heure: string;
-  mode: 'visioconférence' | 'présentiel' | '';
+  mode: 'visio' | 'telephone' | 'cabinet' | '';
 }
 
 @Component({
@@ -58,11 +60,11 @@ export class DashboardComponent implements OnInit {
   };
 
   navItems: NavItem[] = [
-    { label: 'Tableau de bord', icon: 'dashboard' },
+    { label: 'Tableau de bord', icon: 'dashboard' , route: '/avocat/dashboard'},
     { label: 'Rendez-vous',    icon: 'calendar' },
     { label: 'Messagerie',     icon: 'message' },
     { label: 'Paiement',       icon: 'card' },
-    { label: 'Paramètre',      icon: 'settings' },
+    { label: 'Paramètre',      icon: 'settings', route: '/avocat/parametre/profil'},
     { label: 'Deconnexion',    icon: 'logout' },
   ];
 
@@ -116,7 +118,8 @@ export class DashboardComponent implements OnInit {
     private host: ElementRef,
     private authService: AuthService,
     private consultationService: ConsultationService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -206,10 +209,17 @@ export class DashboardComponent implements OnInit {
   }
 
   selectNav(item: NavItem) {
-    console.log('Navigate to', item.label);
-    this.menuOpen = false;
+  this.menuOpen = false;
+
+  if (item.label === 'Deconnexion') {
+    this.authService.logout();
+    return;
   }
 
+  if (item.route) {
+    this.router.navigate([item.route]);
+  }
+}
   @HostListener('document:click', ['$event'])
   onDocClick(e: MouseEvent) {
     if (!this.host.nativeElement.contains(e.target)) this.menuOpen = false;
@@ -275,7 +285,7 @@ export class DashboardComponent implements OnInit {
 
     const payload: ConsultationAcceptRequest = {
       dateRendezVous: `${this.acceptForm.date}T${this.acceptForm.heure}:00`,
-      modeConsultation: this.acceptForm.mode as 'visioconférence' | 'présentiel',
+      modeConsultation: this.acceptForm.mode as 'visio' | 'telephone' | 'cabinet',
     };
 
     this.consultationService.accepterDemande(this.selectedDemande.id, payload).subscribe({

@@ -230,21 +230,6 @@
       </div>
 
       <div class="form-field">
-        <label>Mode de consultation</label>
-        <div class="mode-options" [class.invalid]="dossierErrors.mode">
-          <label class="radio-pill">
-            <input type="radio" name="mode" value="visioconférence" [(ngModel)]="dossier.mode" />
-            Visioconférence
-          </label>
-          <label class="radio-pill">
-            <input type="radio" name="mode" value="présentiel" [(ngModel)]="dossier.mode" />
-            Présentiel
-          </label>
-        </div>
-        <span class="field-error" *ngIf="dossierErrors.mode">{{ dossierErrors.mode }}</span>
-      </div>
-
-      <div class="form-field">
         <label for="description">Description (optionnel)</label>
         <textarea
           id="description"
@@ -353,19 +338,23 @@
         </div>
 
         <div class="form-field">
-          <label>Mode de consultation</label>
-          <div class="mode-options" [class.invalid]="acceptErrors.mode">
-            <label class="radio-pill">
-              <input type="radio" name="acceptMode" value="visioconférence" [(ngModel)]="acceptForm.mode" />
-              Visioconférence
-            </label>
-            <label class="radio-pill">
-              <input type="radio" name="acceptMode" value="présentiel" [(ngModel)]="acceptForm.mode" />
-              Présentiel
-            </label>
-          </div>
-          <span class="field-error" *ngIf="acceptErrors.mode">{{ acceptErrors.mode }}</span>
-        </div>
+  <label>Mode de consultation</label>
+  <div class="mode-options" [class.invalid]="acceptErrors.mode">
+    <label class="radio-pill">
+      <input type="radio" name="acceptMode" value="visio" [(ngModel)]="acceptForm.mode" />
+      Visioconférence
+    </label>
+    <label class="radio-pill">
+      <input type="radio" name="acceptMode" value="telephone" [(ngModel)]="acceptForm.mode" />
+      Téléphone
+    </label>
+    <label class="radio-pill">
+      <input type="radio" name="acceptMode" value="cabinet" [(ngModel)]="acceptForm.mode" />
+      Présentiel (cabinet)
+    </label>
+  </div>
+  <span class="field-error" *ngIf="acceptErrors.mode">{{ acceptErrors.mode }}</span>
+</div>
 
         <p class="field-error" *ngIf="acceptApiError">{{ acceptApiError }}</p>
 

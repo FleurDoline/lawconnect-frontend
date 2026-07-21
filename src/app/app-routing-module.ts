@@ -12,6 +12,7 @@ import { AvocatProfileComponent } from './module/avocat/pages/profile/profile';
 
 
 
+
 const routes: Routes = [
   { path: '', component: Home },
   { path: 'home', component: Home },
@@ -19,23 +20,27 @@ const routes: Routes = [
   { path: 'auth/login', component: LoginComponent },
   { path: 'auth/inscription', component: SignupComponent },
   { path: 'avocat/dashboard', component: DashboardComponent },
+  {
+    path: 'avocat/parametre/profil',
+    loadComponent: () => import('./module/avocat/pages/parametre/profil/profil').then(m => m.AvocatParametreProfilComponent)
+  },
   { path: 'client/dashboard', component: ClientDashboardComponent },
   { path: 'client/besoin-avocat/:id', component: BesoinAvocatComponent },
   {
-    path: 'domaines',
-    loadComponent: () => import('./module/landing/pages/domaines/domaines').then(m => m.DomainesPage)
+path: 'domaines',
+loadComponent: () => import('./module/landing/pages/domaines/domaines').then(m => m.DomainesPage)
   },
   {
-  path: 'avocat/:id',
-  loadComponent: () => import('./module/avocat/pages/profile/profile').then(m => m.AvocatProfileComponent)
+path: 'avocat/:id',
+loadComponent: () => import('./module/avocat/pages/profile/profile').then(m => m.AvocatProfileComponent)
 },
 { path: 'client/consultations', component: ConsultationsComponent },
 
-  /*{ path: 'consultation/nouvelle', component: Consultation },*/
+/*{ path: 'consultation/nouvelle', component: Consultation },*/
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+imports: [RouterModule.forRoot(routes)],
+exports: [RouterModule]
 })
 export class AppRoutingModule { }

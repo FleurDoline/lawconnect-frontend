@@ -77,6 +77,11 @@ export class AuthService {
     return payload?.sub || null;
   }
 
+  getUserId(): number | null {
+  const payload = this.getPayload();
+  return payload?.userId ?? null;
+}
+
   // ==== AJOUTS ====
   isLoggedIn(): boolean {
     if (!this.isBrowser) return false;

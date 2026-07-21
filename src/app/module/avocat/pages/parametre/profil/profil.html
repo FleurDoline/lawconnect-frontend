@@ -1,0 +1,110 @@
+<app-topbar
+  [userName]="userName"
+  [userPlan]="userPlan"
+  [navItems]="navItems"
+  (navSelect)="onNavSelect($event)">
+</app-topbar>
+
+<div class="parametre-page" *ngIf="!loading && !error">
+  <h1 class="parametre-page__titre">Parametre</h1>
+  <p class="parametre-page__sous-titre">Gerer votre profil et vos preferences</p>
+
+  <div class="parametre-page__layout">
+    <nav class="parametre-tabs">
+      <ul>
+        <li *ngFor="let tab of tabs"
+            [class.active]="activeTab === tab.key"
+            (click)="selectTab(tab)">
+          {{ tab.label }}
+        </li>
+      </ul>
+    </nav>
+
+    <div class="parametre-content" *ngIf="activeTab === 'profil'">
+      <div class="profil-card">
+        <div class="profil-card__header">
+          <img
+            [src]="photo || '/images/images.jpeg'"
+            alt="Photo de profil"
+            class="profil-card__photo"
+          />
+          <div class="profil-card__header-info">
+            <span class="profil-card__nom">{{ form.value.prenom }} {{ form.value.nom }}</span>
+            <span class="profil-card__specialites" *ngIf="specialitesActuelles.length">
+              {{ specialitesActuelles.join(' · ') }}
+            </span>
+            <button type="button" class="profil-card__changer-photo">Changer la photo</button>
+          </div>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onEnregistrer()" class="profil-card__form">
+          <div class="profil-card__row">
+            <div class="profil-card__field">
+              <label for="prenom">Prenom</label>
+              <input id="prenom" type="text" formControlName="prenom" />
+              <span class="profil-card__field-error" *ngIf="form.get('prenom')?.invalid && form.get('prenom')?.touched">
+                Le prenom est requis
+              </span>
+            </div>
+
+            <div class="profil-card__field">
+              <label for="nom">Nom</label>
+              <input id="nom" type="text" formControlName="nom" />
+              <span class="profil-card__field-error" *ngIf="form.get('nom')?.invalid && form.get('nom')?.touched">
+                Le nom est requis
+              </span>
+            </div>
+          </div>
+
+          <div class="profil-card__row">
+            <div class="profil-card__field">
+              <label for="email">Email</label>
+              <input id="email" type="email" formControlName="email" readonly />
+            </div>
+
+            <div class="profil-card__field">
+              <label for="telephone">Telephone</label>
+              <input id="telephone" type="tel" formControlName="telephone" placeholder="+237 6XX XX XX XX" />
+              <span class="profil-card__field-error" *ngIf="form.get('telephone')?.invalid && form.get('telephone')?.touched">
+                Un numero de telephone valide est requis
+              </span>
+            </div>
+          </div>
+
+          <div class="profil-card__field profil-card__field--specialite">
+            <label>Specialite</label>
+            <input type="text" [value]="specialitesActuelles.join(', ') || 'Aucune specialite renseignee'" readonly />
+          </div>
+
+          <p class="profil-card__message profil-card__message--success" *ngIf="saveSuccess">
+            Profil mis a jour avec succes.
+          </p>
+          <p class="profil-card__message profil-card__message--error" *ngIf="saveError">
+            Une erreur est survenue, merci de reessayer.
+          </p>
+
+          <div class="profil-card__actions">
+            <button type="button" class="profil-card__btn profil-card__btn--annuler" (click)="onAnnuler()" [disabled]="saving">
+              Annuler
+            </button>
+            <button type="submit" class="profil-card__btn profil-card__btn--enregistrer" [disabled]="saving">
+              {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="parametre-content parametre-content--placeholder" *ngIf="activeTab !== 'profil'">
+      <p>Cette section sera bientot disponible.</p>
+    </div>
+  </div>
+</div>
+
+<div class="parametre-page__loading" *ngIf="loading">
+  <p>Chargement du profil...</p>
+</div>
+
+<div class="parametre-page__error" *ngIf="!loading && error">
+  <p>Impossible de charger votre profil. Merci de vous reconnecter.</p>
+</div>

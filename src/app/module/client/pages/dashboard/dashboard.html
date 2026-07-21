@@ -81,7 +81,7 @@
   <div class="panel">
     <div class="panel__header">
       <h2 class="panel__title">Consultations Récentes</h2>
-      <a class="panel__link" (click)="ouvrirDossiers()">Tout voir &rsaquo;</a>
+      <a class="panel__link" routerLink="/client/consultations">Tout voir &rsaquo;</a>
     </div>
 
     <table class="consultations-table">
@@ -95,7 +95,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let c of pagedConsultationsRecentes; let i = index" [style.animation-delay.ms]="i * 60">
+        <tr *ngFor="let c of apercuConsultationsRecentes; let i = index" [style.animation-delay.ms]="i * 60">
           <td>{{ c.date }}</td>
           <td class="consultations-table__avocat">
             <span class="avatar-badge avatar-badge--small">{{ c.avocatInitiales }}</span>
@@ -129,20 +129,11 @@
       </tbody>
     </table>
 
-    <div class="table-footer" *ngIf="consultationsRecentes.length > 0">
-      <span class="results-count">Page {{ currentPage }} sur {{ totalPages }} . {{ consultationsRecentes.length }} résultat(s)</span>
-
-      <div class="pagination">
-        <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">&lsaquo; Précédent</button>
-        <button
-          *ngFor="let p of pageNumbers()"
-          class="page-btn page-number"
-          [class.active]="p === currentPage"
-          (click)="goToPage(p)">
-          {{ p }}
-        </button>
-        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Suivant &rsaquo;</button>
-      </div>
+    <div class="table-footer" *ngIf="consultationsRecentes.length > 5">
+      <span class="results-count">
+        {{ consultationsRecentes.length }} consultation(s) au total —
+        <a class="panel__link" routerLink="/client/consultations">voir tout &rsaquo;</a>
+      </span>
     </div>
   </div>
 

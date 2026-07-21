@@ -1,0 +1,45 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onOverlayClick($event)">
+  <div class="modal-content" *ngIf="callInfo">
+    <button class="modal-close" (click)="onClose()" aria-label="Fermer">&times;</button>
+
+    <div class="modal-icon">📞</div>
+
+    <h2 class="modal-title">Appel téléphonique prévu</h2>
+
+    <div class="modal-avocat">
+      <span class="avocat-nom">{{ callInfo.contactNom }}</span>
+      <span class="avocat-specialite" *ngIf="callInfo.contactSpecialite">{{ callInfo.contactSpecialite }}</span>
+    </div>
+
+    <p class="modal-datetime">
+      {{ callInfo.dateRendezVous }} à {{ callInfo.heureRendezVous }}
+    </p>
+
+    <ng-container *ngIf="hasPhone; else noPhoneBlock">
+      <div class="modal-phone-box">
+        <span class="phone-label">Numéro à composer</span>
+        <span class="phone-number">{{ callInfo.contactTelephone }}</span>
+      </div>
+
+      <a class="btn-call" [href]="telHref">
+        Appeler maintenant
+      </a>
+
+      <p class="modal-warning">
+        ⚠️ Merci d'appeler à l'heure convenue
+      </p>
+    </ng-container>
+
+    <ng-template #noPhoneBlock>
+      <div class="modal-phone-box modal-phone-box--missing">
+        <span class="phone-missing-text">
+          ⚠️ L'avocat n'a pas encore renseigné son numéro de téléphone
+        </span>
+      </div>
+
+      <p class="modal-warning">
+        Contactez le support pour organiser cet appel autrement.
+      </p>
+    </ng-template>
+  </div>
+</div>

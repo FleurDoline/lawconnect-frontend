@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -36,7 +36,7 @@ export interface DemandeConsultation {
 
 export interface ConsultationAcceptRequest {
   dateRendezVous: string; // ISO datetime string, e.g. "2026-07-20T14:30:00"
-  modeConsultation: 'visioconférence' | 'présentiel';
+  modeConsultation: 'visio' | 'telephone' | 'cabinet';
 }
 
 export interface ConsultationDetail {
@@ -47,6 +47,7 @@ export interface ConsultationDetail {
   date: string;
   heure: string;
   statut: 'CONFIRMEE' | 'EN_ATTENTE' | 'TERMINEE' | 'ANNULEE';
+  mode: 'visio' | 'telephone' | 'cabinet';
   flowType: string;
   eligibilite: string;
   typePersonne: string;
@@ -73,12 +74,44 @@ export interface ConsultationSummary {
   avocatInitiales: string;
   specialite: string;
   date: string;
+  heure: string;
   statut: 'CONFIRMEE' | 'EN_ATTENTE' | 'TERMINEE' | 'ANNULEE';
+  mode: 'visio' | 'telephone' | 'cabinet';
+  avocatTelephone: string;
+}
+
+// ---- Avocat listing (GET /api/v1/avocats) ----
+
+export type StatutAvocat = 'EN_ATTENTE' | 'VALIDE' | 'SUSPENDU' | 'REJETE';
+
+export interface AvocatSummary {
+  id: number;
+  prenom: string;
+  nom: string;
+  specialites: string[];
+  ville: string;
+  tarif: number;
+  noteMoyenne: number;
+  photo: string;
+  statut: StatutAvocat;
+  bio: string;
+  experience: number;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ConsultationService {
   private baseUrl = `${environment.apiUrl}/consultations`;
+  private avocatsUrl = `${environment.apiUrl}/avocats`;
 
   constructor(private http: HttpClient) {}
 
@@ -100,5 +133,25 @@ export class ConsultationService {
 
   accepterDemande(id: number, payload: ConsultationAcceptRequest): Observable<ConsultationResponse> {
     return this.http.patch<ConsultationResponse>(`${this.baseUrl}/${id}/accepter`, payload);
+  }
+
+  getAvocatsDisponibles(
+    page = 0,
+    size = 50,
+    specialites?: string[],
+    ville?: string
+  ): Observable<PageResponse<AvocatSummary>> {
+    let params = new HttpParams()
+      .set('page', String(page))
+      .set('size', String(size));
+
+    if (specialites?.length) {
+      specialites.forEach(s => (params = params.append('specialites', s)));
+    }
+    if (ville) {
+      params = params.set('ville', ville);
+    }
+
+    return this.http.get<PageResponse<AvocatSummary>>(this.avocatsUrl, { params });
   }
 }

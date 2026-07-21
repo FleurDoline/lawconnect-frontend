@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AvocatFilters, AvocatPageResponse } from '../models/avocat.model';
+import { AvocatFilters, AvocatPageResponse, AvocatUpdateRequest } from '../models/avocat.model';
 
 @Injectable({ providedIn: 'root' })
 export class AvocatService {
@@ -15,8 +15,8 @@ export class AvocatService {
       .set('page', page.toString())
       .set('size', size.toString());
     if (filters.specialite) {
-  params = params.set('specialites', filters.specialite); 
-}
+      params = params.set('specialites', filters.specialite);
+    }
     if (filters.ville) {
       params = params.set('ville', filters.ville);
     }
@@ -25,5 +25,13 @@ export class AvocatService {
 
   getById(id: string | number): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/${id}`);
+  }
+
+  getByUserId(userId: string | number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/by-user-id/${userId}`);
+  }
+
+  update(id: string | number, request: AvocatUpdateRequest): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/${id}`, request);
   }
 }

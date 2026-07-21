@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Subject, Subscription, of } from 'rxjs';
 import {
   debounceTime,
@@ -41,7 +41,7 @@ interface SpecialiteQuery {
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, TopbarComponent, CityAutocompleteComponent],
+  imports: [CommonModule, RouterModule, FormsModule, TopbarComponent, CityAutocompleteComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
 })
@@ -174,26 +174,11 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
 
   }
 
-  // ---- pagination for "Consultations Récentes" ----
-  pageSize = 10;
-  currentPage = 1;
+  // ---- Aperçu "Consultations Récentes" (liste complète disponible sur /client/consultations) ----
+  private readonly apercuLimite = 5;
 
-  get totalPages(): number {
-    return Math.max(1, Math.ceil(this.consultationsRecentes.length / this.pageSize));
-  }
-
-  get pagedConsultationsRecentes(): Consultation[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.consultationsRecentes.slice(start, start + this.pageSize);
-  }
-
-  goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-  }
-
-  pageNumbers(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  get apercuConsultationsRecentes(): Consultation[] {
+    return this.consultationsRecentes.slice(0, this.apercuLimite);
   }
 
   selectSpecialite(s: SpecialiteDroit): void {
@@ -287,7 +272,7 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
   rejoindreConsultation(id: number): void {
 
     this.router.navigate([
-      '/client/consultation',
+      '/client/consultations',
       id
     ]);
 

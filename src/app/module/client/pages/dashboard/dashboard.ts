@@ -77,7 +77,7 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
 
   private specialiteInput$ = new Subject<SpecialiteQuery>();
   private inputToken = 0;
-  private specialiteSub!: Subscription;
+private specialiteSub!: Subscription;
 
   dossiersActifs = 0;
   messagesNonLus = 0;

@@ -13,7 +13,11 @@ export interface Avocat {
   id: number;
   prenom: string;
   nom: string;
-  specialites: string[];   // <-- corrigé : pluriel + tableau (correspond au backend)
+  fullName: string;
+  email: string;
+  telephone?: string;
+  lienAgenda?: string;
+  specialites: string[];
   ville: string;
   tarif: number;
   noteMoyenne: number;
@@ -41,8 +45,7 @@ export interface AvocatFilters {
 }
 
 export interface AvocatUpdateRequest {
-  prenom?: string;
-  nom?: string;
+  fullName?: string;
   telephone?: string;
   specialiteIds?: number[];
   bio?: string;

@@ -34,11 +34,6 @@ export interface DemandeConsultation {
   createdAt: string; // ISO string
 }
 
-export interface ConsultationAcceptRequest {
-  dateRendezVous: string; // ISO datetime string, e.g. "2026-07-20T14:30:00"
-  modeConsultation: 'visio' | 'telephone' | 'cabinet';
-}
-
 export interface ConsultationDetail {
   id: number;
   avocatNom: string;
@@ -131,8 +126,8 @@ export class ConsultationService {
     return this.http.get<DemandeConsultation[]>(`${this.baseUrl}/mes-demandes`);
   }
 
-  accepterDemande(id: number, payload: ConsultationAcceptRequest): Observable<ConsultationResponse> {
-    return this.http.patch<ConsultationResponse>(`${this.baseUrl}/${id}/accepter`, payload);
+  accepterDemande(id: number): Observable<ConsultationResponse> {
+    return this.http.patch<ConsultationResponse>(`${this.baseUrl}/${id}/accepter`, {});
   }
 
   getAvocatsDisponibles(

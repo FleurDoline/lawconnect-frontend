@@ -305,66 +305,15 @@
         </ul>
       </div>
 
-      <hr class="detail-divider" />
 
-      <h3 class="accept-title">Accepter et fixer le rendez-vous</h3>
+<p class="field-error" *ngIf="acceptApiError">{{ acceptApiError }}</p>
 
-      <form (ngSubmit)="accepterDemande()" novalidate>
-        <div class="form-row">
-          <div class="form-field">
-            <label for="acceptDate">Date</label>
-            <input
-              id="acceptDate"
-              type="date"
-              name="acceptDate"
-              [(ngModel)]="acceptForm.date"
-              [min]="todayIso"
-              [class.invalid]="acceptErrors.date"
-            />
-            <span class="field-error" *ngIf="acceptErrors.date">{{ acceptErrors.date }}</span>
-          </div>
-
-          <div class="form-field">
-            <label for="acceptHeure">Heure</label>
-            <input
-              id="acceptHeure"
-              type="time"
-              name="acceptHeure"
-              [(ngModel)]="acceptForm.heure"
-              [class.invalid]="acceptErrors.heure"
-            />
-            <span class="field-error" *ngIf="acceptErrors.heure">{{ acceptErrors.heure }}</span>
-          </div>
-        </div>
-
-        <div class="form-field">
-  <label>Mode de consultation</label>
-  <div class="mode-options" [class.invalid]="acceptErrors.mode">
-    <label class="radio-pill">
-      <input type="radio" name="acceptMode" value="visio" [(ngModel)]="acceptForm.mode" />
-      Visioconférence
-    </label>
-    <label class="radio-pill">
-      <input type="radio" name="acceptMode" value="telephone" [(ngModel)]="acceptForm.mode" />
-      Téléphone
-    </label>
-    <label class="radio-pill">
-      <input type="radio" name="acceptMode" value="cabinet" [(ngModel)]="acceptForm.mode" />
-      Présentiel (cabinet)
-    </label>
-  </div>
-  <span class="field-error" *ngIf="acceptErrors.mode">{{ acceptErrors.mode }}</span>
+<div class="modal-footer">
+  <button type="button" class="btn-outline" (click)="closeDetailModal()">Fermer</button>
+  <button type="button" class="btn-primary" [disabled]="acceptSubmitting" (click)="accepterDemande()">
+    {{ acceptSubmitting ? 'Confirmation...' : 'Accepter la demande' }}
+  </button>
 </div>
-
-        <p class="field-error" *ngIf="acceptApiError">{{ acceptApiError }}</p>
-
-        <div class="modal-footer">
-          <button type="button" class="btn-outline" (click)="closeDetailModal()">Fermer</button>
-          <button type="submit" class="btn-primary" [disabled]="acceptSubmitting">
-            {{ acceptSubmitting ? 'Confirmation...' : 'Accepter le rendez-vous' }}
-          </button>
-        </div>
-      </form>
     </div>
   </div>
 </div>

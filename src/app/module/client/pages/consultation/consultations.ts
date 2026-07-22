@@ -240,13 +240,15 @@ export class ConsultationsComponent implements OnInit {
   // "À venir": pending or already accepted, hasn't concluded yet.
   // "Passées": terminated or cancelled.
   get filtered(): ConsultationRow[] {
-    return this.allConsultations.filter(c =>
-      this.activeTab === 'avenir'
-        ? c.statut === 'EN_ATTENTE' || c.statut === 'CONFIRMEE'
-        : c.statut === 'TERMINEE' || c.statut === 'ANNULEE'
-    );
+    const now = new Date();
+    return this.allConsultations.filter(c => {
+    const rdvPasse = c.date ? new Date(c.date) < now : false;
+    const estTerminee = c.statut === 'TERMINEE' || c.statut === 'ANNULEE' || rdvPasse;
+    return this.activeTab === 'avenir' ? !estTerminee : estTerminee;
+     });
+  
   }
-
+  
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
   }

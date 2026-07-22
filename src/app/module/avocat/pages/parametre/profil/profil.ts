@@ -64,10 +64,10 @@ export class AvocatParametreProfilComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      prenom: ['', Validators.required],
-      nom: ['', Validators.required],
+      fullName: ['', Validators.required],
       email: [{ value: '', disabled: true }],
-      telephone: ['', [Validators.required, Validators.pattern(/^[0-9+\s]{6,20}$/)]]
+      telephone: ['', [Validators.required, Validators.pattern(/^[0-9+\s]{6,20}$/)]],
+      lienAgenda: ['', [Validators.pattern(/^https?:\/\/.+/)]]
     });
 
     const fullName = this.authService.getFullName();
@@ -89,27 +89,30 @@ export class AvocatParametreProfilComponent implements OnInit {
     }
 
     this.avocatService.getByUserId(userId).subscribe({
-      next: (avocat) => {
-        this.avocatId = avocat.id;
-        this.photo = avocat.photo || null;
-        this.specialitesActuelles = avocat.specialites || [];
+  next: (avocat) => {
+    this.avocatId = avocat.id;
+    this.photo = avocat.photo || null;
+    this.specialitesActuelles = avocat.specialites || [];
 
-        this.form.patchValue({
-          prenom: avocat.prenom,
-          nom: avocat.nom,
-          email: avocat.email,
-          telephone: avocat.telephone || ''
-        });
+    const nomComplet = avocat.fullName?.trim()
+      || [avocat.prenom, avocat.nom].filter(Boolean).join(' ').trim();
 
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.loading = false;
-        this.error = true;
-        this.cdr.detectChanges();
-      }
+    this.form.patchValue({
+      fullName: nomComplet,
+      email: avocat.email,
+      telephone: avocat.telephone || '',
+      lienAgenda: avocat.lienAgenda || ''
     });
+
+    this.loading = false;
+    this.cdr.detectChanges();
+  },
+  error: () => {
+    this.loading = false;
+    this.error = true;
+    this.cdr.detectChanges();
+  }
+});
   }
 
   selectTab(tab: ParametreTab): void {
@@ -144,9 +147,9 @@ export class AvocatParametreProfilComponent implements OnInit {
     this.saveError = false;
 
     const payload: AvocatUpdateRequest = {
-      prenom: this.form.value.prenom,
-      nom: this.form.value.nom,
-      telephone: this.form.value.telephone
+      fullName: this.form.value.fullName,
+      telephone: this.form.value.telephone,
+      lienAgenda: this.form.value.lienAgenda
     };
 
     this.avocatService.update(this.avocatId, payload).subscribe({

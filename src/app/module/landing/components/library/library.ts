@@ -87,10 +87,11 @@ export class LibraryComponent {
   }
 
   onCreateAccount(): void {
-    this.router.navigate(['/auth/inscription']);
+    this.router.navigate(['/auth/inscription'], { queryParams: { role: 'client' } });
   }
 
-  onLawyerSpace(): void {
-    this.router.navigate(['/avocat/login']);
-  }
+ onLawyerSpace(): void {
+  this.router.navigate(['/auth/inscription'], { queryParams: { role: 'avocat' } });
+}
+
 }

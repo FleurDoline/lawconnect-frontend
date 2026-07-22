@@ -1,5 +1,5 @@
 .parametre-page {
-  padding: 2.5rem 3rem;
+  padding: 1rem 2rem;
   max-width: 1400px;
 
   &__titre {
@@ -12,7 +12,7 @@
   &__sous-titre {
     color: #6b7280;
     font-size: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 0.8rem;
   }
 
   &__layout {
@@ -30,7 +30,7 @@
 }
 
 .parametre-tabs {
-  width: 220px;
+  width: 250px;
   flex-shrink: 0;
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -80,7 +80,7 @@
   background: #fff;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  padding: 2.5rem;
+  padding: 4.5rem;
   width: 100%;
 
   &__header {

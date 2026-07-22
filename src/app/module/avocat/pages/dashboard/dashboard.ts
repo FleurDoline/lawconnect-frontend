@@ -5,7 +5,6 @@ import { AuthService } from '../../../../core/services/auth.service';
 import {
   ConsultationService,
   DemandeConsultation,
-  ConsultationAcceptRequest,
 } from '../../../../core/services/consultation.service';
 import { Router } from '@angular/router';
 
@@ -32,12 +31,6 @@ interface NouveauDossier {
   date: string;
   heure: string;
   mode: 'visioconférence' | 'présentiel' | '';
-}
-
-interface AcceptForm {
-  date: string;
-  heure: string;
-  mode: 'visio' | 'telephone' | 'cabinet' | '';
 }
 
 @Component({
@@ -109,8 +102,6 @@ export class DashboardComponent implements OnInit {
   // ---- Détails / Accepter modal state ----
   showDetailModal = false;
   selectedDemande: DemandeConsultation | null = null;
-  acceptForm: AcceptForm = { date: '', heure: '', mode: '' };
-  acceptErrors: Partial<Record<keyof AcceptForm, string>> = {};
   acceptSubmitting = false;
   acceptApiError = '';
 
@@ -209,17 +200,18 @@ export class DashboardComponent implements OnInit {
   }
 
   selectNav(item: NavItem) {
-  this.menuOpen = false;
+    this.menuOpen = false;
 
-  if (item.label === 'Deconnexion') {
-    this.authService.logout();
-    return;
+    if (item.label === 'Deconnexion') {
+      this.authService.logout();
+      return;
+    }
+
+    if (item.route) {
+      this.router.navigate([item.route]);
+    }
   }
 
-  if (item.route) {
-    this.router.navigate([item.route]);
-  }
-}
   @HostListener('document:click', ['$event'])
   onDocClick(e: MouseEvent) {
     if (!this.host.nativeElement.contains(e.target)) this.menuOpen = false;
@@ -238,8 +230,6 @@ export class DashboardComponent implements OnInit {
     if (!demande) return;
 
     this.selectedDemande = demande;
-    this.acceptForm = { date: '', heure: '', mode: '' };
-    this.acceptErrors = {};
     this.acceptApiError = '';
     this.showDetailModal = true;
   }
@@ -247,48 +237,16 @@ export class DashboardComponent implements OnInit {
   closeDetailModal() {
     this.showDetailModal = false;
     this.selectedDemande = null;
-    this.acceptErrors = {};
     this.acceptApiError = '';
-  }
-
-  private validateAccept(): boolean {
-    const errors: typeof this.acceptErrors = {};
-
-    if (!this.acceptForm.date) {
-      errors.date = 'La date est requise.';
-    } else if (this.acceptForm.date < this.todayIso) {
-      errors.date = 'La date ne peut pas être dans le passé.';
-    }
-
-    if (!this.acceptForm.heure) {
-      errors.heure = "L'heure est requise.";
-    } else if (this.acceptForm.date === this.todayIso) {
-      const now = new Date();
-      const nowHm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      if (this.acceptForm.heure < nowHm) {
-        errors.heure = "L'heure ne peut pas être dans le passé.";
-      }
-    }
-
-    if (!this.acceptForm.mode) errors.mode = 'Le mode de consultation est requis.';
-
-    this.acceptErrors = errors;
-    return Object.keys(errors).length === 0;
   }
 
   accepterDemande(): void {
     if (!this.selectedDemande) return;
-    if (!this.validateAccept()) return;
 
     this.acceptSubmitting = true;
     this.acceptApiError = '';
 
-    const payload: ConsultationAcceptRequest = {
-      dateRendezVous: `${this.acceptForm.date}T${this.acceptForm.heure}:00`,
-      modeConsultation: this.acceptForm.mode as 'visio' | 'telephone' | 'cabinet',
-    };
-
-    this.consultationService.accepterDemande(this.selectedDemande.id, payload).subscribe({
+    this.consultationService.accepterDemande(this.selectedDemande.id).subscribe({
       next: () => {
         this.acceptSubmitting = false;
         this.closeDetailModal();
@@ -297,7 +255,8 @@ export class DashboardComponent implements OnInit {
       error: (err) => {
         console.error("Erreur lors de l'acceptation de la consultation", err);
         this.acceptSubmitting = false;
-        this.acceptApiError = "Impossible de confirmer ce rendez-vous. Veuillez réessayer.";
+        this.acceptApiError =
+          err?.error?.message ?? "Impossible d'accepter cette demande. Veuillez réessayer.";
         this.cdr.detectChanges();
       },
     });

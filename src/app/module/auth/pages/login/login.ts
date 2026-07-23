@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+
+declare const google: any;
 
 @Component({
   selector: 'app-login',
@@ -11,18 +13,46 @@ import { AuthService } from '../../../../core/services/auth.service';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class LoginComponent {
+export class LoginComponent implements AfterViewInit {
   email = '';
   password = '';
   rememberMe = false;
   showPassword = false;
   loading = false;
 
+  private readonly GOOGLE_CLIENT_ID = '281235908564-cj79femv17cdimi678nrur62qr09scik.apps.googleusercontent.com';
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService
   ) {}
+
+  ngAfterViewInit(): void {
+    google.accounts.id.initialize({
+      client_id: this.GOOGLE_CLIENT_ID,
+      callback: (response: any) => this.handleGoogleResponse(response)
+    });
+
+    google.accounts.id.renderButton(
+      document.getElementById('googleBtn'),
+      { theme: 'outline', size: 'large', width: 300, locale: 'fr' }
+    );
+  }
+
+  handleGoogleResponse(response: any): void {
+    this.loading = true;
+    this.authService.googleLogin(response.credential).subscribe({
+      next: () => {
+        this.loading = false;
+        this.redirectAfterLogin();
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Google login failed', err);
+      }
+    });
+  }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
@@ -39,7 +69,6 @@ export class LoginComponent {
       error: (err) => {
         this.loading = false;
         console.error('Login failed', err);
-        // show error message to user here
       }
     });
   }
@@ -55,11 +84,6 @@ export class LoginComponent {
     } else {
       this.authService.redirectByRole();
     }
-  }
-
-  onGoogleLogin(): void {
-    console.log('Google login');
-    this.router.navigate(['/']);
   }
 
   goToHome(): void {

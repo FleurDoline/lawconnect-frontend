@@ -357,3 +357,37 @@ $radius-btn:   8px;
     background: #f9fafb;
   }
 }
+
+.role-toggle-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #1e293b;
+    background: #f8fafc;
+  }
+
+  &--active {
+    background: #1e293b;
+    border-color: #1e293b;
+    color: #ffffff;
+
+    &:hover {
+      background: #1e293b;
+      opacity: 0.95;
+    }
+  }
+}
+
+.form-row-double {
+  display: flex;
+  gap: 0.75rem;
+}

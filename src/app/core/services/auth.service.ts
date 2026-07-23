@@ -33,6 +33,11 @@ export class AuthService {
       .pipe(tap(res => this.storeSession(res)));
   }
 
+  googleLogin(idToken: string, role?: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/google`, { idToken, role })
+    .pipe(tap(res => this.storeSession(res)));
+}
+
   private storeSession(res: AuthResponse): void {
     if (!this.isBrowser) return;
     localStorage.setItem('accessToken', res.accessToken);

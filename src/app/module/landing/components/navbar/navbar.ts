@@ -8,6 +8,8 @@ import { RouterLink } from '@angular/router';
   templateUrl: './navbar.html',
   styleUrl: './navbar.scss'
 })
+
+
 export class Navbar {
   scrollTo(sectionId: string): void {
     const el = document.getElementById(sectionId);

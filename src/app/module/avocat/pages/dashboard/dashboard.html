@@ -145,23 +145,24 @@
     </div>
   </section>
 
+ 
   <!-- Availability -->
   <section class="availability">
     <div class="section-header">
       <h2>Gestion des disponibilites</h2>
-      <a href="#">Modifier les horaires</a>
+      <a href="#" (click)="openDisponibiliteModal(); $event.preventDefault()">Modifier les horaires</a>
     </div>
     <div class="days">
-      <div class="day-card" *ngFor="let d of availabilities">
-        <div class="day">{{ d.day }}</div>
-        <div class="hours">{{ d.hours }}</div>
-      </div>
+     <div class="day-card" *ngFor="let d of disponibilites">
+       <div class="day">{{ d.jour }}</div>
+       <div class="hours">{{ d.heureDebut }} - {{ d.heureFin }}</div>
+     </div>
     </div>
-    <ul class="notes">
-      <li>Samedi/Dimanche: Ferme</li>
-      <li>Pause dejeuner: 12h30-13h30</li>
-    </ul>
-  </section>
+  <ul class="notes">
+    <li>Samedi/Dimanche: Ferme</li>
+    <li>Pause dejeuner: 12h30-13h30</li>
+  </ul>
+</section>
 </main>
 
 <!-- Nouveau Dossier Modal -->
@@ -247,6 +248,68 @@
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Disponibilités Modal -->
+<div class="modal-backdrop" *ngIf="showDisponibiliteModal" (click)="closeDisponibiliteModal()">
+  <div class="modal modal--disponibilite" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Gestion des disponibilités</h2>
+      <button class="modal-close" type="button" (click)="closeDisponibiliteModal()" aria-label="Fermer">
+        <svg class="icon" width="18" height="18"><use href="#i-x"></use></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="disponibilite-liste" *ngIf="disponibilites.length">
+        <div class="disponibilite-ligne" *ngFor="let d of disponibilites; let i = index">
+          <span class="disponibilite-ligne__jour">{{ getJourLabel(d.jour) }}</span>
+          <span class="disponibilite-ligne__heures">{{ d.heureDebut }} - {{ d.heureFin }}</span>
+          <button type="button" class="disponibilite-ligne__supprimer" (click)="supprimerLigneDisponibilite(i)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <p class="disponibilite-empty" *ngIf="!disponibilites.length">
+        Aucune disponibilité configurée pour l'instant.
+      </p>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Jour</label>
+          <select [(ngModel)]="nouvelleDisponibilite.jour" name="jour">
+            <option *ngFor="let j of joursDisponibles" [value]="j.value">{{ j.label }}</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Heure début</label>
+          <input type="time" [(ngModel)]="nouvelleDisponibilite.heureDebut" name="heureDebut" />
+        </div>
+
+        <div class="form-field">
+          <label>Heure fin</label>
+          <input type="time" [(ngModel)]="nouvelleDisponibilite.heureFin" name="heureFin" />
+        </div>
+      </div>
+
+      <button type="button" class="btn-outline btn-ajouter" (click)="ajouterDisponibilite()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Ajouter cette plage
+      </button>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-outline" (click)="closeDisponibiliteModal()">Annuler</button>
+      <button type="button" class="btn-primary" (click)="enregistrerDisponibilites()">Enregistrer</button>
+    </div>
   </div>
 </div>
 

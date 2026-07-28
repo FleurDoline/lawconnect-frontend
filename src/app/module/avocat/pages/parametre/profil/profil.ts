@@ -6,6 +6,7 @@ import { AvocatService } from '../../../../../core/services/avocat.service';
 import { AuthService } from '../../../../../core/services/auth.service';
 import { AvocatUpdateRequest } from '../../../../../core/models/avocat.model';
 import { TopbarComponent, TopbarNavItem } from '../../../../../shared/components/topbar/topbar';
+import { environment } from '../../../../../../environments/environment';
 
 interface ParametreTab {
   label: string;
@@ -21,6 +22,9 @@ interface ParametreTab {
 })
 export class AvocatParametreProfilComponent implements OnInit {
   form!: FormGroup;
+
+  photoBaseUrl = environment.apiUrl.replace('/api/v1', '');
+  progression = 0;
 
   avocatId: number | null = null;
   photo: string | null = null;
@@ -93,6 +97,7 @@ export class AvocatParametreProfilComponent implements OnInit {
     this.avocatId = avocat.id;
     this.photo = avocat.photo || null;
     this.specialitesActuelles = avocat.specialites || [];
+    this.progression = avocat.progression ?? 0;
 
     const nomComplet = avocat.fullName?.trim()
       || [avocat.prenom, avocat.nom].filter(Boolean).join(' ').trim();
@@ -136,33 +141,56 @@ export class AvocatParametreProfilComponent implements OnInit {
   }
 
   onEnregistrer(): void {
-    if (this.form.invalid || !this.avocatId) {
-      this.form.markAllAsTouched();
-      this.cdr.detectChanges();
-      return;
-    }
-
-    this.saving = true;
-    this.saveSuccess = false;
-    this.saveError = false;
-
-    const payload: AvocatUpdateRequest = {
-      fullName: this.form.value.fullName,
-      telephone: this.form.value.telephone,
-      lienAgenda: this.form.value.lienAgenda
-    };
-
-    this.avocatService.update(this.avocatId, payload).subscribe({
-      next: () => {
-        this.saving = false;
-        this.saveSuccess = true;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.saving = false;
-        this.saveError = true;
-        this.cdr.detectChanges();
-      }
-    });
+  if (this.form.invalid || !this.avocatId) {
+    this.form.markAllAsTouched();
+    this.cdr.detectChanges();
+    return;
   }
+
+  this.saving = true;
+  this.saveSuccess = false;
+  this.saveError = false;
+
+  const payload: AvocatUpdateRequest = {
+    fullName: this.form.value.fullName,
+    telephone: this.form.value.telephone,
+    lienAgenda: this.form.value.lienAgenda
+  };
+
+  this.avocatService.update(this.avocatId, payload).subscribe({
+    next: (avocat) => {
+      this.saving = false;
+      this.saveSuccess = true;
+      this.progression = avocat.progression ?? this.progression;
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.saving = false;
+      this.saveError = true;
+      this.cdr.detectChanges();
+    }
+  });
+}
+  onPhotoSelected(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  if (!input.files?.length || !this.avocatId) return;
+
+  const file = input.files[0];
+
+  if (!file.type.startsWith('image/')) {
+    console.error('Le fichier doit être une image');
+    return;
+  }
+
+  this.avocatService.uploadPhoto(this.avocatId, file).subscribe({
+    next: () => {
+      this.chargerProfil(); // recharge photo + progression à jour depuis le backend
+    },
+    error: (err) => {
+      console.error('Erreur upload photo', err);
+    }
+  });
+
+  input.value = '';
+}
 }

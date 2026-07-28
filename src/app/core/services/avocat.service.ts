@@ -34,4 +34,15 @@ export class AvocatService {
   update(id: string | number, request: AvocatUpdateRequest): Observable<any> {
     return this.http.put<any>(`${this.baseUrl}/${id}`, request);
   }
+
+  uploadPhoto(avocatId: number, file: File): Observable<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return this.http.post(
+    `${environment.apiUrl}/avocats/${avocatId}/photo`,
+    formData,
+    { responseType: 'text' }
+  );
+}
 }

@@ -52,12 +52,19 @@ export class AuthInterceptor implements HttpInterceptor {
         console.log('🔑 Token is not a JWT or invalid format');
       }
 
-      const cloned = req.clone({
-        setHeaders: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const headersConfig: Record<string, string> = {
+  Authorization: `Bearer ${token}`
+};
+
+// Ne pas forcer Content-Type pour les uploads de fichiers (FormData)
+// Le navigateur doit définir lui-même le boundary du multipart/form-data
+if (!(req.body instanceof FormData)) {
+  headersConfig['Content-Type'] = 'application/json';
+}
+
+const cloned = req.clone({
+  setHeaders: headersConfig
+});
       
       // Log the headers being sent
       console.log('✅ Headers being sent:', cloned.headers.keys());

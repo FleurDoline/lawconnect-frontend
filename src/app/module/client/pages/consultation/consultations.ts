@@ -282,19 +282,6 @@ export class ConsultationsComponent implements OnInit {
     return labels[statut];
   }
 
-  modeLabel(mode: ConsultationMode): string {
-    const labels: Record<ConsultationMode, string> = {
-      visio: 'Visio',
-      telephone: 'Téléphone',
-      cabinet: 'Cabinet',
-    };
-    return labels[mode];
-  }
-
-  modeIcon(mode: ConsultationMode): string {
-    return mode === 'visio' ? 'video' : mode === 'telephone' ? 'phone' : 'building';
-  }
-
   canJoin(c: ConsultationRow): boolean {
     return c.statut === 'CONFIRMEE';
   }

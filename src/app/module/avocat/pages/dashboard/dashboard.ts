@@ -7,6 +7,7 @@ import {
   DemandeConsultation,
 } from '../../../../core/services/consultation.service';
 import { Router } from '@angular/router';
+import { DisponibiliteService, Disponibilite } from '../../../../core/services/disponibilite.service';
 
 interface Appointment {
   id: number;
@@ -61,6 +62,22 @@ export class DashboardComponent implements OnInit {
     { label: 'Deconnexion',    icon: 'logout' },
   ];
 
+  joursDisponibles = [
+  { value: 'MONDAY', label: 'Lundi' },
+  { value: 'TUESDAY', label: 'Mardi' },
+  { value: 'WEDNESDAY', label: 'Mercredi' },
+  { value: 'THURSDAY', label: 'Jeudi' },
+  { value: 'FRIDAY', label: 'Vendredi' },
+  { value: 'SATURDAY', label: 'Samedi' },
+  { value: 'SUNDAY', label: 'Dimanche' },
+];
+
+nouvelleDisponibilite: Disponibilite = {
+  jour: 'MONDAY',
+  heureDebut: '09:00',
+  heureFin: '18:00'
+};
+
   // Raw data from backend, kept so the detail modal can look up full info by id
   demandes: DemandeConsultation[] = [];
 
@@ -68,14 +85,7 @@ export class DashboardComponent implements OnInit {
   appointmentsLoading = true;
   appointmentsError = false;
 
-  availabilities = [
-    { day: 'Lun', hours: '09h-18h' },
-    { day: 'Mar', hours: '09h-18h' },
-    { day: 'Mer', hours: '09h-12h' },
-    { day: 'Jeu', hours: '09h-18h' },
-    { day: 'Ven', hours: '09h-12h' },
-  ];
-
+  disponibilites: Disponibilite[] = [];
   // ---- Nouveau dossier modal state ----
   showDossierModal = false;
   dossierSubmitting = false;
@@ -102,6 +112,7 @@ export class DashboardComponent implements OnInit {
   // ---- Détails / Accepter modal state ----
   showDetailModal = false;
   selectedDemande: DemandeConsultation | null = null;
+  showDisponibiliteModal = false;
   acceptSubmitting = false;
   acceptApiError = '';
 
@@ -109,6 +120,7 @@ export class DashboardComponent implements OnInit {
     private host: ElementRef,
     private authService: AuthService,
     private consultationService: ConsultationService,
+    private disponibiliteService: DisponibiliteService,
     private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
@@ -122,6 +134,7 @@ export class DashboardComponent implements OnInit {
     this.cdr.detectChanges();
 
     this.loadProchainRendezVous();
+    this.loadDisponibilites();
   }
 
   private loadProchainRendezVous(): void {
@@ -165,6 +178,57 @@ export class DashboardComponent implements OnInit {
       canJoin: false,
     };
   }
+
+  private loadDisponibilites(): void {
+    this.disponibiliteService.getMesDisponibilites().subscribe({
+      next: (disponibilites) => {
+        this.disponibilites = disponibilites;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des disponibilités', err);
+        this.disponibilites = [];
+        }
+    });
+  }
+
+  openDisponibiliteModal(): void {
+  this.showDisponibiliteModal = true;
+}
+
+closeDisponibiliteModal(): void {
+  this.showDisponibiliteModal = false;
+}
+
+ajouterDisponibilite(): void {
+  this.disponibilites.push({ ...this.nouvelleDisponibilite });
+  this.nouvelleDisponibilite = {
+    jour: 'MONDAY',
+    heureDebut: '09:00',
+    heureFin: '18:00'
+  };
+}
+
+getJourLabel(jour: string): string {
+  return this.joursDisponibles.find(j => j.value === jour)?.label || jour;
+}
+
+supprimerLigneDisponibilite(index: number): void {
+  this.disponibilites.splice(index, 1);
+}
+
+enregistrerDisponibilites(): void {
+  this.disponibiliteService.enregistrerDisponibilites(this.disponibilites).subscribe({
+    next: (disponibilites) => {
+      this.disponibilites = disponibilites;
+      this.showDisponibiliteModal = false;
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error('Erreur lors de l\'enregistrement des disponibilités', err);
+    }
+  });
+}
 
   private formatDayLabel(date: Date): string {
     const today = new Date();

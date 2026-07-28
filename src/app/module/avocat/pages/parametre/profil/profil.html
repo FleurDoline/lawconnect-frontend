@@ -24,7 +24,7 @@
       <div class="profil-card">
         <div class="profil-card__header">
           <img
-            [src]="photo || '/images/images.jpeg'"
+            [src]="photo ? (photoBaseUrl + photo) : '/images/images.jpeg'"
             alt="Photo de profil"
             class="profil-card__photo"
           />
@@ -33,7 +33,26 @@
             <span class="profil-card__specialites" *ngIf="specialitesActuelles.length">
               {{ specialitesActuelles.join(' · ') }}
             </span>
-            <button type="button" class="profil-card__changer-photo">Changer la photo</button>
+
+            <div class="profil-card__progression">
+              <div class="profil-card__progression-bar">
+                <div class="profil-card__progression-fill" [style.width.%]="progression"></div>
+              </div>
+              <span class="profil-card__progression-label">Profil complete a {{ progression }}%</span>
+            </div>
+
+            <!-- input caché qui ouvre l'explorateur de fichiers -->
+            <input
+              #photoInput
+              type="file"
+              accept="image/*"
+              hidden
+              (change)="onPhotoSelected($event)"
+            />
+
+            <button type="button" class="profil-card__changer-photo" (click)="photoInput.click()">
+              Changer la photo
+            </button>
           </div>
         </div>
 

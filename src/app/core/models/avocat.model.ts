@@ -26,6 +26,7 @@ export interface Avocat {
   bio?: string;
   experience?: number;
   adresseCabinet?: string;
+  progression?: number;
 }
 
 export interface AvocatPageResponse {

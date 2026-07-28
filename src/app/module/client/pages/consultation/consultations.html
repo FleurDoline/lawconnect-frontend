@@ -55,7 +55,6 @@
           <th>Heure</th>
           <th>Avocat</th>
           <th>Spécialité</th>
-          <th>Mode</th>
           <th>Status</th>
           <th>Action</th>
         </tr>
@@ -77,12 +76,6 @@
             {{ c.avocatNom }}
           </td>
           <td>{{ c.specialite }}</td>
-          <td>
-            <span class="mode-pill" [ngClass]="'mode-pill--' + c.mode">
-              <svg class="icon" width="14" height="14"><use [attr.href]="'#i-' + modeIcon(c.mode)"></use></svg>
-              {{ modeLabel(c.mode) }}
-            </span>
-          </td>
           <td>
             <span class="status-badge" [ngClass]="'status-badge--' + c.statut.toLowerCase()">
               <span class="status-badge__dot"></span>
@@ -311,16 +304,6 @@
       <div class="detail-row">
         <span class="detail-label">Heure</span>
         <span class="detail-value">{{ c.heure }}</span>
-      </div>
-
-      <div class="detail-row">
-        <span class="detail-label">Mode</span>
-        <span class="detail-value">
-          <span class="mode-pill" [ngClass]="'mode-pill--' + c.mode">
-            <svg class="icon" width="14" height="14"><use [attr.href]="'#i-' + modeIcon(c.mode)"></use></svg>
-            {{ modeLabel(c.mode) }}
-          </span>
-        </span>
       </div>
 
       <div class="detail-row">

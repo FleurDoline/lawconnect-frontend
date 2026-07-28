@@ -36,13 +36,24 @@ export class AvocatService {
   }
 
   uploadPhoto(avocatId: number, file: File): Observable<string> {
-  const formData = new FormData();
-  formData.append('file', file);
+    const formData = new FormData();
+    formData.append('file', file);
 
-  return this.http.post(
-    `${environment.apiUrl}/avocats/${avocatId}/photo`,
-    formData,
-    { responseType: 'text' }
-  );
-}
+    return this.http.post(
+     `${environment.apiUrl}/avocats/${avocatId}/photo`,
+      formData,
+      { responseType: 'text' }
+    );
+  }
+
+  uploadDocument(avocatId: number, type: 'CARTE_PROFESSIONNELLE' | 'DIPLOME' | 'PIECE_IDENTITE', file: File): Observable<string> {
+     const formData = new FormData();
+     formData.append('file', file);
+
+     return this.http.post(
+      `${environment.apiUrl}/avocats/${avocatId}/documents/${type}`,
+      formData,
+      { responseType: 'text' }
+    );
+  }
 }

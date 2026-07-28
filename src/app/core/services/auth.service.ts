@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface AuthResponse {
   accessToken: string;
@@ -117,4 +118,11 @@ export class AuthService {
     localStorage.removeItem('refreshToken');
     this.router.navigate(['/']);
   }
+
+  changePassword(userId: number, currentPassword: string, newPassword: string, confirmPassword: string): Observable<void> {
+  return this.http.put<void>(
+    `${environment.apiUrl}/users/${userId}/password`,
+    { currentPassword, newPassword, confirmPassword }
+  );
+}
 }

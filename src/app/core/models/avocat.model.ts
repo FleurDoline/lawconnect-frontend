@@ -27,6 +27,9 @@ export interface Avocat {
   experience?: number;
   adresseCabinet?: string;
   progression?: number;
+  carteProfessionnel?: string | null;
+  diplome?: string | null;
+  pieceIdentite?: string | null;
 }
 
 export interface AvocatPageResponse {

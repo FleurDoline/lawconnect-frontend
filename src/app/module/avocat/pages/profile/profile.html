@@ -3,7 +3,7 @@
 
   <div class="avocat-profile__header">
     <img
-      [src]="avocat.photo || defaultAvatar"
+      [src]="avocat.photo ? (photoBaseUrl + avocat.photo) : defaultAvatar"
       [alt]="nomComplet()"
       class="avocat-profile__photo"
       (error)="onImageError($event)"

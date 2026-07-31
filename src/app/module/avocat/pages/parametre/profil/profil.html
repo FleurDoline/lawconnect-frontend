@@ -36,7 +36,10 @@
 
             <div class="profil-card__progression">
               <div class="profil-card__progression-bar">
-                <div class="profil-card__progression-fill" [style.width.%]="progression"></div>
+                <div class="profil-card__progression-fill"
+                     [style.width.%]="progression"
+                     [style.background-color]="progressionColor">
+                </div>
               </div>
               <span class="profil-card__progression-label">Profil complete a {{ progression }}%</span>
             </div>

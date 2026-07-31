@@ -23,7 +23,7 @@
   <div class="avocat-card" *ngFor="let a of avocats">
   <img
     class="avocat-card__photo"
-    [src]="(a.photo && a.photo !== 'string') ? a.photo : defaultAvatar"
+    [src]="(a.photo && a.photo !== 'string') ? (photoBaseUrl + a.photo) : defaultAvatar"
     [alt]="nomComplet(a)"
     (error)="onImageError($event)"
   />

@@ -28,7 +28,7 @@ $text-muted: #6b7280;
   width: 100%;
   max-width: 100%;
   min-height: 100vh;
-  padding: 32px 60px 64px; // Increased horizontal padding
+  padding: 32px 60px 64px;
   margin: 0;
   background: $gray-bg;
   animation: fadeIn 0.4s ease;
@@ -41,6 +41,8 @@ $text-muted: #6b7280;
     margin-bottom: 24px;
     animation: fadeInUp 0.4s ease;
     width: 100%;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
   &__title {
@@ -98,6 +100,7 @@ $text-muted: #6b7280;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   animation: fadeInUp 0.45s ease backwards;
+  min-width: 0; // prevents grid items from forcing overflow on narrow screens
 
   &:nth-child(2) { animation-delay: 0.05s; }
   &:nth-child(3) { animation-delay: 0.1s; }
@@ -107,7 +110,6 @@ $text-muted: #6b7280;
     box-shadow: 0 8px 20px rgba(15, 31, 61, 0.1);
   }
 
-  // Only "Prochaine consultation" keeps the navy background
   &--highlight {
     background: linear-gradient(135deg, $navy-dark, $navy);
     border: none;
@@ -134,6 +136,7 @@ $text-muted: #6b7280;
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 0;
   }
 
   &__value {
@@ -141,6 +144,9 @@ $text-muted: #6b7280;
     font-weight: 600;
     margin: 0;
     color: $navy-dark;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
     &--big {
       font-size: 2rem;
@@ -199,6 +205,8 @@ $text-muted: #6b7280;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   &__title {
@@ -213,6 +221,7 @@ $text-muted: #6b7280;
     color: $navy;
     cursor: pointer;
     font-weight: 600;
+    white-space: nowrap;
 
     &:hover {
       text-decoration: underline;
@@ -220,14 +229,6 @@ $text-muted: #6b7280;
   }
 }
 
-// ------------------------------------------------------------------
-// SEARCH BAR
-// Every column (Spécialité / Ville / Rechercher button) is wrapped in
-// the same .search-bar__field structure: a label on top + a
-// fixed-height control below. That's what keeps the button's bottom
-// edge locked to the same line as the inputs, instead of floating
-// above the row or breaking out of the panel.
-// ------------------------------------------------------------------
 .search-bar {
   display: flex;
   gap: 12px;
@@ -238,9 +239,8 @@ $text-muted: #6b7280;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    flex: 1 1 220px;   // grow to fill available space, shrink if needed, start from 220px
-    min-width: 0;      // overrides flexbox's default min-width:auto, which was letting
-                        // this field ignore its container and overlap the button
+    flex: 1 1 220px;
+    min-width: 0;
 
     label {
       font-size: 0.75rem;
@@ -257,7 +257,7 @@ $text-muted: #6b7280;
     }
 
     select, input {
-      height: 42px; // fixed height so every control lines up regardless of content
+      height: 42px;
       padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid #e5e7eb;
@@ -271,13 +271,11 @@ $text-muted: #6b7280;
       }
     }
 
-    // Wrapper for the search button: same label + fixed-height
-    // structure as the real inputs, so flex-end aligns it identically.
     &--button {
-      flex: 0 0 auto; // fixed width, never grows or shrinks — this is what the input fields expand toward
+      flex: 0 0 auto;
 
       label {
-        visibility: hidden; // reserves the same vertical space as a real label, without showing text
+        visibility: hidden;
       }
     }
   }
@@ -294,9 +292,6 @@ $text-muted: #6b7280;
   position: relative;
 }
 
-// app-city-autocomplete has its own view encapsulation, so its internal
-// <input> can ignore the host's width and overflow into the next column.
-// ::ng-deep pierces that boundary so it's forced to fit the field.
 ::ng-deep app-city-autocomplete {
   width: 100%;
   display: block;
@@ -367,6 +362,8 @@ $text-muted: #6b7280;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 16px; // keeps the modal off the screen edges on small viewports
+  box-sizing: border-box;
 }
 
 .modal-card {
@@ -375,12 +372,13 @@ $text-muted: #6b7280;
   padding: 28px;
   width: 100%;
   max-width: 420px;
-  max-height: 88vh;       // modal itself scrolls if content is too tall for the screen
+  max-height: 88vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   position: relative;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
 
   &__close {
     position: absolute;
@@ -401,6 +399,7 @@ $text-muted: #6b7280;
     font-weight: 700;
     color: #1a2744;
     margin: 0 0 20px;
+    padding-right: 24px; // keeps title from overlapping the close button on narrow screens
   }
 
   &__row {
@@ -437,6 +436,7 @@ $text-muted: #6b7280;
     align-items: center;
     gap: 12px;
     font-size: 14px;
+    flex-wrap: wrap;
   }
 
   &__label {
@@ -448,11 +448,9 @@ $text-muted: #6b7280;
     font-weight: 500;
     color: #1a2744;
     text-align: right;
+    word-break: break-word;
   }
 
-  // Situation décrite section: lives at the bottom, its own bordered
-  // box with a capped height. Long paragraphs scroll inside the box
-  // instead of stretching the whole modal.
   &__situation {
     margin-bottom: 20px;
 
@@ -472,13 +470,13 @@ $text-muted: #6b7280;
     font-size: 13.5px;
     line-height: 1.6;
     color: #1a2744;
-    white-space: pre-wrap;   // preserves line breaks the user typed
-    word-break: break-word;  // long unbroken strings (like "qazxswedc...") wrap instead of overflowing
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 
   &__close-btn {
     width: 100%;
-    flex-shrink: 0; // stays pinned at the bottom, doesn't get squeezed by scrolling content above
+    flex-shrink: 0;
   }
 }
 
@@ -498,7 +496,7 @@ $text-muted: #6b7280;
 
 .btn-search {
   box-sizing: border-box;
-  height: 42px; // matches the input height exactly
+  height: 42px;
   background: $gold;
   color: $navy-dark;
   border: none;
@@ -518,8 +516,18 @@ $text-muted: #6b7280;
   }
 }
 
+// Wrap the <table> in this container in the HTML
+// (e.g. <div class="table-scroll"><table class="consultations-table">...) so it
+// scrolls horizontally on narrow screens instead of squeezing/breaking columns.
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .consultations-table {
   width: 100%;
+  min-width: 560px; // ensures columns stay legible; the .table-scroll wrapper handles overflow
   border-collapse: collapse;
 
   th {
@@ -530,6 +538,7 @@ $text-muted: #6b7280;
     padding: 10px 8px;
     border-bottom: 1px solid #e5e7eb;
     font-weight: 600;
+    white-space: nowrap;
   }
 
   td {
@@ -552,7 +561,6 @@ $text-muted: #6b7280;
     align-items: center;
   }
 
-  // Action column: buttons line up flush right, under the "Action" header
   th:last-child,
   td:last-child {
     text-align: right;
@@ -568,6 +576,8 @@ $text-muted: #6b7280;
   background: #f7f8fa;
   border-top: 1px solid #eef0f3;
   border-radius: 0 0 14px 14px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .results-count {
@@ -579,6 +589,7 @@ $text-muted: #6b7280;
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .page-btn {
@@ -601,13 +612,6 @@ $text-muted: #6b7280;
   color: #fff;
 }
 
-// ------------------------------------------------------------------
-// STATUS BADGE
-// Class names match the exact statut values coming from the backend,
-// lowercased: CONFIRMEE -> confirmee, EN_ATTENTE -> en_attente,
-// TERMINEE -> terminee, ANNULEE -> annulee. A small dot (same color
-// as the text) sits in front of the label, matching the mockup.
-// ------------------------------------------------------------------
 .status-badge {
   font-size: 0.78rem;
   font-weight: 600;
@@ -647,13 +651,6 @@ $text-muted: #6b7280;
   }
 }
 
-// ------------------------------------------------------------------
-// BUTTONS
-// .btn-primary (Rejoindre) = solid navy, filled.
-// .btn-outline (Détails)   = true outline: white bg, border, dark text.
-// .btn-outline--light is used on the dark navy help banner and keeps
-// its own transparent/white-border look regardless of the base style.
-// ------------------------------------------------------------------
 .btn-outline {
   background: #fff;
   color: $navy-dark;
@@ -727,10 +724,20 @@ $text-muted: #6b7280;
   }
 }
 
-// Responsive adjustments
+// ------------------------------------------------------------------
+// RESPONSIVE BREAKPOINTS
+// ------------------------------------------------------------------
 @media (max-width: 1024px) {
   .dashboard {
     padding: 24px 40px 48px;
+  }
+
+  .dashboard__stats {
+    grid-template-columns: 1fr 1fr; // highlight card keeps priority, other two share the row
+  }
+
+  .stat-card--highlight {
+    grid-column: 1 / -1; // spans full width so it stays readable at this breakpoint
   }
 }
 
@@ -743,6 +750,10 @@ $text-muted: #6b7280;
     grid-template-columns: 1fr;
   }
 
+  .stat-card--highlight {
+    grid-column: auto;
+  }
+
   .dashboard__header {
     flex-direction: column;
     align-items: flex-start;
@@ -751,6 +762,11 @@ $text-muted: #6b7280;
 
   .panel {
     padding: 16px;
+  }
+
+  .panel__header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .search-bar {
@@ -798,6 +814,21 @@ $text-muted: #6b7280;
       display: none;
     }
   }
+
+  .table-footer {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .pagination {
+    justify-content: center;
+  }
+
+  .modal-card {
+    padding: 20px;
+    max-height: 92vh;
+  }
 }
 
 @media (max-width: 480px) {
@@ -815,5 +846,28 @@ $text-muted: #6b7280;
 
   .stat-card__value--big {
     font-size: 1.5rem;
+  }
+
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal-overlay {
+    padding: 8px;
+  }
+
+  .modal-card {
+    padding: 16px;
+  }
+
+  .modal-card__field {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .modal-card__value {
+    text-align: left;
   }
 }

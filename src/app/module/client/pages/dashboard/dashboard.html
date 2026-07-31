@@ -84,50 +84,52 @@
       <a class="panel__link" routerLink="/client/consultations">Tout voir &rsaquo;</a>
     </div>
 
-    <table class="consultations-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Avocat</th>
-          <th>Spécialité</th>
-          <th>Statut</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let c of apercuConsultationsRecentes; let i = index" [style.animation-delay.ms]="i * 60">
-          <td>{{ c.date }}</td>
-          <td class="consultations-table__avocat">
-            <span class="avatar-badge avatar-badge--small">{{ c.avocatInitiales }}</span>
-            Me. {{ c.avocatNom }}
-          </td>
-          <td>{{ c.specialite }}</td>
-          <td>
-            <span class="status-badge" [ngClass]="'status-badge--' + c.statut.toLowerCase()">
-              <span class="status-badge__dot"></span>
-              {{ statutLabel(c.statut) }}
-            </span>
-          </td>
-          <td>
+    <div class="table-scroll">
+      <table class="consultations-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Avocat</th>
+            <th>Spécialité</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of apercuConsultationsRecentes; let i = index" [style.animation-delay.ms]="i * 60">
+            <td>{{ c.date }}</td>
+            <td class="consultations-table__avocat">
+              <span class="avatar-badge avatar-badge--small">{{ c.avocatInitiales }}</span>
+              Me. {{ c.avocatNom }}
+            </td>
+            <td>{{ c.specialite }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="'status-badge--' + c.statut.toLowerCase()">
+                <span class="status-badge__dot"></span>
+                {{ statutLabel(c.statut) }}
+              </span>
+            </td>
+            <td>
 
-    <button
-        *ngIf="c.statut === 'CONFIRMEE'"
-        class="btn-primary"
-        (click)="rejoindreConsultation(c.id)">
-        Rejoindre
-    </button>
+      <button
+          *ngIf="c.statut === 'CONFIRMEE'"
+          class="btn-primary"
+          (click)="rejoindreConsultation(c.id)">
+          Rejoindre
+      </button>
 
-    <button
-        *ngIf="c.statut !== 'CONFIRMEE'"
-        class="btn-outline"
-        (click)="ouvrirDetailsConsultation(c.id)">
-        Détails
-    </button>
+      <button
+          *ngIf="c.statut !== 'CONFIRMEE'"
+          class="btn-outline"
+          (click)="ouvrirDetailsConsultation(c.id)">
+          Détails
+      </button>
 
-</td>
-        </tr>
-      </tbody>
-    </table>
+  </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div class="table-footer" *ngIf="consultationsRecentes.length > 5">
       <span class="results-count">

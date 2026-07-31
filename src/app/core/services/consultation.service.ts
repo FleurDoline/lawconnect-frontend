@@ -17,6 +17,8 @@ export interface ConsultationCreateRequest {
   email: string;
   ville: string;
   contactPreference: string;
+  dateRendezVous: string; // format ISO "2026-08-03T14:00:00"
+  modeConsultation: string;
 }
 
 export interface DemandeConsultation {
@@ -73,7 +75,9 @@ export interface ConsultationSummary {
   statut: 'CONFIRMEE' | 'EN_ATTENTE' | 'TERMINEE' | 'ANNULEE';
   mode: 'visio' | 'telephone' | 'cabinet';
   avocatTelephone: string;
+  dateAfficheeIso: string;
 }
+
 
 // ---- Avocat listing (GET /api/v1/avocats) ----
 
@@ -149,4 +153,9 @@ export class ConsultationService {
 
     return this.http.get<PageResponse<AvocatSummary>>(this.avocatsUrl, { params });
   }
+
+  getCreneauxDisponibles(avocatId: number, date: string): Observable<string[]> {
+  const params = new HttpParams().set('date', date);
+  return this.http.get<string[]>(`${this.baseUrl}/avocats/${avocatId}/creneaux-disponibles`, { params });
+}
 }

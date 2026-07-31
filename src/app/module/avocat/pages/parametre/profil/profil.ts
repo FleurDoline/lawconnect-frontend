@@ -31,6 +31,13 @@ export class AvocatParametreProfilComponent implements OnInit {
   photoBaseUrl = environment.apiUrl.replace('/api/v1', '');
   progression = 0;
 
+  get progressionColor(): string {
+    if (this.progression < 40) return '#ef4444';
+    if (this.progression < 70) return '#f59e0b';
+    if (this.progression < 100) return '#3b82f6';
+    return '#22c55e';
+  }
+
   avocatId: number | null = null;
   photo: string | null = null;
   carteProfessionnel: string | null = null;

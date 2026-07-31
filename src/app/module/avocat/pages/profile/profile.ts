@@ -5,6 +5,7 @@ import { AvocatService } from '../../../../core/services/avocat.service';
 import { Avocat } from '../../../../core/models/avocat.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ContactAvocatModalComponent } from '../../../../shared/contact-avocat-modal/contact-avocat-modal';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-avocat-profile',
@@ -18,8 +19,10 @@ export class AvocatProfileComponent implements OnInit {
   loading = true;
   error = false;
   defaultAvatar = '/images/images.jpeg';
+  photoBaseUrl = environment.apiUrl.replace('/api/v1', '');
 
   modalOuvert = false;
+
 
   constructor(
     private avocatService: AvocatService,

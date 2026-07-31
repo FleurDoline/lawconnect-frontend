@@ -5,6 +5,7 @@ import { AvocatService } from '../../../../core/services/avocat.service';
 import { Avocat, AvocatFilters } from '../../../../core/models/avocat.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ContactAvocatModalComponent } from '../../../../shared/contact-avocat-modal/contact-avocat-modal';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-list-avocats',
@@ -16,12 +17,13 @@ import { ContactAvocatModalComponent } from '../../../../shared/contact-avocat-m
 export class ListeAvocatsComponent implements OnInit {
   avocats: Avocat[] = [];
   totalElements = 0;
+  defaultAvatar = '/images/dupont.jpeg';
+  photoBaseUrl = environment.apiUrl.replace('/api/v1', '');
   totalPages = 0;
   currentPage = 0;
   pageSize = 10;
   loading = true;
   error = false;
-  defaultAvatar = '/images/dupont.jpeg';
   filters: AvocatFilters = {};
 
   // ==== Modal contact ====

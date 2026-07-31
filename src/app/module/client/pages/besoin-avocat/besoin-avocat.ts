@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AvocatService } from '../../../../core/services/avocat.service';
-import { ConsultationService } from '../../../../core/services/consultation.service';
+import { ConsultationService, ConsultationCreateRequest } from '../../../../core/services/consultation.service';
 import { CityAutocompleteComponent } from '../../../../../app/shared/components/city-autocomplete/city-autocomplete';
 import { City } from '../../../../core/models/city.model';
 
@@ -13,6 +13,8 @@ interface CountryCode {
   dial: string;
   flag: string;
 }
+
+type ModeConsultation = 'visio' | 'telephone' | 'cabinet';
 
 @Component({
   selector: 'app-besoin-avocat',
@@ -57,7 +59,7 @@ export class BesoinAvocatComponent implements OnInit {
   readonly SITUATION_MIN_LENGTH = 30;
 
   // Données de coordonnées (étape 4)
-  
+
   nomComplet: string = '';
   indicatifTelephone: string = '+237';
   telephone: string = '';
@@ -65,6 +67,18 @@ export class BesoinAvocatComponent implements OnInit {
   ville: string = '';
   villesOptions: string[] = [];
   contactPreference: 'mail_telephone' | 'mail' | 'telephone' = 'mail_telephone';
+
+  // Données de rendez-vous (étape 4) — requises par le backend
+  // (ConsultationCreateRequest.dateRendezVous et .modeConsultation sont @NotNull/@NotBlank)
+  modeConsultation: ModeConsultation | null = null;
+  dateRendezVousJour: string = '';   // "YYYY-MM-DD" (ex: valeur d'un <input type="date">)
+  dateRendezVousHeure: string = '';  // "HH:mm" (ex: valeur d'un <input type="time">)
+
+  private readonly modeToBackend: Record<ModeConsultation, string> = {
+    visio: 'visioconférence',
+    telephone: 'téléphone',
+    cabinet: 'présentiel',
+  };
 
   // --- Sélecteur d'indicatif téléphonique ---
   isCountryDropdownOpen = false;
@@ -229,19 +243,35 @@ export class BesoinAvocatComponent implements OnInit {
     return this.telephone.trim().length >= 8;
   }
 
+  isRendezVousValid(): boolean {
+    return !!this.modeConsultation
+      && !!this.dateRendezVousJour
+      && !!this.dateRendezVousHeure;
+  }
+
   isCoordonneesValid(): boolean {
     return !!this.nomComplet.trim()
       && this.isTelephoneValid()
       && this.isEmailValid()
-      && !!this.ville;
+      && !!this.ville
+      && this.isRendezVousValid();
   }
 
   isSubmitting = false;
 
+  private buildDateRendezVous(): string {
+    // dateRendezVousJour: "YYYY-MM-DD", dateRendezVousHeure: "HH:mm"
+    // Backend expects a LocalDateTime-compatible string, e.g. "2026-08-05T14:00:00"
+    const heure = this.dateRendezVousHeure.length === 5
+      ? `${this.dateRendezVousHeure}:00`
+      : this.dateRendezVousHeure;
+    return `${this.dateRendezVousJour}T${heure}`;
+  }
+
   onSuivantCoordonnees(): void {
     if (!this.isCoordonneesValid() || this.isSubmitting) return;
 
-    const payload = {
+    const payload: ConsultationCreateRequest = {
       avocatId: Number(this.avocatId),
       flowType: this.flowType,
       eligibilite: this.eligibiliteChoice,
@@ -254,7 +284,9 @@ export class BesoinAvocatComponent implements OnInit {
       telephone: `${this.indicatifTelephone} ${this.telephone}`,
       email: this.email,
       ville: this.ville,
-      contactPreference: this.contactPreference
+      contactPreference: this.contactPreference,
+      dateRendezVous: this.buildDateRendezVous(),
+      modeConsultation: this.modeToBackend[this.modeConsultation as ModeConsultation],
     };
 
     this.isSubmitting = true;

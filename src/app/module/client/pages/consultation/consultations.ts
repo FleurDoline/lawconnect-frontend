@@ -31,6 +31,7 @@ interface ConsultationRow {
   mode: ConsultationMode;
   statut: ConsultationStatut;
   avocatTelephone: string;
+  dateAfficheeIso: string;
 }
 
 interface AvocatOption {
@@ -53,6 +54,7 @@ interface NouvelleConsultationForm {
   email: string;
   ville: string;
   contactPreference: 'email' | 'telephone' | '';
+  mode: ConsultationMode | '';
 }
 
 @Component({
@@ -80,11 +82,24 @@ export class ConsultationsComponent implements OnInit {
   loading = true;
   loadError = false;
 
+  // ---- Sélection créneau ----
+  prochainsJours: { label: string; iso: string }[] = [];
+  jourSelectionne: string | null = null;
+  creneauxDisponibles: string[] = [];
+  creneauSelectionne: string | null = null;
+  loadingCreneaux = false;
+  creneauxError = false;
+  creneauErreur: string | null = null;
+
   private allConsultations: ConsultationRow[] = [];
 
-  // Palette used to derive a stable avatar color from initials
-  // (the backend doesn't send a color for avocats or consultations).
   private readonly avatarPalette = ['#2f5fd6', '#2f9e5f', '#8a6d1f', '#7a3fbf', '#c0392b', '#0f766e', '#b45309'];
+
+  private readonly modeToBackend: Record<ConsultationMode, string> = {
+    visio: 'visioconférence',
+    telephone: 'téléphone',
+    cabinet: 'présentiel',
+  };
 
   readonly attentesOptions = [
     { value: 'conseil', label: 'Conseil juridique' },
@@ -95,26 +110,20 @@ export class ConsultationsComponent implements OnInit {
 
   readonly SITUATION_MIN_LENGTH = 30;
 
-  // ---- avocats available for booking (fetched from backend) ----
   avocats: AvocatOption[] = [];
   loadingAvocats = false;
   loadAvocatsError = false;
 
-  // ---- Nouvelle consultation modal state ----
   showNouvelleModal = false;
   submitting = false;
   submitError: string | null = null;
 
-  // ---- Détail modal state ----
   showDetailModal = false;
   selectedConsultation: ConsultationRow | null = null;
   errors: Partial<Record<keyof NouvelleConsultationForm, string>> = {};
 
-  // ---- Call modal state ----
   isCallModalOpen = false;
   selectedCallInfo: ConsultationCallInfo | null = null;
-
- 
 
   form: NouvelleConsultationForm = {
     avocatId: null,
@@ -128,6 +137,7 @@ export class ConsultationsComponent implements OnInit {
     email: '',
     ville: '',
     contactPreference: '',
+    mode: '',
   };
 
   constructor(
@@ -207,15 +217,16 @@ export class ConsultationsComponent implements OnInit {
       mode: this.normalizeMode(c.mode),
       statut: c.statut,
       avocatTelephone: c.avocatTelephone,
+      dateAfficheeIso: c.dateAfficheeIso,
     };
   }
 
- private normalizeMode(raw: unknown): ConsultationMode {
-  const v = String(raw ?? '').trim().toLowerCase();
-  if (v.includes('visio') || v.includes('video')) return 'visio';
-  if (v.includes('tel')) return 'telephone';
-  return 'cabinet';
-}
+  private normalizeMode(raw: unknown): ConsultationMode {
+    const v = String(raw ?? '').trim().toLowerCase();
+    if (v.includes('visio') || v.includes('video')) return 'visio';
+    if (v.includes('tel')) return 'telephone';
+    return 'cabinet';
+  }
 
   private colorFor(initiales: string): string {
     let hash = 0;
@@ -237,18 +248,15 @@ export class ConsultationsComponent implements OnInit {
     }
   }
 
-  // "À venir": pending or already accepted, hasn't concluded yet.
-  // "Passées": terminated or cancelled.
   get filtered(): ConsultationRow[] {
     const now = new Date();
     return this.allConsultations.filter(c => {
-    const rdvPasse = c.date ? new Date(c.date) < now : false;
-    const estTerminee = c.statut === 'TERMINEE' || c.statut === 'ANNULEE' || rdvPasse;
+      const rdvPasse = c.dateAfficheeIso ? new Date(c.dateAfficheeIso) < now : false;
+      const estTerminee = c.statut === 'TERMINEE' || c.statut === 'ANNULEE' || rdvPasse;
     return this.activeTab === 'avenir' ? !estTerminee : estTerminee;
-     });
-  
-  }
-  
+  });
+}
+
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
   }
@@ -299,7 +307,6 @@ export class ConsultationsComponent implements OnInit {
       return;
     }
 
-    // visio (cabinet n'a pas besoin de "rejoindre")
     this.router.navigate(['/client/consultation', c.id]);
   }
 
@@ -307,6 +314,7 @@ export class ConsultationsComponent implements OnInit {
     this.isCallModalOpen = false;
     this.selectedCallInfo = null;
   }
+
   detail(c: ConsultationRow): void {
     this.selectedConsultation = c;
     this.showDetailModal = true;
@@ -323,6 +331,57 @@ export class ConsultationsComponent implements OnInit {
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // ---- Sélection créneau ----
+
+  private genererProchainsJours(): void {
+    const jours: { label: string; iso: string }[] = [];
+    const noms = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+
+    for (let i = 0; i < 14; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const iso = d.toISOString().split('T')[0];
+      const label = `${noms[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}`;
+      jours.push({ label, iso });
+    }
+
+    this.prochainsJours = jours;
+  }
+
+  onAvocatChange(): void {
+    this.jourSelectionne = null;
+    this.creneauSelectionne = null;
+    this.creneauxDisponibles = [];
+    this.creneauErreur = null;
+    if (this.form.avocatId) {
+      this.genererProchainsJours();
+    }
+  }
+
+  selectionnerJour(iso: string): void {
+    this.jourSelectionne = iso;
+    this.creneauSelectionne = null;
+    this.loadingCreneaux = true;
+    this.creneauxError = false;
+
+    this.consultationService.getCreneauxDisponibles(this.form.avocatId!, iso).subscribe({
+      next: (creneaux) => {
+        this.creneauxDisponibles = creneaux;
+        this.loadingCreneaux = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.creneauxError = true;
+        this.loadingCreneaux = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  selectionnerCreneau(heure: string): void {
+    this.creneauSelectionne = heure;
   }
 
   // ---- Nouvelle consultation modal actions ----
@@ -347,10 +406,16 @@ export class ConsultationsComponent implements OnInit {
       email: '',
       ville: '',
       contactPreference: '',
+      mode: '',
     };
+    this.prochainsJours = [];
+    this.jourSelectionne = null;
+    this.creneauSelectionne = null;
+    this.creneauxDisponibles = [];
+    this.creneauErreur = null;
   }
 
- toggleAttente(value: string): void {
+  toggleAttente(value: string): void {
     const i = this.form.attentes.indexOf(value);
     if (i === -1) {
       this.form.attentes.push(value);
@@ -380,9 +445,14 @@ export class ConsultationsComponent implements OnInit {
     }
     if (!this.form.ville.trim()) errors.ville = 'La ville est requise.';
     if (!this.form.contactPreference) errors.contactPreference = 'Ce champ est requis.';
+    if (!this.form.mode) errors.mode = 'Veuillez choisir un mode de consultation.';
+
+    this.creneauErreur = (!this.jourSelectionne || !this.creneauSelectionne)
+      ? 'Veuillez choisir une date et une heure.'
+      : null;
 
     this.errors = errors;
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors).length === 0 && !this.creneauErreur;
   }
 
   submitNouvelleConsultation(): void {
@@ -405,6 +475,8 @@ export class ConsultationsComponent implements OnInit {
       email: this.form.email.trim(),
       ville: this.form.ville.trim(),
       contactPreference: this.form.contactPreference,
+      modeConsultation: this.modeToBackend[this.form.mode as ConsultationMode],
+      dateRendezVous: `${this.jourSelectionne}T${this.creneauSelectionne}`,
     };
 
     this.consultationService.envoyerDemande(payload).subscribe({

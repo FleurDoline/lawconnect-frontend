@@ -175,7 +175,7 @@ private specialiteSub!: Subscription;
   }
 
   // ---- Aperçu "Consultations Récentes" (liste complète disponible sur /client/consultations) ----
-  private readonly apercuLimite = 5;
+  private readonly apercuLimite = 3;
 
   get apercuConsultationsRecentes(): Consultation[] {
     return this.consultationsRecentes.slice(0, this.apercuLimite);

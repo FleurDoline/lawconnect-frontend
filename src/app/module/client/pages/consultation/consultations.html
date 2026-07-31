@@ -130,6 +130,7 @@
       [(ngModel)]="form.avocatId"
       [class.invalid]="errors.avocatId"
       [disabled]="loadingAvocats || loadAvocatsError"
+      (change)="onAvocatChange()"
     >
       <option [ngValue]="null" disabled>
         {{ loadingAvocats ? 'Chargement...' : (loadAvocatsError ? 'Erreur de chargement' : 'Sélectionner un avocat') }}
@@ -138,6 +139,69 @@
     </select>
     <span class="field-error" *ngIf="errors.avocatId">{{ errors.avocatId }}</span>
     <span class="field-error" *ngIf="loadAvocatsError">Impossible de charger la liste des avocats.</span>
+  </div>
+
+  <!-- Sélection du jour et de l'heure -->
+  <div class="form-field" *ngIf="form.avocatId">
+    <label>Choisissez une date</label>
+    <div class="jours-scroll">
+      <button
+        type="button"
+        *ngFor="let j of prochainsJours"
+        class="jour-pill"
+        [class.active]="jourSelectionne === j.iso"
+        (click)="selectionnerJour(j.iso)"
+      >
+        {{ j.label }}
+      </button>
+    </div>
+
+    <div *ngIf="jourSelectionne" style="margin-top: 12px;">
+      <label>Choisissez une heure</label>
+
+      <p *ngIf="loadingCreneaux">Chargement des créneaux...</p>
+      <p *ngIf="!loadingCreneaux && creneauxError" class="field-error">
+        Impossible de charger les créneaux. Veuillez réessayer.
+      </p>
+      <p *ngIf="!loadingCreneaux && !creneauxError && creneauxDisponibles.length === 0">
+        Aucun créneau disponible ce jour-là.
+      </p>
+
+      <div class="mode-options" *ngIf="!loadingCreneaux && creneauxDisponibles.length > 0">
+        <label class="radio-pill" *ngFor="let heure of creneauxDisponibles" [class.active]="creneauSelectionne === heure">
+          <input
+            type="radio"
+            name="creneau"
+            [value]="heure"
+            [checked]="creneauSelectionne === heure"
+            (change)="selectionnerCreneau(heure)"
+          />
+          {{ heure.substring(0, 5) }}
+        </label>
+      </div>
+    </div>
+
+    <span class="field-error" *ngIf="creneauErreur">{{ creneauErreur }}</span>
+  </div>
+
+  <!-- Mode de consultation -->
+  <div class="form-field">
+    <label>Mode de consultation</label>
+    <div class="mode-options" [class.invalid]="errors.mode">
+      <label class="radio-pill">
+        <input type="radio" name="mode" value="visio" [(ngModel)]="form.mode" />
+        Visioconférence
+      </label>
+      <label class="radio-pill">
+        <input type="radio" name="mode" value="telephone" [(ngModel)]="form.mode" />
+        Téléphone
+      </label>
+      <label class="radio-pill">
+        <input type="radio" name="mode" value="cabinet" [(ngModel)]="form.mode" />
+        Cabinet
+      </label>
+    </div>
+    <span class="field-error" *ngIf="errors.mode">{{ errors.mode }}</span>
   </div>
 
   <div class="form-field">

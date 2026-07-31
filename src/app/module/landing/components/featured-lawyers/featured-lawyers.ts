@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AvocatService } from '../../../../core/services/avocat.service';
 import { Avocat, StatutAvocatEnum } from '../../../../core/models/avocat.model';
+import { environment } from '../../../../../environments/environment';
 
 interface FeaturedLawyer {
   id: number;
@@ -25,6 +26,11 @@ export class FeaturedLawyers implements OnInit {
   isLoading = true;
   hasError = false;
 
+  avocat: Avocat | null = null;
+  loading = true;
+  error = false;
+  defaultAvatar = '/images/images.jpeg';
+  photoBaseUrl = environment.apiUrl.replace('/api/v1', '');
   constructor(
     private avocatService: AvocatService,
     private cdr: ChangeDetectorRef
@@ -66,7 +72,7 @@ export class FeaturedLawyers implements OnInit {
       name: this.buildName(a.prenom, a.nom),
       rating: a.noteMoyenne ?? 0,
       specialite: a.specialites?.[0] ?? 'Spécialité non précisée',
-      photo: a.photo
+      photo: a.photo ? this.photoBaseUrl + a.photo : null
     };
   }
 

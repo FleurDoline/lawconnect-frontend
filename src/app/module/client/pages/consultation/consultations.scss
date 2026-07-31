@@ -261,6 +261,29 @@
   &--cabinet { background: #fde9d0; color: #b5680f; }
 }
 
+.jours-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.jour-pill {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: white;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &.active {
+    background: #1e293b;
+    color: white;
+    border-color: #1e293b;
+  }
+}
+
 .status-badge {
   display: inline-block;
   padding: 5px 12px;

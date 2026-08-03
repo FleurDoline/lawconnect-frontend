@@ -16,6 +16,7 @@ interface Appointment {
   name: string;
   matter: string;
   type: string;
+  mode: string;
   canJoin: boolean;
 }
 
@@ -34,6 +35,20 @@ interface NouveauDossier {
   mode: 'visioconférence' | 'présentiel' | '';
 }
 
+const STATUT_LABELS: Record<string, string> = {
+  EN_ATTENTE: 'En attente',
+  CONFIRMEE: 'Confirmé',
+  TERMINEE: 'Terminée',
+  ANNULEE: 'Annulée',
+};
+
+const STATUT_CLASSES: Record<string, string> = {
+  EN_ATTENTE: 'badge-warning',
+  CONFIRMEE: 'badge-success',
+  TERMINEE: 'badge-neutral',
+  ANNULEE: 'badge-danger',
+};
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -47,6 +62,9 @@ export class DashboardComponent implements OnInit {
   userPlan = 'CLIENT PREMIUM';
   menuOpen = false;
 
+  statutLabels = STATUT_LABELS;
+  statutClasses = STATUT_CLASSES;
+
   stats = {
     revenue: '12 450,00 Fcfa',
     consultations: 42,
@@ -55,7 +73,7 @@ export class DashboardComponent implements OnInit {
 
   navItems: NavItem[] = [
     { label: 'Tableau de bord', icon: 'dashboard' , route: '/avocat/dashboard'},
-    { label: 'Rendez-vous',    icon: 'calendar' },
+    { label: 'Rendez-vous',    icon: 'calendar' , route: '/avocat/rendez-vous' },
     { label: 'Messagerie',     icon: 'message' },
     { label: 'Paiement',       icon: 'card' },
     { label: 'Paramètre',      icon: 'settings', route: '/avocat/parametre/profil'},
@@ -63,20 +81,20 @@ export class DashboardComponent implements OnInit {
   ];
 
   joursDisponibles = [
-  { value: 'MONDAY', label: 'Lundi' },
-  { value: 'TUESDAY', label: 'Mardi' },
-  { value: 'WEDNESDAY', label: 'Mercredi' },
-  { value: 'THURSDAY', label: 'Jeudi' },
-  { value: 'FRIDAY', label: 'Vendredi' },
-  { value: 'SATURDAY', label: 'Samedi' },
-  { value: 'SUNDAY', label: 'Dimanche' },
-];
+    { value: 'MONDAY', label: 'Lundi' },
+    { value: 'TUESDAY', label: 'Mardi' },
+    { value: 'WEDNESDAY', label: 'Mercredi' },
+    { value: 'THURSDAY', label: 'Jeudi' },
+    { value: 'FRIDAY', label: 'Vendredi' },
+    { value: 'SATURDAY', label: 'Samedi' },
+    { value: 'SUNDAY', label: 'Dimanche' },
+  ];
 
-nouvelleDisponibilite: Disponibilite = {
-  jour: 'MONDAY',
-  heureDebut: '09:00',
-  heureFin: '18:00'
-};
+  nouvelleDisponibilite: Disponibilite = {
+    jour: 'MONDAY',
+    heureDebut: '09:00',
+    heureFin: '18:00'
+  };
 
   // Raw data from backend, kept so the detail modal can look up full info by id
   demandes: DemandeConsultation[] = [];
@@ -86,6 +104,7 @@ nouvelleDisponibilite: Disponibilite = {
   appointmentsError = false;
 
   disponibilites: Disponibilite[] = [];
+
   // ---- Nouveau dossier modal state ----
   showDossierModal = false;
   dossierSubmitting = false;
@@ -145,12 +164,11 @@ nouvelleDisponibilite: Disponibilite = {
       next: (demandes) => {
         this.demandes = demandes;
         this.appointments = demandes
-          .filter((d) => d.statut === 'EN_ATTENTE')
           .sort(
             (a, b) =>
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )
-          .slice(0, 4)
+          .slice(0, 3)
           .map((d) => this.toAppointment(d));
         this.appointmentsLoading = false;
         this.cdr.detectChanges();
@@ -167,16 +185,29 @@ nouvelleDisponibilite: Disponibilite = {
   }
 
   private toAppointment(d: DemandeConsultation): Appointment {
-    const created = new Date(d.createdAt);
+    const dateAffichee = d.statut === 'CONFIRMEE' && d.dateRendezVous
+      ? new Date(d.dateRendezVous)
+      : new Date(d.createdAt);
+
     return {
       id: d.id,
-      dayLabel: this.formatDayLabel(created),
-      time: this.formatTime(created),
+      dayLabel: this.formatDayLabel(dateAffichee),
+      time: this.formatTime(dateAffichee),
       name: d.nomComplet,
       matter: d.mission || d.typePersonne || 'Consultation',
-      type: '',
-      canJoin: false,
+      type: this.modeLabel(d.modeConsultation),
+      mode: d.modeConsultation,
+      canJoin: d.statut === 'CONFIRMEE',
     };
+  }
+
+  private modeLabel(mode: string): string {
+    const labels: Record<string, string> = {
+      visio: 'Visioconférence',
+      telephone: 'Téléphone',
+      cabinet: 'Présentiel',
+    };
+    return labels[mode] || '';
   }
 
   private loadDisponibilites(): void {
@@ -188,47 +219,47 @@ nouvelleDisponibilite: Disponibilite = {
       error: (err) => {
         console.error('Erreur lors du chargement des disponibilités', err);
         this.disponibilites = [];
-        }
+      }
     });
   }
 
   openDisponibiliteModal(): void {
-  this.showDisponibiliteModal = true;
-}
+    this.showDisponibiliteModal = true;
+  }
 
-closeDisponibiliteModal(): void {
-  this.showDisponibiliteModal = false;
-}
+  closeDisponibiliteModal(): void {
+    this.showDisponibiliteModal = false;
+  }
 
-ajouterDisponibilite(): void {
-  this.disponibilites.push({ ...this.nouvelleDisponibilite });
-  this.nouvelleDisponibilite = {
-    jour: 'MONDAY',
-    heureDebut: '09:00',
-    heureFin: '18:00'
-  };
-}
+  ajouterDisponibilite(): void {
+    this.disponibilites.push({ ...this.nouvelleDisponibilite });
+    this.nouvelleDisponibilite = {
+      jour: 'MONDAY',
+      heureDebut: '09:00',
+      heureFin: '18:00'
+    };
+  }
 
-getJourLabel(jour: string): string {
-  return this.joursDisponibles.find(j => j.value === jour)?.label || jour;
-}
+  getJourLabel(jour: string): string {
+    return this.joursDisponibles.find(j => j.value === jour)?.label || jour;
+  }
 
-supprimerLigneDisponibilite(index: number): void {
-  this.disponibilites.splice(index, 1);
-}
+  supprimerLigneDisponibilite(index: number): void {
+    this.disponibilites.splice(index, 1);
+  }
 
-enregistrerDisponibilites(): void {
-  this.disponibiliteService.enregistrerDisponibilites(this.disponibilites).subscribe({
-    next: (disponibilites) => {
-      this.disponibilites = disponibilites;
-      this.showDisponibiliteModal = false;
-      this.cdr.detectChanges();
-    },
-    error: (err) => {
-      console.error('Erreur lors de l\'enregistrement des disponibilités', err);
-    }
-  });
-}
+  enregistrerDisponibilites(): void {
+    this.disponibiliteService.enregistrerDisponibilites(this.disponibilites).subscribe({
+      next: (disponibilites) => {
+        this.disponibilites = disponibilites;
+        this.showDisponibiliteModal = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erreur lors de l\'enregistrement des disponibilités', err);
+      }
+    });
+  }
 
   private formatDayLabel(date: Date): string {
     const today = new Date();
@@ -314,7 +345,7 @@ enregistrerDisponibilites(): void {
       next: () => {
         this.acceptSubmitting = false;
         this.closeDetailModal();
-        this.loadProchainRendezVous(); // refresh — the accepted one is no longer EN_ATTENTE
+        this.loadProchainRendezVous(); // refresh — le statut a changé
       },
       error: (err) => {
         console.error("Erreur lors de l'acceptation de la consultation", err);

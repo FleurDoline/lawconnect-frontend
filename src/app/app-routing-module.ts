@@ -24,19 +24,21 @@ const routes: Routes = [
     path: 'avocat/parametre/profil',
     loadComponent: () => import('./module/avocat/pages/parametre/profil/profil').then(m => m.AvocatParametreProfilComponent)
   },
+  {
+    path: 'avocat/rendez-vous',
+    loadComponent: () => import('./module/avocat/pages/rendez-vous/rendez-vous').then(m => m.RendezVousComponent)
+  },
   { path: 'client/dashboard', component: ClientDashboardComponent },
   { path: 'client/besoin-avocat/:id', component: BesoinAvocatComponent },
   {
-path: 'domaines',
-loadComponent: () => import('./module/landing/pages/domaines/domaines').then(m => m.DomainesPage)
+    path: 'domaines',
+    loadComponent: () => import('./module/landing/pages/domaines/domaines').then(m => m.DomainesPage)
   },
   {
-path: 'avocat/:id',
-loadComponent: () => import('./module/avocat/pages/profile/profile').then(m => m.AvocatProfileComponent)
-},
-{ path: 'client/consultations', component: ConsultationsComponent },
-
-/*{ path: 'consultation/nouvelle', component: Consultation },*/
+    path: 'avocat/:id',
+    loadComponent: () => import('./module/avocat/pages/profile/profile').then(m => m.AvocatProfileComponent)
+  },
+  { path: 'client/consultations', component: ConsultationsComponent },
 ];
 
 @NgModule({

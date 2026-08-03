@@ -34,6 +34,8 @@ export interface DemandeConsultation {
   urgent: string; // 'oui' | 'non'
   statut: string; // ex: 'EN_ATTENTE', 'CONFIRMEE', 'TERMINEE', 'ANNULEE'
   createdAt: string; // ISO string
+  dateRendezVous: string | null;   
+  modeConsultation: string; 
 }
 
 export interface ConsultationDetail {

@@ -569,6 +569,20 @@ $danger: #dc2626;
   }
 }
 
+.statut-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.badge-warning { background: #fef3c7; color: #b45309; }
+.badge-success { background: #d1fae5; color: #047857; }
+.badge-neutral { background: #e5e7eb; color: #374151; }
+.badge-danger  { background: #fee2e2; color: #b91c1c; }
+
 .modal--disponibilite .form-row {
   display: flex;
   gap: 1.25rem;

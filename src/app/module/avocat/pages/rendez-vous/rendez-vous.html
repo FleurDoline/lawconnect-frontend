@@ -1,0 +1,155 @@
+<app-topbar
+  [userName]="userName"
+  [userPlan]="userPlan"
+  [navItems]="navItems"
+  (navSelect)="onNavSelect($event)">
+</app-topbar>
+
+<div class="rdv-page">
+  <header class="rdv-header">
+    <h1>Rendez-vous</h1>
+    <p>Gérer votre planning consultation par consultation</p>
+  </header>
+
+  <div class="rdv-toolbar">
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Recherche un client, un type..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="onSearchChange($event)"
+      />
+    </div>
+
+    <div class="filter-tabs">
+      <button [class.active]="filtreMode() === 'tout'" (click)="setFiltre('tout')">Tout</button>
+      <button [class.active]="filtreMode() === 'visio'" (click)="setFiltre('visio')">Visio</button>
+      <button [class.active]="filtreMode() === 'cabinet'" (click)="setFiltre('cabinet')">Cabinet</button>
+      <button [class.active]="filtreMode() === 'telephone'" (click)="setFiltre('telephone')">Téléphone</button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p class="state-msg">Chargement...</p>
+  } @else if (error()) {
+    <p class="state-msg error">{{ error() }}</p>
+  } @else {
+    <table class="rdv-table">
+      <thead>
+        <tr>
+          <th>Num</th>
+          <th>Date &amp; Heure</th>
+          <th>Client</th>
+          <th>Type de Consultation</th>
+          <th>Mode</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of consultationsPage(); track c.id; let i = $index) {
+          <tr>
+            <td class="num">{{ numRdv(i) }}</td>
+            <td class="date">
+              @if (c.dateRendezVous) {
+                {{ c.dateRendezVous | date: 'dd/MM' }}<br />
+                <span class="heure">{{ c.dateRendezVous | date: 'HH:mm' }}</span>
+              } @else {
+                <span class="heure">Non planifié</span>
+              }
+            </td>
+            <td class="client">
+              <span class="avatar">{{ initiales(c.nomComplet) }}</span>
+              {{ c.nomComplet }}
+            </td>
+            <td class="type">{{ c.mission }}</td>
+            <td>
+              <span class="mode-badge" [attr.data-mode]="c.modeConsultation">
+                {{ modeLabels[c.modeConsultation] }}
+              </span>
+            </td>
+            <td>
+              <span class="statut-badge" [ngClass]="statutClasses[c.statut]">
+                {{ statutLabels[c.statut] }}
+              </span>
+            </td>
+            <td class="action">
+              <button class="icon-btn" title="Messagerie">💬</button>
+
+              @switch (c.statut) {
+                @case ('EN_ATTENTE') {
+                  <button
+                    class="btn-primary"
+                    [disabled]="accepterEnCours() === c.id"
+                    (click)="accepter(c.id, $event)"
+                  >
+                    {{ accepterEnCours() === c.id ? '...' : 'Accepter' }}
+                  </button>
+                }
+                @case ('CONFIRMEE') {
+                  <button class="btn-primary" (click)="rejoindre(c, $event)">Rejoindre</button>
+                }
+                @default {
+                  <button class="btn-outline" (click)="ouvrirDetails(c)">Détails</button>
+                }
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="state-msg">Aucun rendez-vous trouvé.</td></tr>
+        }
+      </tbody>
+    </table>
+
+    <footer class="rdv-footer">
+      <span>Page {{ pageActuelle() }} sur {{ totalPages() }} · {{ filtrees().length }} résultat(s)</span>
+      <div class="pagination">
+        <button (click)="pagePrecedente()" [disabled]="pageActuelle() === 1">&lt; Précédent</button>
+        @for (p of [].constructor(totalPages()); track $index) {
+          <button [class.active]="pageActuelle() === $index + 1" (click)="allerAPage($index + 1)">
+            {{ $index + 1 }}
+          </button>
+        }
+        <button (click)="pageSuivante()" [disabled]="pageActuelle() === totalPages()">Suivant &gt;</button>
+      </div>
+    </footer>
+  }
+
+  @if (consultationSelectionnee(); as c) {
+    <div class="modal-overlay" (click)="fermerDetails()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="fermerDetails()">✕</button>
+        <h2>{{ c.nomComplet }}</h2>
+        <span class="statut-badge" [ngClass]="statutClasses[c.statut]">{{ statutLabels[c.statut] }}</span>
+
+        <dl class="detail-grid">
+          <dt>Type de consultation</dt>
+          <dd>{{ c.mission }}</dd>
+
+          <dt>Mode</dt>
+          <dd>{{ modeLabels[c.modeConsultation] }}</dd>
+
+          <dt>Date &amp; Heure</dt>
+          <dd>{{ c.dateRendezVous ? (c.dateRendezVous | date: 'dd/MM/yyyy HH:mm') : 'Non planifié' }}</dd>
+
+          <dt>Téléphone</dt>
+          <dd>{{ c.telephone }}</dd>
+
+          <dt>Email</dt>
+          <dd>{{ c.email }}</dd>
+
+          <dt>Ville</dt>
+          <dd>{{ c.ville }}</dd>
+
+          <dt>Situation</dt>
+          <dd>{{ c.situation }}</dd>
+
+          @if (c.attentes?.length) {
+            <dt>Attentes</dt>
+            <dd>{{ c.attentes.join(', ') }}</dd>
+          }
+        </dl>
+      </div>
+    </div>
+  }
+</div>

@@ -324,6 +324,9 @@
     </div>
 
     <div class="modal-body" *ngIf="selectedDemande as d">
+      <span class="statut-badge" [ngClass]="statutClasses[d.statut]">
+       {{ statutLabels[d.statut] }}
+      </span>
       <div class="detail-grid">
         <div class="detail-item">
           <span class="detail-label">Client</span>
@@ -373,7 +376,13 @@
 
 <div class="modal-footer">
   <button type="button" class="btn-outline" (click)="closeDetailModal()">Fermer</button>
-  <button type="button" class="btn-primary" [disabled]="acceptSubmitting" (click)="accepterDemande()">
+  <button
+    type="button"
+    class="btn-primary"
+    *ngIf="selectedDemande?.statut === 'EN_ATTENTE'"
+    [disabled]="acceptSubmitting"
+    (click)="accepterDemande()"
+  >
     {{ acceptSubmitting ? 'Confirmation...' : 'Accepter la demande' }}
   </button>
 </div>

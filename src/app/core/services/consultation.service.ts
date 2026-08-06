@@ -136,6 +136,13 @@ export class ConsultationService {
     return this.http.patch<ConsultationResponse>(`${this.baseUrl}/${id}/accepter`, {});
   }
 
+  refuserDemande(id: number): Observable<ConsultationResponse> {
+    return this.http.patch<ConsultationResponse>(
+       `${this.baseUrl}/${id}/refuser`,
+     {}
+    );
+  }
+
   getAvocatsDisponibles(
     page = 0,
     size = 50,
@@ -157,7 +164,13 @@ export class ConsultationService {
   }
 
   getCreneauxDisponibles(avocatId: number, date: string): Observable<string[]> {
-  const params = new HttpParams().set('date', date);
-  return this.http.get<string[]>(`${this.baseUrl}/avocats/${avocatId}/creneaux-disponibles`, { params });
-}
+    const params = new HttpParams().set('date', date);
+    return this.http.get<string[]>(`${this.baseUrl}/avocats/${avocatId}/creneaux-disponibles`, { params });
+  }
+
+  getProchainsRendezVous(): Observable<DemandeConsultation[]> {
+    return this.http.get<DemandeConsultation[]>(
+    `${this.baseUrl}/prochains-rendez-vous`
+    );
+  }
 }

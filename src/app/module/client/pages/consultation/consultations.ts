@@ -57,6 +57,13 @@ interface NouvelleConsultationForm {
   mode: ConsultationMode | '';
 }
 
+interface EditConsultationForm {
+  date: string;
+  heure: string;
+  mode: ConsultationMode | '';
+  note: string;
+}
+
 @Component({
   selector: 'app-consultations',
   standalone: true,
@@ -77,12 +84,12 @@ export class ConsultationsComponent implements OnInit {
   ];
 
   activeTab: 'avenir' | 'passees' = 'avenir';
-  pageSize = 10;
+  pageSize = 8;
   currentPage = 1;
   loading = true;
   loadError = false;
 
-  // ---- Sélection créneau ----
+  // ---- Sélection créneau (Nouvelle Consultation) ----
   prochainsJours: { label: string; iso: string }[] = [];
   jourSelectionne: string | null = null;
   creneauxDisponibles: string[] = [];
@@ -90,15 +97,21 @@ export class ConsultationsComponent implements OnInit {
   loadingCreneaux = false;
   creneauxError = false;
   creneauErreur: string | null = null;
+  refuserEnCours: number | null = null;
 
   private allConsultations: ConsultationRow[] = [];
 
   private readonly avatarPalette = ['#2f5fd6', '#2f9e5f', '#8a6d1f', '#7a3fbf', '#c0392b', '#0f766e', '#b45309'];
 
   private readonly modeToBackend: Record<ConsultationMode, string> = {
-    visio: 'visioconférence',
-    telephone: 'téléphone',
-    cabinet: 'présentiel',
+    visio: 'visio',
+    telephone: 'telephone',
+    cabinet: 'cabinet',
+  };
+  private readonly modeLabels: Record<ConsultationMode, string> = {
+    visio: 'Visioconférence',
+    telephone: 'Téléphone',
+    cabinet: 'Cabinet',
   };
 
   readonly attentesOptions = [
@@ -121,6 +134,14 @@ export class ConsultationsComponent implements OnInit {
   showDetailModal = false;
   selectedConsultation: ConsultationRow | null = null;
   errors: Partial<Record<keyof NouvelleConsultationForm, string>> = {};
+
+  // ---- Edit modal ----
+  showEditModal = false;
+  selectedForEdit: ConsultationRow | null = null;
+  editSubmitting = false;
+  editSubmitError: string | null = null;
+  editForm: EditConsultationForm = { date: '', heure: '', mode: '', note: '' };
+  editErrors: Partial<Record<keyof EditConsultationForm, string>> = {};
 
   isCallModalOpen = false;
   selectedCallInfo: ConsultationCallInfo | null = null;
@@ -228,6 +249,10 @@ export class ConsultationsComponent implements OnInit {
     return 'cabinet';
   }
 
+  modeLabel(mode: ConsultationMode): string {
+    return this.modeLabels[mode] ?? mode;
+  }
+
   private colorFor(initiales: string): string {
     let hash = 0;
     for (let i = 0; i < initiales.length; i++) {
@@ -248,14 +273,40 @@ export class ConsultationsComponent implements OnInit {
     }
   }
 
+  canCancel(c: ConsultationRow): boolean {
+  return c.statut === 'EN_ATTENTE';
+}
+
+refuserDemande(c: ConsultationRow): void {
+  if (c.statut !== 'EN_ATTENTE') return;
+
+  this.refuserEnCours = c.id;
+
+  this.consultationService.refuserDemande(c.id).subscribe({
+    next: () => {
+      this.refuserEnCours = null;
+      const consultation = this.allConsultations.find(x => x.id === c.id);
+      if (consultation) {
+        consultation.statut = 'ANNULEE';
+      }
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error('Erreur lors de l\'annulation de la consultation', err);
+      this.refuserEnCours = null;
+      this.cdr.detectChanges();
+    },
+  });
+}
+
   get filtered(): ConsultationRow[] {
     const now = new Date();
     return this.allConsultations.filter(c => {
       const rdvPasse = c.dateAfficheeIso ? new Date(c.dateAfficheeIso) < now : false;
       const estTerminee = c.statut === 'TERMINEE' || c.statut === 'ANNULEE' || rdvPasse;
-    return this.activeTab === 'avenir' ? !estTerminee : estTerminee;
-  });
-}
+      return this.activeTab === 'avenir' ? !estTerminee : estTerminee;
+    });
+  }
 
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
@@ -292,6 +343,10 @@ export class ConsultationsComponent implements OnInit {
 
   canJoin(c: ConsultationRow): boolean {
     return c.statut === 'CONFIRMEE';
+  }
+
+  canEdit(c: ConsultationRow): boolean {
+    return c.statut === 'EN_ATTENTE';
   }
 
   rejoindre(c: ConsultationRow): void {
@@ -333,7 +388,7 @@ export class ConsultationsComponent implements OnInit {
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  // ---- Sélection créneau ----
+  // ---- Sélection créneau (Nouvelle Consultation) ----
 
   private genererProchainsJours(): void {
     const jours: { label: string; iso: string }[] = [];
@@ -493,6 +548,89 @@ export class ConsultationsComponent implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  // ---- Edit consultation modal actions ----
+
+  openEdit(c: ConsultationRow): void {
+    this.selectedForEdit = c;
+    this.editForm = {
+      date: this.toDateInputValue(c),
+      heure: this.toTimeInputValue(c),
+      mode: c.mode,
+      note: '',
+    };
+    this.editErrors = {};
+    this.editSubmitError = null;
+    this.showEditModal = true;
+  }
+
+  closeEditModal(): void {
+    this.showEditModal = false;
+    this.selectedForEdit = null;
+    this.editForm = { date: '', heure: '', mode: '', note: '' };
+    this.editErrors = {};
+    this.editSubmitError = null;
+  }
+
+  private toDateInputValue(c: ConsultationRow): string {
+    if (c.dateAfficheeIso) {
+      return c.dateAfficheeIso.split('T')[0];
+    }
+    return '';
+  }
+
+  private toTimeInputValue(c: ConsultationRow): string {
+    return (c.heure ?? '').substring(0, 5);
+  }
+
+  private validateEditForm(): boolean {
+    const errors: typeof this.editErrors = {};
+
+    if (!this.editForm.date) errors.date = 'La date est requise.';
+    if (!this.editForm.heure) errors.heure = "L'heure est requise.";
+    if (!this.editForm.mode) errors.mode = 'Veuillez choisir un mode de consultation.';
+
+    this.editErrors = errors;
+    return Object.keys(errors).length === 0;
+  }
+
+  submitEdit(): void {
+    this.editSubmitError = null;
+    if (!this.selectedForEdit || !this.validateEditForm()) return;
+
+    this.editSubmitting = true;
+    const id = this.selectedForEdit.id;
+
+    // TODO: backend PATCH endpoint needed, e.g. PATCH /api/v1/consultations/{id}
+    // and a corresponding ConsultationService.modifierConsultation(id, payload) method,
+    // similar in shape to the accepter flow on the avocat dashboard.
+    const payload = {
+      date: this.editForm.date,
+      heure: this.editForm.heure,
+      mode: this.modeToBackend[this.editForm.mode as ConsultationMode],
+      note: this.editForm.note?.trim() || undefined,
+    };
+
+    if (typeof (this.consultationService as any).modifierConsultation === 'function') {
+      (this.consultationService as any).modifierConsultation(id, payload).subscribe({
+        next: () => {
+          this.editSubmitting = false;
+          this.closeEditModal();
+          this.chargerConsultations();
+        },
+        error: (err: unknown) => {
+          console.error('Erreur lors de la modification de la consultation:', err);
+          this.editSubmitting = false;
+          this.editSubmitError = 'Une erreur est survenue lors de la modification. Veuillez réessayer.';
+          this.cdr.detectChanges();
+        },
+      });
+    } else {
+      this.editSubmitting = false;
+      this.editSubmitError = "La modification n'est pas encore disponible côté serveur.";
+      this.cdr.detectChanges();
+    }
   }
 
 }

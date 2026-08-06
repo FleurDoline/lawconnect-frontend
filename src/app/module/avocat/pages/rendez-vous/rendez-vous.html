@@ -78,19 +78,13 @@
 
               @switch (c.statut) {
                 @case ('EN_ATTENTE') {
-                  <button
-                    class="btn-primary"
-                    [disabled]="accepterEnCours() === c.id"
-                    (click)="accepter(c.id, $event)"
-                  >
-                    {{ accepterEnCours() === c.id ? '...' : 'Accepter' }}
-                  </button>
+                  <button class="btn-outline" (click)="ouvrirDetails(c)">Voir la demande</button>
                 }
                 @case ('CONFIRMEE') {
-                  <button class="btn-primary" (click)="rejoindre(c, $event)">Rejoindre</button>
+                 <button class="btn-primary" (click)="rejoindre(c, $event)">Rejoindre</button>
                 }
                 @default {
-                  <button class="btn-outline" (click)="ouvrirDetails(c)">Détails</button>
+                 <button class="btn-outline" (click)="ouvrirDetails(c)">Détails</button>
                 }
               }
             </td>
@@ -115,41 +109,100 @@
     </footer>
   }
 
-  @if (consultationSelectionnee(); as c) {
-    <div class="modal-overlay" (click)="fermerDetails()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+ @if (consultationSelectionnee(); as c) {
+  <div class="modal-overlay" (click)="fermerDetails()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-content__header">
+        <h2>Détails de la consultation</h2>
         <button class="modal-close" (click)="fermerDetails()">✕</button>
-        <h2>{{ c.nomComplet }}</h2>
-        <span class="statut-badge" [ngClass]="statutClasses[c.statut]">{{ statutLabels[c.statut] }}</span>
+      </div>
 
-        <dl class="detail-grid">
-          <dt>Type de consultation</dt>
-          <dd>{{ c.mission }}</dd>
+      <div class="detail-profile">
+        <span class="client-avatar">{{ initiales(c.nomComplet) }}</span>
+        <div class="detail-profile__text">
+          <div class="detail-profile__name">{{ c.nomComplet }}</div>
+          <div class="detail-profile__sub">{{ c.mission }}</div>
+        </div>
+      </div>
 
-          <dt>Mode</dt>
-          <dd>{{ modeLabels[c.modeConsultation] }}</dd>
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="detail-row__label">Statut</span>
+          <span class="detail-row__value">
+            <span class="statut-badge statut-badge--dot" [ngClass]="statutClasses[c.statut]">
+              {{ statutLabels[c.statut] }}
+            </span>
+          </span>
+        </div>
 
-          <dt>Date &amp; Heure</dt>
-          <dd>{{ c.dateRendezVous ? (c.dateRendezVous | date: 'dd/MM/yyyy HH:mm') : 'Non planifié' }}</dd>
+        <div class="detail-row">
+          <span class="detail-row__label">Type de consultation</span>
+          <span class="detail-row__value">{{ c.mission }}</span>
+        </div>
 
-          <dt>Téléphone</dt>
-          <dd>{{ c.telephone }}</dd>
+        <div class="detail-row">
+          <span class="detail-row__label">Mode</span>
+          <span class="detail-row__value">{{ modeLabels[c.modeConsultation] || 'Non renseigné' }}</span>
+        </div>
 
-          <dt>Email</dt>
-          <dd>{{ c.email }}</dd>
+        <div class="detail-row">
+          <span class="detail-row__label">Date &amp; Heure</span>
+          <span class="detail-row__value">
+            {{ c.dateRendezVous ? (c.dateRendezVous | date: 'dd/MM/yyyy à HH:mm') : 'Non planifié' }}
+          </span>
+        </div>
 
-          <dt>Ville</dt>
-          <dd>{{ c.ville }}</dd>
+        @if (c.attentes?.length) {
+          <div class="detail-row">
+            <span class="detail-row__label">Attentes</span>
+            <span class="detail-row__value">
+              <ul class="detail-list">
+                @for (att of c.attentes; track att) {
+                  <li>{{ att }}</li>
+                }
+              </ul>
+            </span>
+          </div>
+        }
 
-          <dt>Situation</dt>
-          <dd>{{ c.situation }}</dd>
+        <div class="detail-row">
+          <span class="detail-row__label">Téléphone</span>
+          <span class="detail-row__value">{{ c.telephone }}</span>
+        </div>
 
-          @if (c.attentes?.length) {
-            <dt>Attentes</dt>
-            <dd>{{ c.attentes.join(', ') }}</dd>
-          }
-        </dl>
+        <div class="detail-row">
+          <span class="detail-row__label">Email</span>
+          <span class="detail-row__value">{{ c.email }}</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-row__label">Ville</span>
+          <span class="detail-row__value">{{ c.ville || '—' }}</span>
+        </div>
+
+        <div class="detail-block">
+          <span class="detail-block__label">Situation décrite</span>
+          <textarea class="detail-block__box" readonly rows="3">{{ c.situation }}</textarea>
+        </div>
+      </div>
+
+      @if (accepterApiError()) {
+        <p class="field-error">{{ accepterApiError() }}</p>
+      }
+
+      <div class="modal-footer modal-footer--detail">
+        @if (c.statut === 'EN_ATTENTE') {
+          <button
+            class="btn-primary btn-block"
+            [disabled]="accepterEnCours() === c.id"
+            (click)="accepterEtFermer(c.id)">
+            {{ accepterEnCours() === c.id ? 'Confirmation...' : 'Accepter la demande' }}
+          </button>
+        } @else {
+          <button class="btn-primary btn-block" (click)="fermerDetails()">Fermer</button>
+        }
       </div>
     </div>
-  }
+  </div>
+}
 </div>

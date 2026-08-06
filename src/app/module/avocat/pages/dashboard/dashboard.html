@@ -123,26 +123,29 @@
   <section class="appointments">
     <div class="section-header">
       <h2>Prochain Rendez-vous</h2>
-      <a href="#">Voir tout l'agenda</a>
+      <a routerLink="/avocat/rendez-vous">Voir tous les rendez-vous</a>
     </div>
 
     <div class="appt" *ngFor="let a of appointments">
-      <div class="when">
-        <div class="day">{{ a.dayLabel }}</div>
-        <div class="time">{{ a.time }}</div>
-      </div>
-      <div class="info">
-        <div class="name">{{ a.name }}</div>
-        <div class="matter">{{ a.matter }}</div>
-        <div class="type" *ngIf="a.type">{{ a.type }}</div>
-      </div>
-      <div class="actions">
-        <button class="btn-outline" (click)="onDetails(a)">Details</button>
-        <button class="btn-primary" *ngIf="a.canJoin" (click)="onJoin(a)">
-          Rejoindre la Consultation
-        </button>
-      </div>
+  <div class="when">
+    <div class="day">{{ a.dayLabel }}</div>
+    <div class="time">{{ a.time }}</div>
+  </div>
+  <div class="info">
+    <div class="name">
+      {{ a.name }}
+      <span class="urgent-badge" *ngIf="a.urgent">Urgent</span>
     </div>
+    <div class="matter">{{ a.matter }}</div>
+    <div class="type" *ngIf="a.type">{{ a.type }}</div>
+  </div>
+  <div class="actions">
+    <button class="btn-outline" (click)="onDetails(a)">Details</button>
+    <button class="btn-primary" *ngIf="a.canJoin" (click)="onJoin(a)">
+      Rejoindre la Consultation
+    </button>
+  </div>
+</div>
   </section>
 
  
@@ -313,9 +316,10 @@
   </div>
 </div>
 
+
 <!-- Détails de la demande / Accepter le rendez-vous -->
 <div class="modal-backdrop" *ngIf="showDetailModal" (click)="closeDetailModal()">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title" (click)="$event.stopPropagation()">
+  <div class="modal modal--detail" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2 id="detail-modal-title">Détails de la demande</h2>
       <button class="modal-close" type="button" (click)="closeDetailModal()" aria-label="Fermer">
@@ -323,69 +327,94 @@
       </button>
     </div>
 
-    <div class="modal-body" *ngIf="selectedDemande as d">
-      <span class="statut-badge" [ngClass]="statutClasses[d.statut]">
-       {{ statutLabels[d.statut] }}
-      </span>
-      <div class="detail-grid">
-        <div class="detail-item">
-          <span class="detail-label">Client</span>
-          <span class="detail-value">{{ d.nomComplet }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Téléphone</span>
-          <span class="detail-value">{{ d.telephone }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Email</span>
-          <span class="detail-value">{{ d.email }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Ville</span>
-          <span class="detail-value">{{ d.ville || '—' }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Type de personne</span>
-          <span class="detail-value">{{ d.typePersonne }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Urgent</span>
-          <span class="detail-value">{{ d.urgent === 'oui' ? 'Oui' : 'Non' }}</span>
+    <div class="modal-body detail-rows" *ngIf="selectedDemande as d">
+
+      <!-- Profile header -->
+      <div class="detail-profile">
+        <span class="client-avatar client-avatar--lg">{{ initiales(d.nomComplet) }}</span>
+        <div class="detail-profile__text">
+          <div class="detail-profile__name">{{ d.nomComplet }}</div>
+          <div class="detail-profile__sub">{{ d.mission }}</div>
         </div>
       </div>
 
-      <div class="detail-item full">
-        <span class="detail-label">Mission</span>
-        <span class="detail-value">{{ d.mission }}</span>
+      <div class="detail-row">
+        <span class="detail-row__label">Status</span>
+        <span class="detail-row__value">
+          <span class="statut-badge statut-badge--dot" [ngClass]="statutClasses[d.statut]">
+            {{ statutLabels[d.statut] }}
+          </span>
+        </span>
       </div>
 
-      <div class="detail-item full">
-        <span class="detail-label">Situation</span>
-        <span class="detail-value">{{ d.situation }}</span>
+      <div class="detail-row">
+        <span class="detail-row__label">Type de personne</span>
+        <span class="detail-row__value">{{ d.typePersonne }}</span>
       </div>
 
-      <div class="detail-item full" *ngIf="d.attentes?.length">
-        <span class="detail-label">Attentes</span>
-        <ul class="detail-list">
-          <li *ngFor="let att of d.attentes">{{ att }}</li>
-        </ul>
+      <div class="detail-row">
+        <span class="detail-row__label">Mission</span>
+        <span class="detail-row__value">{{ d.mission }}</span>
       </div>
 
+      <div class="detail-row" *ngIf="d.attentes?.length">
+        <span class="detail-row__label">Attentes</span>
+        <span class="detail-row__value">
+          <ul class="detail-list">
+            <li *ngFor="let att of d.attentes">{{ att }}</li>
+          </ul>
+        </span>
+      </div>
 
-<p class="field-error" *ngIf="acceptApiError">{{ acceptApiError }}</p>
+      <div class="detail-row">
+        <span class="detail-row__label">Urgent</span>
+        <span class="detail-row__value">
+          <span class="urgent-badge" *ngIf="d.urgent === 'oui'">Urgent</span>
+          <span *ngIf="d.urgent !== 'oui'">Non</span>
+        </span>
+      </div>
 
-<div class="modal-footer">
-  <button type="button" class="btn-outline" (click)="closeDetailModal()">Fermer</button>
-  <button
-    type="button"
-    class="btn-primary"
-    *ngIf="selectedDemande?.statut === 'EN_ATTENTE'"
-    [disabled]="acceptSubmitting"
-    (click)="accepterDemande()"
-  >
-    {{ acceptSubmitting ? 'Confirmation...' : 'Accepter la demande' }}
-  </button>
+      <div class="detail-row">
+        <span class="detail-row__label">Téléphone</span>
+        <span class="detail-row__value">{{ d.telephone }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-row__label">Email</span>
+        <span class="detail-row__value">{{ d.email }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-row__label">Ville</span>
+        <span class="detail-row__value">{{ d.ville || '—' }}</span>
+      </div>
+
+      <div class="detail-block">
+  <span class="detail-block__label">Situation décrite</span>
+  <textarea class="detail-block__box" readonly rows="3">{{ d.situation }}</textarea>
 </div>
+
+      <p class="field-error" *ngIf="acceptApiError">{{ acceptApiError }}</p>
+
+      <div class="modal-footer modal-footer--detail">
+        <button
+          type="button"
+          class="btn-primary btn-block"
+          *ngIf="selectedDemande?.statut === 'EN_ATTENTE'"
+          [disabled]="acceptSubmitting"
+          (click)="accepterDemande()"
+        >
+          {{ acceptSubmitting ? 'Confirmation...' : 'Accepter la demande' }}
+        </button>
+        <button
+          type="button"
+          class="btn-primary btn-block"
+          *ngIf="selectedDemande?.statut !== 'EN_ATTENTE'"
+          (click)="closeDetailModal()"
+        >
+          Fermer
+        </button>
+      </div>
     </div>
   </div>
 </div>

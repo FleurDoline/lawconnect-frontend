@@ -75,6 +75,8 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
   specialiteSuggestions: SpecialiteDroit[] = [];
   showSuggestions = false;
 
+  refuserEnCours: number | null = null;
+
   private specialiteInput$ = new Subject<SpecialiteQuery>();
   private inputToken = 0;
 private specialiteSub!: Subscription;
@@ -196,21 +198,14 @@ private specialiteSub!: Subscription;
 
   }
 
+  // Dossiers actifs / messages non lus restent mockés pour l'instant —
+  // aucun endpoint backend disponible pour ces deux valeurs à ce jour.
   private chargerStatsMock(): void {
 
     setTimeout(() => {
 
       this.dossiersActifs = 4;
       this.messagesNonLus = 7;
-
-      this.prochaineConsultation = {
-        id: 1,
-        avocatNom: 'Anne Martin',
-        avocatInitiales: 'AM',
-        specialite: 'Immobilier',
-        date: 'Demain à 14h30',
-        statut: 'CONFIRMEE'
-      };
 
       this.cdr.detectChanges();
 
@@ -223,17 +218,56 @@ private specialiteSub!: Subscription;
     this.consultationService.getMesConsultations().subscribe({
       next: (data: ConsultationSummary[]) => {
         this.consultationsRecentes = data;
+        this.prochaineConsultation = this.calculerProchaineConsultation(data);
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Erreur chargement consultations:', err);
         this.consultationsRecentes = [];
+        this.prochaineConsultation = null;
         this.loading = false;
         this.cdr.detectChanges();
       }
     });
 
+  }
+
+  private calculerProchaineConsultation(data: ConsultationSummary[]): Consultation | null {
+    const now = new Date();
+
+    const prochaine = data
+      .filter(c => c.statut === 'CONFIRMEE' && c.dateAfficheeIso && new Date(c.dateAfficheeIso) > now)
+      .sort((a, b) => new Date(a.dateAfficheeIso).getTime() - new Date(b.dateAfficheeIso).getTime())[0];
+
+    if (!prochaine) return null;
+
+    return {
+      id: prochaine.id,
+      avocatNom: prochaine.avocatNom,
+      avocatInitiales: prochaine.avocatInitiales,
+      specialite: prochaine.specialite,
+      date: this.formatDateCarte(new Date(prochaine.dateAfficheeIso)),
+      statut: prochaine.statut as Consultation['statut'],
+    };
+  }
+
+  private formatDateCarte(date: Date): string {
+    const now = new Date();
+    const demain = new Date();
+    demain.setDate(now.getDate() + 1);
+
+    const isSameDay = (a: Date, b: Date) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+
+    const heure = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+    if (isSameDay(date, now)) return `Aujourd'hui à ${heure}`;
+    if (isSameDay(date, demain)) return `Demain à ${heure}`;
+
+    return `${date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' })} à ${heure}`;
   }
 
   rechercherAvocat(): void {
@@ -320,6 +354,28 @@ private specialiteSub!: Subscription;
       '/consultation/nouvelle'
     ]);
 
+  }
+
+  refuserDemande(id: number, event: Event): void {
+     event.stopPropagation();
+
+      this.refuserEnCours = id;
+
+    this.consultationService.refuserDemande(id).subscribe({
+        next: () => {
+           this.refuserEnCours = null;
+           const consultation = this.consultationsRecentes.find(c => c.id === id);
+         if (consultation) {
+          consultation.statut = 'ANNULEE';
+         }
+         this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Erreur lors de l\'annulation de la consultation', err);
+           this.refuserEnCours = null;
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   statutLabel(statut: string): string {

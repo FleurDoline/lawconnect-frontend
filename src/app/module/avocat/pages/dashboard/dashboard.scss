@@ -272,11 +272,14 @@ $danger: #dc2626;
   position: fixed;
   inset: 0;
   background: rgba(15, 31, 61, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 16px;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .modal {
@@ -394,6 +397,60 @@ $danger: #dc2626;
   color: $navy;
 }
 
+
+.detail-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 18px;
+
+  &__name {
+    font-size: 16px;
+    font-weight: 700;
+    color: $navy;
+  }
+
+  &__sub {
+    font-size: 13px;
+    color: $muted;
+    margin-top: 2px;
+  }
+}
+
+.client-avatar--lg {
+  width: 48px;
+  height: 48px;
+  font-size: 15px;
+  background: $orange;
+  color: #fff;
+}
+
+.statut-badge--dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+
+.btn-block {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+}
+
+.modal-footer--detail {
+  margin-top: 8px;
+  justify-content: stretch;
+
+  button { min-width: 0; }
+}
 .form-field {
   display: flex;
   flex-direction: column;
@@ -569,6 +626,104 @@ $danger: #dc2626;
   }
 }
 
+.urgent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: $danger;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+
+  &::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: $danger;
+  }
+}
+
+.modal--detail {
+  max-width: 480px;
+}
+
+.detail-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 0;
+  border-bottom: 1px solid #edf0f3;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  &__label {
+    font-size: 13px;
+    color: #8b95a1;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  &__value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1d29;
+    text-align: right;
+
+    &--client {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+}
+
+.client-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #0f3d3e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.detail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: right;
+
+  li {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1d29;
+
+    &::before {
+      content: '• ';
+      color: #8b95a1;
+    }
+  }
+}
+
 .statut-badge {
   display: inline-block;
   padding: 4px 10px;
@@ -578,6 +733,42 @@ $danger: #dc2626;
   margin-bottom: 12px;
 }
 
+
+.detail-block {
+  padding: 14px 0;
+  border-bottom: 1px solid #edf0f3;
+
+  &__label {
+    display: block;
+    font-size: 13px;
+    color: #8b95a1;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  &__box {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid $border;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: $text;
+    background: #fff;
+    outline: none;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: vertical;
+    white-space: pre-wrap;
+    word-break: break-word;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:focus {
+      border-color: $navy;
+      box-shadow: 0 0 0 3px rgba(15, 31, 61, 0.12);
+    }
+  }
+}
 .badge-warning { background: #fef3c7; color: #b45309; }
 .badge-success { background: #d1fae5; color: #047857; }
 .badge-neutral { background: #e5e7eb; color: #374151; }

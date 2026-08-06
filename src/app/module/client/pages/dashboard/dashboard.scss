@@ -119,6 +119,10 @@ $text-muted: #6b7280;
       color: rgba(255,255,255,0.6);
     }
 
+    .stat-card__value {
+      color: #fff;   
+    }
+
     .stat-card__sub {
       color: rgba(255,255,255,0.7);
     }
@@ -358,12 +362,15 @@ $text-muted: #6b7280;
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 16px; // keeps the modal off the screen edges on small viewports
   box-sizing: border-box;
+  animation: fadeIn 0.2s ease;
 }
 
 .modal-card {
@@ -461,23 +468,30 @@ $text-muted: #6b7280;
   }
 
   &__textbox {
-    max-height: 140px;
-    overflow-y: auto;
-    background: #f8f9fb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 12px 14px;
-    font-size: 13.5px;
-    line-height: 1.6;
-    color: #1a2744;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
+  width: 100%;
+  box-sizing: border-box;
+  max-height: 140px;
+  min-height: 80px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #1a2744;
+  font-family: inherit;
+  resize: vertical;
+  white-space: pre-wrap;
+  word-break: break-word;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
-  &__close-btn {
-    width: 100%;
-    flex-shrink: 0;
+  &:focus {
+    border-color: $navy;
+    box-shadow: 0 0 0 3px rgba(26, 43, 75, 0.1);
   }
+}
 }
 
 .tag {
@@ -525,6 +539,16 @@ $text-muted: #6b7280;
   -webkit-overflow-scrolling: touch;
 }
 
+
+.btn-danger {
+  color: #dc2626;
+  border-color: #fecaca;
+
+  &:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+  }
+}
 .consultations-table {
   width: 100%;
   min-width: 560px; // ensures columns stay legible; the .table-scroll wrapper handles overflow
@@ -705,6 +729,12 @@ $text-muted: #6b7280;
     gap: 10px;
     flex-wrap: wrap;
   }
+}
+
+.stat-card__sub--specialite {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  margin-top: 0;
 }
 
 .btn-gold {

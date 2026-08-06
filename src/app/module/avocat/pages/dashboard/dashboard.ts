@@ -6,7 +6,7 @@ import {
   ConsultationService,
   DemandeConsultation,
 } from '../../../../core/services/consultation.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { DisponibiliteService, Disponibilite } from '../../../../core/services/disponibilite.service';
 
 interface Appointment {
@@ -17,6 +17,7 @@ interface Appointment {
   matter: string;
   type: string;
   mode: string;
+  urgent: boolean;
   canJoin: boolean;
 }
 
@@ -52,7 +53,7 @@ const STATUT_CLASSES: Record<string, string> = {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss'],
 })
@@ -156,34 +157,39 @@ export class DashboardComponent implements OnInit {
     this.loadDisponibilites();
   }
 
-  private loadProchainRendezVous(): void {
-    this.appointmentsLoading = true;
-    this.appointmentsError = false;
+ private loadProchainRendezVous(): void {
+  this.appointmentsLoading = true;
+  this.appointmentsError = false;
 
-    this.consultationService.getMesDemandes().subscribe({
-      next: (demandes) => {
-        this.demandes = demandes;
-        this.appointments = demandes
-          .sort(
-            (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )
-          .slice(0, 3)
-          .map((d) => this.toAppointment(d));
-        this.appointmentsLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement des demandes de consultation', err);
-        this.demandes = [];
-        this.appointments = [];
-        this.appointmentsLoading = false;
-        this.appointmentsError = true;
-        this.cdr.detectChanges();
-      },
-    });
-  }
+  // Used by the detail modal (onDetails) to look up full data by id —
+  // still needs the full list, so we keep this call.
+  this.consultationService.getMesDemandes().subscribe({
+    next: (demandes) => {
+      this.demandes = demandes;
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error('Erreur lors du chargement des demandes de consultation', err);
+      this.demandes = [];
+    },
+  });
 
+  // Prochain(s) rendez-vous : filtré côté backend sur statut CONFIRMEE + date future
+  this.consultationService.getProchainsRendezVous().subscribe({
+    next: (prochains) => {
+      this.appointments = prochains.slice(0, 3).map((d) => this.toAppointment(d));
+      this.appointmentsLoading = false;
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error('Erreur lors du chargement du prochain rendez-vous', err);
+      this.appointments = [];
+      this.appointmentsLoading = false;
+      this.appointmentsError = true;
+      this.cdr.detectChanges();
+    },
+  });
+}
   private toAppointment(d: DemandeConsultation): Appointment {
     const dateAffichee = d.statut === 'CONFIRMEE' && d.dateRendezVous
       ? new Date(d.dateRendezVous)
@@ -198,6 +204,7 @@ export class DashboardComponent implements OnInit {
       type: this.modeLabel(d.modeConsultation),
       mode: d.modeConsultation,
       canJoin: d.statut === 'CONFIRMEE',
+      urgent: d.urgent === 'oui',
     };
   }
 
@@ -412,4 +419,17 @@ export class DashboardComponent implements OnInit {
       this.cdr.detectChanges();
     }, 600);
   }
+
+  goToRendezVous(): void {
+  this.router.navigate(['/avocat/rendez-vous']);
+}
+
+initiales(nomComplet: string): string {
+  return nomComplet
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((s) => s[0].toUpperCase())
+    .join('');
+}
 }

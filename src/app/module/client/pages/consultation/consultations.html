@@ -26,6 +26,13 @@
     <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
     </symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+    </symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -61,11 +68,11 @@
       </thead>
       <tbody>
         <tr *ngIf="loading">
-          <td colspan="7" class="empty-row">Chargement des consultations...</td>
+          <td colspan="6" class="empty-row">Chargement des consultations...</td>
         </tr>
 
         <tr *ngIf="!loading && loadError">
-          <td colspan="7" class="empty-row">Impossible de charger vos consultations. Veuillez réessayer.</td>
+          <td colspan="6" class="empty-row">Impossible de charger vos consultations. Veuillez réessayer.</td>
         </tr>
 
         <tr *ngFor="let c of pagedConsultations">
@@ -83,13 +90,34 @@
             </span>
           </td>
           <td>
-            <button *ngIf="canJoin(c)" class="btn-primary btn-small" (click)="rejoindre(c)">Rejoindre</button>
-            <button *ngIf="!canJoin(c)" class="btn-outline btn-small" (click)="detail(c)">Détail</button>
-          </td>
+  <div class="actions-cell">
+    <button class="icon-btn" type="button" title="Voir le détail" (click)="detail(c)">
+      <svg width="16" height="16"><use href="#i-eye"></use></svg>
+    </button>
+    <button
+      *ngIf="canEdit(c)"
+      class="icon-btn"
+      type="button"
+      title="Modifier"
+      (click)="openEdit(c)">
+      <svg width="16" height="16"><use href="#i-edit"></use></svg>
+    </button>
+    <button
+      *ngIf="canCancel(c)"
+      class="icon-btn icon-btn--danger"
+      type="button"
+      title="Annuler la demande"
+      [disabled]="refuserEnCours === c.id"
+      (click)="refuserDemande(c)">
+      <svg width="16" height="16"><use href="#i-x"></use></svg>
+    </button>
+    <button *ngIf="canJoin(c)" class="btn-primary btn-small" (click)="rejoindre(c)">Rejoindre</button>
+  </div>
+</td>
         </tr>
 
         <tr *ngIf="!loading && !loadError && pagedConsultations.length === 0">
-          <td colspan="7" class="empty-row">Aucune consultation à afficher.</td>
+          <td colspan="6" class="empty-row">Aucune consultation à afficher.</td>
         </tr>
       </tbody>
     </table>
@@ -112,287 +140,382 @@
   </div>
 
   <!-- Nouvelle Consultation Modal -->
-<div class="modal-backdrop" *ngIf="showNouvelleModal" (click)="closeNouvelleModal()">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="nouvelle-consultation-title" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2 id="nouvelle-consultation-title">Nouvelle Consultation</h2>
-      <button class="modal-close" type="button" (click)="closeNouvelleModal()" aria-label="Fermer">
-        <svg class="icon" width="18" height="18"><use href="#i-x"></use></svg>
-      </button>
-    </div>
+  <div class="modal-backdrop" *ngIf="showNouvelleModal" (click)="closeNouvelleModal()">
+    <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="nouvelle-consultation-title" (click)="$event.stopPropagation()">
+      <div class="modal-header modal-header--brand">
+        <div>
+          <h2 id="nouvelle-consultation-title">Nouvelle Consultation</h2>
+          <p class="modal-subtitle">Décrivez votre besoin pour être mis en relation avec un avocat</p>
+        </div>
+        <button class="modal-close modal-close--brand" type="button" (click)="closeNouvelleModal()" aria-label="Fermer">
+          <svg class="icon" width="18" height="18"><use href="#i-x"></use></svg>
+        </button>
+      </div>
 
-    <form class="modal-body" (ngSubmit)="submitNouvelleConsultation()" novalidate>
-  <div class="form-field">
-    <label for="avocatId">Avocat</label>
-    <select
-      id="avocatId"
-      name="avocatId"
-      [(ngModel)]="form.avocatId"
-      [class.invalid]="errors.avocatId"
-      [disabled]="loadingAvocats || loadAvocatsError"
-      (change)="onAvocatChange()"
-    >
-      <option [ngValue]="null" disabled>
-        {{ loadingAvocats ? 'Chargement...' : (loadAvocatsError ? 'Erreur de chargement' : 'Sélectionner un avocat') }}
-      </option>
-      <option *ngFor="let a of avocats" [ngValue]="a.id">{{ a.nom }} — {{ a.specialite }}</option>
-    </select>
-    <span class="field-error" *ngIf="errors.avocatId">{{ errors.avocatId }}</span>
-    <span class="field-error" *ngIf="loadAvocatsError">Impossible de charger la liste des avocats.</span>
-  </div>
+      <form class="modal-body" (ngSubmit)="submitNouvelleConsultation()" novalidate>
+        <div class="form-field">
+          <label for="avocatId">Avocat</label>
+          <select
+            id="avocatId"
+            name="avocatId"
+            [(ngModel)]="form.avocatId"
+            [class.invalid]="errors.avocatId"
+            [disabled]="loadingAvocats || loadAvocatsError"
+            (change)="onAvocatChange()"
+          >
+            <option [ngValue]="null" disabled>
+              {{ loadingAvocats ? 'Chargement...' : (loadAvocatsError ? 'Erreur de chargement' : 'Sélectionner un avocat') }}
+            </option>
+            <option *ngFor="let a of avocats" [ngValue]="a.id">{{ a.nom }} — {{ a.specialite }}</option>
+          </select>
+          <span class="field-error" *ngIf="errors.avocatId">{{ errors.avocatId }}</span>
+          <span class="field-error" *ngIf="loadAvocatsError">Impossible de charger la liste des avocats.</span>
+        </div>
 
-  <!-- Sélection du jour et de l'heure -->
-  <div class="form-field" *ngIf="form.avocatId">
-    <label>Choisissez une date</label>
-    <div class="jours-scroll">
-      <button
-        type="button"
-        *ngFor="let j of prochainsJours"
-        class="jour-pill"
-        [class.active]="jourSelectionne === j.iso"
-        (click)="selectionnerJour(j.iso)"
-      >
-        {{ j.label }}
-      </button>
-    </div>
+        <!-- Sélection du jour et de l'heure -->
+        <div class="form-field" *ngIf="form.avocatId">
+          <label>Choisissez une date</label>
+          <div class="jours-scroll">
+            <button
+              type="button"
+              *ngFor="let j of prochainsJours"
+              class="jour-pill"
+              [class.active]="jourSelectionne === j.iso"
+              (click)="selectionnerJour(j.iso)"
+            >
+              {{ j.label }}
+            </button>
+          </div>
 
-    <div *ngIf="jourSelectionne" style="margin-top: 12px;">
-      <label>Choisissez une heure</label>
+          <div *ngIf="jourSelectionne" style="margin-top: 12px;">
+            <label>Choisissez une heure</label>
 
-      <p *ngIf="loadingCreneaux">Chargement des créneaux...</p>
-      <p *ngIf="!loadingCreneaux && creneauxError" class="field-error">
-        Impossible de charger les créneaux. Veuillez réessayer.
-      </p>
-      <p *ngIf="!loadingCreneaux && !creneauxError && creneauxDisponibles.length === 0">
-        Aucun créneau disponible ce jour-là.
-      </p>
+            <p *ngIf="loadingCreneaux">Chargement des créneaux...</p>
+<p *ngIf="!loadingCreneaux && creneauxError" class="field-error">
+  Impossible de charger les créneaux. Veuillez réessayer.
+</p>
+<p *ngIf="!loadingCreneaux && !creneauxError && creneauxDisponibles.length === 0">
+  Cet avocat ne semble pas disponible ce jour-là. Essayez une autre date.
+</p>
 
-      <div class="mode-options" *ngIf="!loadingCreneaux && creneauxDisponibles.length > 0">
-        <label class="radio-pill" *ngFor="let heure of creneauxDisponibles" [class.active]="creneauSelectionne === heure">
+            <div class="mode-options" *ngIf="!loadingCreneaux && creneauxDisponibles.length > 0">
+              <label class="radio-pill" *ngFor="let heure of creneauxDisponibles" [class.active]="creneauSelectionne === heure">
+                <input
+                  type="radio"
+                  name="creneau"
+                  [value]="heure"
+                  [checked]="creneauSelectionne === heure"
+                  (change)="selectionnerCreneau(heure)"
+                />
+                {{ heure.substring(0, 5) }}
+              </label>
+            </div>
+          </div>
+
+          <span class="field-error" *ngIf="creneauErreur">{{ creneauErreur }}</span>
+        </div>
+
+        <!-- Mode de consultation -->
+        <div class="form-field">
+          <label>Mode de consultation</label>
+          <div class="mode-options" [class.invalid]="errors.mode">
+            <label class="radio-pill">
+              <input type="radio" name="mode" value="visio" [(ngModel)]="form.mode" />
+              Visioconférence
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="mode" value="telephone" [(ngModel)]="form.mode" />
+              Téléphone
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="mode" value="cabinet" [(ngModel)]="form.mode" />
+              Cabinet
+            </label>
+          </div>
+          <span class="field-error" *ngIf="errors.mode">{{ errors.mode }}</span>
+        </div>
+
+        <div class="form-field">
+          <label>Vous êtes</label>
+          <div class="mode-options" [class.invalid]="errors.typePersonne">
+            <label class="radio-pill">
+              <input type="radio" name="typePersonne" value="particulier" [(ngModel)]="form.typePersonne" />
+              Particulier
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="typePersonne" value="entreprise" [(ngModel)]="form.typePersonne" />
+              Entreprise
+            </label>
+          </div>
+          <span class="field-error" *ngIf="errors.typePersonne">{{ errors.typePersonne }}</span>
+        </div>
+
+        <div class="form-field">
+          <label for="mission">Objet de la demande</label>
           <input
-            type="radio"
-            name="creneau"
-            [value]="heure"
-            [checked]="creneauSelectionne === heure"
-            (change)="selectionnerCreneau(heure)"
+            id="mission"
+            type="text"
+            name="mission"
+            [(ngModel)]="form.mission"
+            [class.invalid]="errors.mission"
+            placeholder="Ex : Litige contrat de travail"
           />
-          {{ heure.substring(0, 5) }}
-        </label>
+          <span class="field-error" *ngIf="errors.mission">{{ errors.mission }}</span>
+        </div>
+
+        <div class="form-field">
+          <label for="situation">Votre situation</label>
+          <textarea
+            id="situation"
+            name="situation"
+            rows="3"
+            [(ngModel)]="form.situation"
+            [class.invalid]="errors.situation"
+            placeholder="Décrivez votre situation..."
+          ></textarea>
+          <div class="situation-counter" [class.situation-counter--ok]="form.situation.trim().length >= SITUATION_MIN_LENGTH">
+            {{ form.situation.trim().length }} caractères (min {{ SITUATION_MIN_LENGTH }} caractères)
+          </div>
+          <span class="field-error" *ngIf="errors.situation">{{ errors.situation }}</span>
+        </div>
+
+        <div class="form-field">
+          <label>Vos attentes (optionnel)</label>
+          <div class="mode-options">
+            <label class="radio-pill" *ngFor="let opt of attentesOptions">
+              <input
+                type="checkbox"
+                [checked]="form.attentes.includes(opt.value)"
+                (change)="toggleAttente(opt.value)"
+              />
+              {{ opt.label }}
+            </label>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Est-ce urgent ?</label>
+          <div class="mode-options" [class.invalid]="errors.urgent">
+            <label class="radio-pill">
+              <input type="radio" name="urgent" value="oui" [(ngModel)]="form.urgent" />
+              Oui
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="urgent" value="non" [(ngModel)]="form.urgent" />
+              Non
+            </label>
+          </div>
+          <span class="field-error" *ngIf="errors.urgent">{{ errors.urgent }}</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="nomComplet">Nom complet</label>
+            <input id="nomComplet" type="text" name="nomComplet" [(ngModel)]="form.nomComplet" [class.invalid]="errors.nomComplet" />
+            <span class="field-error" *ngIf="errors.nomComplet">{{ errors.nomComplet }}</span>
+          </div>
+
+          <div class="form-field">
+            <label for="telephone">Téléphone</label>
+            <input id="telephone" type="tel" name="telephone" [(ngModel)]="form.telephone" [class.invalid]="errors.telephone" />
+            <span class="field-error" *ngIf="errors.telephone">{{ errors.telephone }}</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="email">Email</label>
+            <input id="email" type="email" name="email" [(ngModel)]="form.email" [class.invalid]="errors.email" />
+            <span class="field-error" *ngIf="errors.email">{{ errors.email }}</span>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Ville</label>
+            <app-city-autocomplete
+              placeholder="Sélectionnez votre ville"
+              [initialValue]="form.ville"
+              (citySelected)="onCitySelected($event)"
+            ></app-city-autocomplete>
+            <span class="field-error" *ngIf="errors.ville">{{ errors.ville }}</span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Préférence de contact</label>
+          <div class="mode-options" [class.invalid]="errors.contactPreference">
+            <label class="radio-pill">
+              <input type="radio" name="contactPreference" value="email" [(ngModel)]="form.contactPreference" />
+              Email
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="contactPreference" value="telephone" [(ngModel)]="form.contactPreference" />
+              Téléphone
+            </label>
+          </div>
+          <span class="field-error" *ngIf="errors.contactPreference">{{ errors.contactPreference }}</span>
+        </div>
+
+        <div class="field-error" *ngIf="submitError" style="margin-top: 8px;">{{ submitError }}</div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" (click)="closeNouvelleModal()">Annuler</button>
+          <button type="submit" class="btn-primary" [disabled]="submitting">
+            {{ submitting ? 'Envoi...' : 'Confirmer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Détail Consultation Modal -->
+  <div class="modal-backdrop" *ngIf="showDetailModal" (click)="closeDetailModal()">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detail-consultation-title" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="detail-consultation-title">Détail de la consultation</h2>
+        <button class="modal-close" type="button" (click)="closeDetailModal()" aria-label="Fermer">
+          <svg class="icon" width="18" height="18"><use href="#i-x"></use></svg>
+        </button>
       </div>
+
+      <div class="modal-body" *ngIf="selectedConsultation as c">
+  <div class="detail-box">
+    <div class="detail-row">
+      <span class="detail-label">Avocat</span>
+      <span class="detail-value avocat-cell">
+        <span class="avatar-badge" [style.background]="c.avatarColor">{{ c.avocatInitiales }}</span>
+        {{ c.avocatNom }}
+      </span>
     </div>
 
-    <span class="field-error" *ngIf="creneauErreur">{{ creneauErreur }}</span>
-  </div>
-
-  <!-- Mode de consultation -->
-  <div class="form-field">
-    <label>Mode de consultation</label>
-    <div class="mode-options" [class.invalid]="errors.mode">
-      <label class="radio-pill">
-        <input type="radio" name="mode" value="visio" [(ngModel)]="form.mode" />
-        Visioconférence
-      </label>
-      <label class="radio-pill">
-        <input type="radio" name="mode" value="telephone" [(ngModel)]="form.mode" />
-        Téléphone
-      </label>
-      <label class="radio-pill">
-        <input type="radio" name="mode" value="cabinet" [(ngModel)]="form.mode" />
-        Cabinet
-      </label>
-    </div>
-    <span class="field-error" *ngIf="errors.mode">{{ errors.mode }}</span>
-  </div>
-
-  <div class="form-field">
-    <label>Vous êtes</label>
-    <div class="mode-options" [class.invalid]="errors.typePersonne">
-      <label class="radio-pill">
-        <input type="radio" name="typePersonne" value="particulier" [(ngModel)]="form.typePersonne" />
-        Particulier
-      </label>
-      <label class="radio-pill">
-        <input type="radio" name="typePersonne" value="entreprise" [(ngModel)]="form.typePersonne" />
-        Entreprise
-      </label>
-    </div>
-    <span class="field-error" *ngIf="errors.typePersonne">{{ errors.typePersonne }}</span>
-  </div>
-
-  <div class="form-field">
-    <label for="mission">Objet de la demande</label>
-    <input
-      id="mission"
-      type="text"
-      name="mission"
-      [(ngModel)]="form.mission"
-      [class.invalid]="errors.mission"
-      placeholder="Ex : Litige contrat de travail"
-    />
-    <span class="field-error" *ngIf="errors.mission">{{ errors.mission }}</span>
-  </div>
-
-  <div class="form-field">
-  <label for="situation">Votre situation</label>
-  <textarea
-    id="situation"
-    name="situation"
-    rows="3"
-    [(ngModel)]="form.situation"
-    [class.invalid]="errors.situation"
-    placeholder="Décrivez votre situation..."
-  ></textarea>
-  <div class="situation-counter" [class.situation-counter--ok]="form.situation.trim().length >= SITUATION_MIN_LENGTH">
-    {{ form.situation.trim().length }} caractères (min {{ SITUATION_MIN_LENGTH }} caractères)
-  </div>
-  <span class="field-error" *ngIf="errors.situation">{{ errors.situation }}</span>
-</div>
-
-  <div class="form-field">
-    <label>Vos attentes (optionnel)</label>
-    <div class="mode-options">
-      <label class="radio-pill" *ngFor="let opt of attentesOptions">
-        <input
-          type="checkbox"
-          [checked]="form.attentes.includes(opt.value)"
-          (change)="toggleAttente(opt.value)"
-        />
-        {{ opt.label }}
-      </label>
-    </div>
-  </div>
-
-  <div class="form-field">
-    <label>Est-ce urgent ?</label>
-    <div class="mode-options" [class.invalid]="errors.urgent">
-      <label class="radio-pill">
-        <input type="radio" name="urgent" value="oui" [(ngModel)]="form.urgent" />
-        Oui
-      </label>
-      <label class="radio-pill">
-        <input type="radio" name="urgent" value="non" [(ngModel)]="form.urgent" />
-        Non
-      </label>
-    </div>
-    <span class="field-error" *ngIf="errors.urgent">{{ errors.urgent }}</span>
-  </div>
-
-  <div class="form-row">
-    <div class="form-field">
-      <label for="nomComplet">Nom complet</label>
-      <input id="nomComplet" type="text" name="nomComplet" [(ngModel)]="form.nomComplet" [class.invalid]="errors.nomComplet" />
-      <span class="field-error" *ngIf="errors.nomComplet">{{ errors.nomComplet }}</span>
+    <div class="detail-row">
+      <span class="detail-label">Spécialité</span>
+      <span class="detail-value">{{ c.specialite }}</span>
     </div>
 
-    <div class="form-field">
-      <label for="telephone">Téléphone</label>
-      <input id="telephone" type="tel" name="telephone" [(ngModel)]="form.telephone" [class.invalid]="errors.telephone" />
-      <span class="field-error" *ngIf="errors.telephone">{{ errors.telephone }}</span>
-    </div>
-  </div>
-
-  <div class="form-row">
-    <div class="form-field">
-      <label for="email">Email</label>
-      <input id="email" type="email" name="email" [(ngModel)]="form.email" [class.invalid]="errors.email" />
-      <span class="field-error" *ngIf="errors.email">{{ errors.email }}</span>
+    <div class="detail-row">
+      <span class="detail-label">Date</span>
+      <span class="detail-value">{{ c.date }}</span>
     </div>
 
-    <div class="form-field">
-  <label class="form-label">Ville</label>
-  <app-city-autocomplete
-    placeholder="Sélectionnez votre ville"
-    [initialValue]="form.ville"
-    (citySelected)="onCitySelected($event)"
-  ></app-city-autocomplete>
-  <span class="field-error" *ngIf="errors.ville">{{ errors.ville }}</span>
-</div>
-  </div>
-
-  <div class="form-field">
-    <label>Préférence de contact</label>
-    <div class="mode-options" [class.invalid]="errors.contactPreference">
-      <label class="radio-pill">
-        <input type="radio" name="contactPreference" value="email" [(ngModel)]="form.contactPreference" />
-        Email
-      </label>
-      <label class="radio-pill">
-        <input type="radio" name="contactPreference" value="telephone" [(ngModel)]="form.contactPreference" />
-        Téléphone
-      </label>
-    </div>
-    <span class="field-error" *ngIf="errors.contactPreference">{{ errors.contactPreference }}</span>
-  </div>
-
-  <div class="field-error" *ngIf="submitError" style="margin-top: 8px;">{{ submitError }}</div>
-
-  <div class="modal-footer">
-    <button type="button" class="btn-outline" (click)="closeNouvelleModal()">Annuler</button>
-    <button type="submit" class="btn-primary" [disabled]="submitting">
-      {{ submitting ? 'Envoi...' : 'Confirmer' }}
-    </button>
-  </div>
-</form>
-  </div>
-</div>
-
-<!-- Détail Consultation Modal -->
-<div class="modal-backdrop" *ngIf="showDetailModal" (click)="closeDetailModal()">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detail-consultation-title" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2 id="detail-consultation-title">Détail de la consultation</h2>
-      <button class="modal-close" type="button" (click)="closeDetailModal()" aria-label="Fermer">
-        <svg class="icon" width="18" height="18"><use href="#i-x"></use></svg>
-      </button>
+    <div class="detail-row">
+      <span class="detail-label">Heure</span>
+      <span class="detail-value">{{ c.heure }}</span>
     </div>
 
-    <div class="modal-body" *ngIf="selectedConsultation as c">
-      <div class="detail-row">
-        <span class="detail-label">Avocat</span>
-        <span class="detail-value avocat-cell">
-          <span class="avatar-badge" [style.background]="c.avatarColor">{{ c.avocatInitiales }}</span>
-          {{ c.avocatNom }}
+    <div class="detail-row">
+      <span class="detail-label">Mode</span>
+      <span class="detail-value">{{ modeLabel(c.mode) }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Status</span>
+      <span class="detail-value">
+        <span class="status-badge" [ngClass]="'status-badge--' + c.statut.toLowerCase()">
+          <span class="status-badge__dot"></span>
+          {{ statutLabel(c.statut) }}
         </span>
-      </div>
-
-      <div class="detail-row">
-        <span class="detail-label">Spécialité</span>
-        <span class="detail-value">{{ c.specialite }}</span>
-      </div>
-
-      <div class="detail-row">
-        <span class="detail-label">Date</span>
-        <span class="detail-value">{{ c.date }}</span>
-      </div>
-
-      <div class="detail-row">
-        <span class="detail-label">Heure</span>
-        <span class="detail-value">{{ c.heure }}</span>
-      </div>
-
-      <div class="detail-row">
-        <span class="detail-label">Status</span>
-        <span class="detail-value">
-          <span class="status-badge" [ngClass]="'status-badge--' + c.statut.toLowerCase()">
-            <span class="status-badge__dot"></span>
-            {{ statutLabel(c.statut) }}
-          </span>
-        </span>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" class="btn-outline" (click)="closeDetailModal()">Fermer</button>
-      <button
-        *ngIf="selectedConsultation && canJoin(selectedConsultation)"
-        type="button"
-        class="btn-primary"
-        (click)="rejoindre(selectedConsultation); closeDetailModal()">
-        Rejoindre
-      </button>
+      </span>
     </div>
   </div>
 </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-outline" (click)="closeDetailModal()">Fermer</button>
+        <button
+          *ngIf="selectedConsultation && canJoin(selectedConsultation)"
+          type="button"
+          class="btn-primary"
+          (click)="rejoindre(selectedConsultation); closeDetailModal()">
+          Rejoindre
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Consultation Modal -->
+  <div class="modal-backdrop" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-consultation-title" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="edit-consultation-title">Modifier la consultation</h2>
+        <button class="modal-close" type="button" (click)="closeEditModal()" aria-label="Fermer">
+          <svg class="icon" width="18" height="18"><use href="#i-x"></use></svg>
+        </button>
+      </div>
+
+      <form class="modal-body" (ngSubmit)="submitEdit()" novalidate *ngIf="selectedForEdit as c">
+
+        <div class="section-card">
+          <h3 class="section-title">Rendez-vous</h3>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="editDate">Date</label>
+              <input
+                id="editDate"
+                type="date"
+                name="editDate"
+                [(ngModel)]="editForm.date"
+                [class.invalid]="editErrors.date"
+              />
+              <span class="field-error" *ngIf="editErrors.date">{{ editErrors.date }}</span>
+            </div>
+            <div class="form-field">
+              <label for="editHeure">Heure</label>
+              <input
+                id="editHeure"
+                type="time"
+                name="editHeure"
+                [(ngModel)]="editForm.heure"
+                [class.invalid]="editErrors.heure"
+              />
+              <span class="field-error" *ngIf="editErrors.heure">{{ editErrors.heure }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h3 class="section-title">Détails</h3>
+          <div class="form-field">
+            <label>Mode de consultation</label>
+            <div class="mode-options" [class.invalid]="editErrors.mode">
+              <label class="radio-pill">
+                <input type="radio" name="editMode" value="visio" [(ngModel)]="editForm.mode" />
+                Visioconférence
+              </label>
+              <label class="radio-pill">
+                <input type="radio" name="editMode" value="telephone" [(ngModel)]="editForm.mode" />
+                Téléphone
+              </label>
+              <label class="radio-pill">
+                <input type="radio" name="editMode" value="cabinet" [(ngModel)]="editForm.mode" />
+                Cabinet
+              </label>
+            </div>
+            <span class="field-error" *ngIf="editErrors.mode">{{ editErrors.mode }}</span>
+          </div>
+
+          <div class="form-field">
+            <label for="editNote">Note additionnelle (optionnel)</label>
+            <textarea
+              id="editNote"
+              name="editNote"
+              rows="3"
+              [(ngModel)]="editForm.note"
+              placeholder="Précisez une demande particulière, un changement de dernière minute..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="field-error" *ngIf="editSubmitError" style="margin-top: 8px;">{{ editSubmitError }}</div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" (click)="closeEditModal()">Annuler</button>
+          <button type="submit" class="btn-primary" [disabled]="editSubmitting">
+            {{ editSubmitting ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
 </div>
 

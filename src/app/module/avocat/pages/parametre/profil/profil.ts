@@ -57,11 +57,11 @@ export class AvocatParametreProfilComponent implements OnInit {
 
   navItems: TopbarNavItem[] = [
     { label: 'Tableau de bord', icon: 'dashboard', route: '/avocat/dashboard' },
-    { label: 'Rendez-vous',    icon: 'calendar' },
-    { label: 'Messagerie',     icon: 'message' },
-    { label: 'Paiement',       icon: 'card' },
+    { label: 'Rendez-vous',    icon: 'calendar', route: '/avocat/rendez-vous' },
+    { label: 'Messagerie',     icon: 'message', route: '/avocat/messagerie' },
+    { label: 'Paiement',       icon: 'card', route: '/avocat/paiement' },
     { label: 'Paramètre',      icon: 'settings', route: '/avocat/parametre/profil' },
-    { label: 'Deconnexion',    icon: 'logout' },
+    { label: 'Deconnexion',    icon: 'logout', route: '/avocat/deconnexion' },
   ];
 
   tabs: ParametreTab[] = [

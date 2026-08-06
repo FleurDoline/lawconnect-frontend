@@ -14,14 +14,18 @@
   <div class="dashboard__stats">
     <div class="stat-card stat-card--highlight" (click)="prochaineConsultation && ouvrirDossier(prochaineConsultation.id)">
       <p class="stat-card__label">Prochaine consultation</p>
-      <div class="stat-card__content" *ngIf="prochaineConsultation">
-        <span class="avatar-badge">{{ prochaineConsultation.avocatInitiales }}</span>
-        <div>
-          <p class="stat-card__value">{{ prochaineConsultation.date }}</p>
-          <p class="stat-card__sub">Me. {{ prochaineConsultation.avocatNom }}</p>
-        </div>
-      </div>
+      <div class="stat-card__content" *ngIf="prochaineConsultation; else aucuneConsultation">
+       <span class="avatar-badge">{{ prochaineConsultation.avocatInitiales }}</span>
+      <div>
+      <p class="stat-card__value">{{ prochaineConsultation.date }}</p>
+      <p class="stat-card__sub">M. {{ prochaineConsultation.avocatNom }}</p>
+      <p class="stat-card__sub stat-card__sub--specialite">{{ prochaineConsultation.specialite }}</p>
     </div>
+  </div>
+  <ng-template #aucuneConsultation>
+    <p class="stat-card__sub">Aucune consultation à venir</p>
+  </ng-template>
+  </div>
 
     <div class="stat-card" (click)="ouvrirDossiers()">
       <p class="stat-card__label">Dossiers actifs</p>
@@ -111,21 +115,29 @@
             </td>
             <td>
 
-      <button
-          *ngIf="c.statut === 'CONFIRMEE'"
-          class="btn-primary"
-          (click)="rejoindreConsultation(c.id)">
-          Rejoindre
-      </button>
+              <button
+                 *ngIf="c.statut === 'CONFIRMEE'"
+                 class="btn-primary"
+                 (click)="rejoindreConsultation(c.id)">
+                    Rejoindre
+              </button>
 
-      <button
-          *ngIf="c.statut !== 'CONFIRMEE'"
-          class="btn-outline"
-          (click)="ouvrirDetailsConsultation(c.id)">
-          Détails
-      </button>
+              <button
+                 *ngIf="c.statut === 'EN_ATTENTE'"
+                 class="btn-outline btn-outline--danger"
+                 [disabled]="refuserEnCours === c.id"
+                 (click)="refuserDemande(c.id, $event)">
+                 {{ refuserEnCours === c.id ? 'Annulation...' : 'Annuler' }}
+              </button>
 
-  </td>
+              <button
+                  *ngIf="c.statut !== 'CONFIRMEE'"
+                  class="btn-outline"
+                 (click)="ouvrirDetailsConsultation(c.id)">
+                      Détails
+              </button>
+
+            </td>
           </tr>
         </tbody>
       </table>
@@ -216,10 +228,10 @@
 
         <!-- Situation décrite: placed last, in its own scrollable box,
              so a long paragraph never distorts the rest of the modal -->
-        <div class="modal-card__situation" *ngIf="c.situation">
-          <span class="modal-card__label">Situation décrite</span>
-          <div class="modal-card__textbox">{{ c.situation }}</div>
-        </div>
+        <div class="modal-card__situation">
+  <span class="modal-card__label">Situation décrite</span>
+  <textarea class="modal-card__textbox" readonly rows="3">{{ c.situation }}</textarea>
+</div>
 
         <button class="btn-primary modal-card__close-btn" (click)="closeDetailsModal()">Fermer</button>
       </ng-container>

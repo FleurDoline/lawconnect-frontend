@@ -4,9 +4,11 @@ import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AvocatService } from '../../../../../core/services/avocat.service';
 import { AuthService } from '../../../../../core/services/auth.service';
+import { ConsultationService } from '../../../../../core/services/consultation.service';
 import { AvocatUpdateRequest } from '../../../../../core/models/avocat.model';
 import { TopbarComponent, TopbarNavItem } from '../../../../../shared/components/topbar/topbar';
 import { environment } from '../../../../../../environments/environment';
+import { AbonnementService, Abonnement } from '../../../../../core/services/abonnement.service';
 
 interface ParametreTab {
   label: string;
@@ -31,6 +33,10 @@ export class AvocatParametreProfilComponent implements OnInit {
   photoBaseUrl = environment.apiUrl.replace('/api/v1', '');
   progression = 0;
 
+  // true si l'avocat gère ses créneaux sur la plateforme (via Disponibilite).
+  // false => il gère son agenda en externe => lienAgenda devient obligatoire.
+  avocatGereDisponibilites = true;
+
   get progressionColor(): string {
     if (this.progression < 40) return '#ef4444';
     if (this.progression < 70) return '#f59e0b';
@@ -51,6 +57,10 @@ export class AvocatParametreProfilComponent implements OnInit {
   saving = false;
   saveSuccess = false;
   saveError = false;
+
+  abonnementActif: Abonnement | null = null;
+  abonnementLoading = false;
+  abonnementCharge = false;
 
   userName = '';
   userPlan = 'AVOCAT';
@@ -78,6 +88,8 @@ export class AvocatParametreProfilComponent implements OnInit {
     private fb: FormBuilder,
     private avocatService: AvocatService,
     private authService: AuthService,
+    private abonnementService: AbonnementService,
+    private consultationService: ConsultationService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -140,8 +152,33 @@ export class AvocatParametreProfilComponent implements OnInit {
           lienAgenda: avocat.lienAgenda || ''
         });
 
-        this.loading = false;
-        this.cdr.detectChanges();
+        // Détermine si le lien d'agenda doit être obligatoire :
+        // l'avocat n'a de créneaux configurés sur la plateforme.
+        this.consultationService.avocatGereDisponibilites(avocat.id).subscribe({
+          next: (gereDisponibilites) => {
+            this.avocatGereDisponibilites = gereDisponibilites;
+
+            const lienAgendaCtrl = this.form.get('lienAgenda');
+            if (!gereDisponibilites) {
+              lienAgendaCtrl?.setValidators([
+                Validators.required,
+                Validators.pattern(/^https?:\/\/.+/)
+              ]);
+            } else {
+              lienAgendaCtrl?.setValidators([Validators.pattern(/^https?:\/\/.+/)]);
+            }
+            lienAgendaCtrl?.updateValueAndValidity();
+
+            this.loading = false;
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            // En cas d'échec de la vérification, on ne bloque pas le chargement du profil ;
+            // le lien reste simplement optionnel comme avant.
+            this.loading = false;
+            this.cdr.detectChanges();
+          }
+        });
       },
       error: () => {
         this.loading = false;
@@ -151,8 +188,50 @@ export class AvocatParametreProfilComponent implements OnInit {
     });
   }
 
+  private chargerAbonnement(): void {
+    if (!this.avocatId) return;
+    this.abonnementLoading = true;
+
+    this.abonnementService.getActiveAbonnement(this.avocatId).subscribe({
+     next: (abonnement) => {
+       this.abonnementActif = abonnement;
+       this.abonnementLoading = false;
+       this.abonnementCharge = true;
+       this.cdr.detectChanges();
+      },
+      error: () => {
+       this.abonnementActif = null;
+       this.abonnementLoading = false;
+       this.abonnementCharge = true;
+       this.cdr.detectChanges();
+      }
+   });
+  }
+
+nomFormuleAffiche(formule?: string): string {
+  switch (formule) {
+    case 'BASIC': return 'Classique';
+    case 'STANDARD': return 'Pro';
+    case 'PREMIUM': return 'Premium';
+    default: return '—';
+  }
+}
+
+formatDateFr(dateStr: string): string {
+  const mois = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const d = new Date(dateStr);
+  return `${String(d.getDate()).padStart(2, '0')} ${mois[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+allerVersPaiement(): void {
+  this.router.navigate(['/avocat/paiement']);
+}
+
   selectTab(tab: ParametreTab): void {
-    this.activeTab = tab.key;
+     this.activeTab = tab.key;
+     if (tab.key === 'facturation' && !this.abonnementCharge) {
+       this.chargerAbonnement();
+     }
   }
 
   onNavSelect(item: TopbarNavItem): void {

@@ -117,6 +117,33 @@
   }
 }
 
+.facturation-card {
+  background: linear-gradient(135deg, #14213d, #1e2a4a);
+  border-radius: 14px;
+  padding: 24px;
+  color: #fff;
+  max-width: 420px;
+
+  &__eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  &__nom {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 6px 0;
+  }
+
+  &__detail {
+    font-size: 13px;
+    opacity: 0.85;
+    margin: 0 0 16px;
+  }
+}
+
 .profil-card {
   background: #fff;
   border-radius: 12px;

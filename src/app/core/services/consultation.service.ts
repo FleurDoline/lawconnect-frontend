@@ -17,7 +17,7 @@ export interface ConsultationCreateRequest {
   email: string;
   ville: string;
   contactPreference: string;
-  dateRendezVous: string; // format ISO "2026-08-03T14:00:00"
+  dateRendezVous?: string | null; // format ISO "2026-08-03T14:00:00"
   modeConsultation: string;
 }
 
@@ -97,6 +97,7 @@ export interface AvocatSummary {
   statut: StatutAvocat;
   bio: string;
   experience: number;
+  gereDisponibilites: boolean;
 }
 
 export interface PageResponse<T> {
@@ -172,5 +173,9 @@ export class ConsultationService {
     return this.http.get<DemandeConsultation[]>(
     `${this.baseUrl}/prochains-rendez-vous`
     );
+  }
+
+  avocatGereDisponibilites(avocatId: number): Observable<boolean> {
+    return this.http.get<boolean>(`${this.baseUrl}/avocats/${avocatId}/gere-disponibilites`);
   }
 }

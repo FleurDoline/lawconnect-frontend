@@ -172,8 +172,8 @@
           <span class="field-error" *ngIf="loadAvocatsError">Impossible de charger la liste des avocats.</span>
         </div>
 
-        <!-- Sélection du jour et de l'heure -->
-        <div class="form-field" *ngIf="form.avocatId">
+        <!-- Sélection du jour et de l'heure : uniquement si l'avocat gère ses disponibilités sur la plateforme -->
+        <div class="form-field" *ngIf="form.avocatId && avocatGereDisponibilites">
           <label>Choisissez une date</label>
           <div class="jours-scroll">
             <button
@@ -191,12 +191,12 @@
             <label>Choisissez une heure</label>
 
             <p *ngIf="loadingCreneaux">Chargement des créneaux...</p>
-<p *ngIf="!loadingCreneaux && creneauxError" class="field-error">
-  Impossible de charger les créneaux. Veuillez réessayer.
-</p>
-<p *ngIf="!loadingCreneaux && !creneauxError && creneauxDisponibles.length === 0">
-  Cet avocat ne semble pas disponible ce jour-là. Essayez une autre date.
-</p>
+            <p *ngIf="!loadingCreneaux && creneauxError" class="field-error">
+              Impossible de charger les créneaux. Veuillez réessayer.
+            </p>
+            <p *ngIf="!loadingCreneaux && !creneauxError && creneauxDisponibles.length === 0">
+              Cet avocat ne semble pas disponible ce jour-là. Essayez une autre date.
+            </p>
 
             <div class="mode-options" *ngIf="!loadingCreneaux && creneauxDisponibles.length > 0">
               <label class="radio-pill" *ngFor="let heure of creneauxDisponibles" [class.active]="creneauSelectionne === heure">
@@ -213,6 +213,13 @@
           </div>
 
           <span class="field-error" *ngIf="creneauErreur">{{ creneauErreur }}</span>
+        </div>
+
+        <!-- Cas où l'avocat gère son agenda en externe : pas de sélection de créneau -->
+        <div class="form-field" *ngIf="form.avocatId && !avocatGereDisponibilites">
+          <p class="info-message">
+            Cet avocat gère son agenda directement. Vous recevrez un lien de planification par email dès que votre demande sera acceptée.
+          </p>
         </div>
 
         <!-- Mode de consultation -->

@@ -8,6 +8,8 @@ import {
 } from '../../../../core/services/consultation.service';
 import { Router, RouterLink } from '@angular/router';
 import { DisponibiliteService, Disponibilite } from '../../../../core/services/disponibilite.service';
+import { environment } from '../../../../../environments/environment';
+import { AvocatService } from '../../../../core/services/avocat.service';
 
 interface Appointment {
   id: number;
@@ -60,7 +62,8 @@ const STATUT_CLASSES: Record<string, string> = {
 export class DashboardComponent implements OnInit {
   lawyerName = 'Maître';
   userName = '';
-  userPlan = 'CLIENT PREMIUM';
+  userPlan = 'AVOCAT PREMIUM';
+  avocatPhoto: string | null = null;
   menuOpen = false;
 
   statutLabels = STATUT_LABELS;
@@ -76,7 +79,7 @@ export class DashboardComponent implements OnInit {
     { label: 'Tableau de bord', icon: 'dashboard' , route: '/avocat/dashboard'},
     { label: 'Rendez-vous',    icon: 'calendar' , route: '/avocat/rendez-vous' },
     { label: 'Messagerie',     icon: 'message' },
-    { label: 'Paiement',       icon: 'card' },
+    { label: 'Paiement',       icon: 'card', route: '/avocat/paiement' },
     { label: 'Paramètre',      icon: 'settings', route: '/avocat/parametre/profil'},
     { label: 'Deconnexion',    icon: 'logout' },
   ];
@@ -141,6 +144,7 @@ export class DashboardComponent implements OnInit {
     private authService: AuthService,
     private consultationService: ConsultationService,
     private disponibiliteService: DisponibiliteService,
+    private avocatService: AvocatService,
     private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
@@ -152,7 +156,7 @@ export class DashboardComponent implements OnInit {
       this.userName = fullName;
     }
     this.cdr.detectChanges();
-
+    this.loadAvocatProfile();
     this.loadProchainRendezVous();
     this.loadDisponibilites();
   }
@@ -207,6 +211,19 @@ export class DashboardComponent implements OnInit {
       urgent: d.urgent === 'oui',
     };
   }
+
+  private loadAvocatProfile(): void {
+  const userId = this.authService.getUserId(); // confirm this method name matches your AuthService
+  if (!userId) return;
+
+  this.avocatService.getByUserId(userId).subscribe({
+    next: (avocat) => {
+      this.avocatPhoto = avocat.photo ? environment.fileBaseUrl + avocat.photo : null;
+      this.cdr.detectChanges();
+    },
+    error: (err) => console.error('Erreur lors du chargement du profil avocat', err),
+  });
+}
 
   private modeLabel(mode: string): string {
     const labels: Record<string, string> = {

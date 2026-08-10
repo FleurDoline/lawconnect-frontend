@@ -77,7 +77,10 @@
             <div class="name">{{ userName }}</div>
             <div class="plan">{{ userPlan }}</div>
           </div>
-          <div class="avatar"></div>
+          <div class="avatar">
+  <img *ngIf="avocatPhoto" [src]="avocatPhoto" [alt]="userName" />
+  <span *ngIf="!avocatPhoto">{{ initiales(userName) }}</span>
+</div>
           <svg class="icon" width="16" height="16"><use href="#i-chevron"></use></svg>
         </button>
 

@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 
 export interface TopbarNavItem {
   label: string;
-  icon: string; // key into the icon sprite (e.g. 'dashboard' -> '#i-dashboard')
-  route?: string; // optional, if you want the component to navigate itself
+  icon: string;
+  route?: string;
 }
 
 @Component({
@@ -21,6 +21,7 @@ export class TopbarComponent {
 
   @Input() userName = '';
   @Input() userPlan = '';
+  @Input() userPhotoUrl: string | null = null; // NEW
   @Input() navItems: TopbarNavItem[] = [];
 
   @Output() navSelect = new EventEmitter<TopbarNavItem>();
@@ -37,6 +38,17 @@ export class TopbarComponent {
   selectNav(item: TopbarNavItem) {
     this.menuOpen = false;
     this.navSelect.emit(item);
+  }
+
+  get initials(): string {
+    return this.userName
+      .trim()
+      .split(/\s+/)
+      .map(part => part[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
   }
 
   @HostListener('document:click', ['$event'])

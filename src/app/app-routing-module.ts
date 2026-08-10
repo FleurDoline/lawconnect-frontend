@@ -11,8 +11,6 @@ import { ConsultationsComponent } from './module/client/pages/consultation/consu
 import { AvocatProfileComponent } from './module/avocat/pages/profile/profile';
 
 
-
-
 const routes: Routes = [
   { path: '', component: Home },
   { path: 'home', component: Home },
@@ -33,6 +31,14 @@ const routes: Routes = [
   {
     path: 'domaines',
     loadComponent: () => import('./module/landing/pages/domaines/domaines').then(m => m.DomainesPage)
+  },
+  {
+    path: 'avocat/paiement',
+    loadComponent: () => import('./module/avocat/pages/paiement/paiement').then(m => m.PaiementComponent)
+  },
+  {
+    path: 'admin/dashboard',
+    loadComponent: () => import('./module/admin/pages/dashboard/dashboard').then(m => m.AdminDashboardComponent)
   },
   {
     path: 'avocat/:id',

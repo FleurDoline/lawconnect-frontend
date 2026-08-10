@@ -1,0 +1,610 @@
+$navy: #1A2B4B;
+$gold: #c9a84c;
+$orange: #e08a3c;
+$success: #1c9d5e;
+$success-bg: #e4f7ee;
+$danger: #d64545;
+$bg-page: #f4f5f7;
+$bg-card: #ffffff;
+$border-light: #e6e8ec;
+$text-muted: #7c8494;
+$bar-fill: #c7d3e6;
+$bar-fill-hover: #aebfda;
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 28px;
+  background: $bg-page;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: $navy;
+}
+
+// ===== Topbar =====
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: $bg-card;
+  border-bottom: 1px solid $border-light;
+  padding: 12px 28px;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $navy;
+}
+
+.tagline {
+  font-size: 0.7rem;
+  color: $text-muted;
+}
+
+.search {
+  flex: 1;
+  max-width: 480px;
+
+  input {
+    width: 100%;
+    border: 1px solid $border-light;
+    background: $bg-page;
+    border-radius: 999px;
+    padding: 9px 18px;
+    font-size: 0.85rem;
+    color: $navy;
+    outline: none;
+    transition: border-color 0.15s ease;
+
+    &::placeholder {
+      color: $text-muted;
+    }
+
+    &:focus {
+      border-color: $gold;
+    }
+  }
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.icon {
+  fill: currentColor;
+  color: $navy;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: $text-muted;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: $bg-page;
+    color: $navy;
+  }
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: $bg-page;
+  }
+}
+
+.user-info {
+  text-align: right;
+  line-height: 1.2;
+}
+
+.user-info .name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $navy;
+}
+
+.user-info .plan {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: $gold;
+  text-transform: uppercase;
+}
+
+.user-trigger .avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: $navy;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.chevron {
+  color: $text-muted;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.chevron--open {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 190px;
+  background: $bg-card;
+  border: 1px solid $border-light;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(26, 43, 75, 0.12);
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  z-index: 20;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: $navy;
+
+    &:hover {
+      background: $bg-page;
+    }
+
+    .icon {
+      color: $text-muted;
+    }
+  }
+}
+
+// ===== Header =====
+.dashboard__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard__greeting {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.btn--primary {
+  background: $navy;
+  color: white;
+}
+
+.btn__icon {
+  font-weight: 700;
+}
+
+// ===== Stats row =====
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.stat-card {
+  background: $bg-card;
+  border: 1px solid $border-light;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-card__label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: $text-muted;
+}
+
+.stat-card__label--orange,
+.stat-card__label--green {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+}
+
+.stat-card__label--orange {
+  background: $orange;
+  color: white;
+}
+
+.stat-card__label--green {
+  background: $success-bg;
+  color: $success;
+}
+
+.stat-card__value {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.stat-card__value--green {
+  color: $success;
+}
+
+.stat-card__sublabel {
+  font-size: 0.75rem;
+  color: $text-muted;
+}
+
+// ===== Main row: chart + taches =====
+.dashboard__main-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.panel {
+  background: $bg-card;
+  border: 1px solid $border-light;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.panel__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.panel__title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.panel__subtitle {
+  font-size: 0.75rem;
+  color: $text-muted;
+}
+
+// ===== Chart (Chart.js via ng2-charts) =====
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 260px;
+}
+
+// ===== A traiter =====
+.taches-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.taches-list__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid $border-light;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.taches-list__icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: $border-light;
+}
+
+.taches-list__icon--check { background: $success; }
+.taches-list__icon--clock { background: $gold; }
+.taches-list__icon--litige { background: #4c7dc9; }
+.taches-list__icon--flag { background: $danger; }
+
+.taches-list__label {
+  flex: 1;
+  font-size: 0.85rem;
+}
+
+.taches-list__count {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+// ===== Validation table =====
+.panel--validation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.badge--pending {
+  background: $gold;
+  color: $navy;
+}
+
+.validation-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: $text-muted;
+    background: #f7f8fa;
+    padding: 10px 14px;
+  }
+
+  td {
+    padding: 14px;
+    font-size: 0.88rem;
+    border-bottom: 1px solid $border-light;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.validation-table__nom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-initiales {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: $navy;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.validation-table__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn--valider {
+  background: $navy;
+  color: white;
+  padding: 6px 16px;
+  font-size: 0.8rem;
+}
+
+.btn--rejeter {
+  background: white;
+  color: $danger;
+  border: 1px solid $danger;
+  padding: 6px 16px;
+  font-size: 0.8rem;
+}
+
+.validation-table__empty {
+  text-align: center;
+  color: $text-muted;
+  padding: 24px !important;
+}
+
+// ===== Main row: chart + taches =====
+.dashboard__main-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+  min-width: 0; // empêche le débordement de grid
+}
+
+.panel {
+  background: $bg-card;
+  border: 1px solid $border-light;
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 0; // crucial : empêche un enfant (canvas) de forcer la largeur du panel
+  box-sizing: border-box;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  min-width: 0;
+}
+
+.chart-container canvas {
+  max-width: 100% !important;
+}
+
+// ===== Responsive =====
+@media (max-width: 900px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard__main-row {
+    grid-template-columns: 1fr;
+  }
+
+  .panel--chart {
+    order: 1;
+  }
+
+  .panel--taches {
+    order: 2;
+  }
+
+  .chart-container {
+    height: 220px;
+  }
+
+  .validation-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 16px;
+    gap: 16px;
+    overflow-x: hidden; // empêche tout débordement horizontal global
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .search {
+    order: 3;
+    max-width: 100%;
+    flex-basis: 100%;
+  }
+
+  .dashboard__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .dashboard__greeting {
+    font-size: 1.25rem;
+  }
+
+  .btn--primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .chart-container {
+    height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-info {
+    display: none;
+  }
+
+  .stat-card {
+    padding: 14px 16px;
+  }
+
+  .stat-card__value {
+    font-size: 1.15rem;
+  }
+
+  .chart-container {
+    height: 180px;
+  }
+
+  .validation-table__actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .btn--valider,
+  .btn--rejeter {
+    width: 100%;
+    text-align: center;
+  }
+}

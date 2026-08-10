@@ -1,0 +1,145 @@
+<app-topbar
+  [userName]="userName"
+  [userPlan]="userPlan"
+  [navItems]="navItems"
+  (navSelect)="onNavSelect($event)">
+</app-topbar>
+
+<div class="paiement-page" *ngIf="!loading && !error">
+  <div class="paiement-page__header">
+    <div>
+      <h1 class="paiement-page__titre">Abonnement</h1>
+      <p class="paiement-page__sous-titre">Restez visible et accédez à tous les outils de la plateforme</p>
+    </div>
+
+    <div class="paiement-page__renouvellement" *ngIf="abonnementActif">
+      <span>Renouvellement le</span>
+      <strong>{{ dateRenouvellementAffichee }}</strong>
+    </div>
+  </div>
+
+  <!-- Bannière abonnement actif -->
+  <div class="plan-banner" *ngIf="abonnementActif">
+    <div class="plan-banner__icon">⚙</div>
+    <div class="plan-banner__info">
+      <span class="plan-banner__eyebrow">Abonnement actif</span>
+      <h2 class="plan-banner__nom">
+        {{ nomFormuleAffiche(abonnementActif.formule) }} — {{ abonnementActif.cycle === 'ANNUEL' ? 'Annuel' : 'Mensuel' }}
+      </h2>
+      <p class="plan-banner__detail">
+        {{ abonnementActif.montant | number:'1.0-0' }} frs / {{ abonnementActif.cycle === 'ANNUEL' ? 'an' : 'mois' }}
+        · prochain prélèvement dans {{ joursRestants }} jours
+      </p>
+    </div>
+    <div class="plan-banner__actions">
+      <button type="button" class="btn btn--ghost-light" (click)="onGererPaiement()">Gérer le paiement</button>
+    </div>
+  </div>
+
+  <!-- Aucun abonnement actif -->
+  <div class="plan-banner plan-banner--vide" *ngIf="!abonnementActif">
+    <div class="plan-banner__info">
+      <span class="plan-banner__eyebrow">Aucun abonnement actif</span>
+      <h2 class="plan-banner__nom">Choisissez une formule ci-dessous pour démarrer</h2>
+    </div>
+  </div>
+
+  <p class="form-message form-message--success" *ngIf="creationSuccessMessage">{{ creationSuccessMessage }}</p>
+  <p class="form-message form-message--error" *ngIf="creationError">{{ creationError }}</p>
+
+  <!-- Toggle Mensuel / Annuel -->
+  <div class="cycle-toggle">
+    <button type="button" [class.active]="cycleAffichage === 'MENSUEL'" (click)="toggleCycle('MENSUEL')">
+      Mensuel
+    </button>
+    <button type="button" [class.active]="cycleAffichage === 'ANNUEL'" (click)="toggleCycle('ANNUEL')">
+      Annuel <span class="cycle-toggle__badge">-2 mois</span>
+    </button>
+  </div>
+
+  <!-- Cartes de formules -->
+  <div class="plans-grid">
+    <div class="plan-card"
+         *ngFor="let plan of plans"
+         [class.plan-card--recommande]="plan.recommande">
+
+      <span class="plan-card__badge plan-card__badge--actuel" *ngIf="estFormuleActuelle(plan)">Actuel</span>
+      <span class="plan-card__badge plan-card__badge--recommande" *ngIf="plan.recommande && !estFormuleActuelle(plan)">Recommandé</span>
+
+      <div class="plan-card__header">
+        <h3>{{ plan.nomAffiche }}</h3>
+        <span class="plan-card__icone">{{ plan.recommande ? '🏆' : '🛡' }}</span>
+      </div>
+      <p class="plan-card__tagline">{{ plan.tagline }}</p>
+
+      <div class="plan-card__prix">
+        <span class="plan-card__montant">{{ prixAffiche(plan) | number:'1.0-0' }}</span>
+        <span class="plan-card__unite">frs /{{ cycleAffichage === 'MENSUEL' ? 'mois' : 'an' }}</span>
+      </div>
+      <p class="plan-card__equivalent" *ngIf="cycleAffichage === 'ANNUEL'">
+        2 mois offerts · soit {{ prixMensuelEquivalent(plan) | number:'1.0-0' }} frs/mois
+      </p>
+
+      <ul class="plan-card__features">
+        <li *ngFor="let feature of plan.features">
+          <span class="plan-card__check">✓</span> {{ feature }}
+        </li>
+      </ul>
+
+      <button type="button"
+        class="plan-card__btn"
+        [disabled]="estFormuleActuelle(plan) || creationEnCours"
+        (click)="onChoisirFormule(plan)">
+             {{ libelleBouton(plan) }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Historique des paiements -->
+  <div class="historique-card">
+  <div class="historique-card__header">
+    <div>
+      <h2>Historique des paiements</h2>
+      <p>Reçus de votre abonnement LawConnect</p>
+    </div>
+  </div>
+
+  <table class="historique-table">
+    <thead>
+      <tr>
+        <th>Référence</th>
+        <th>Date</th>
+        <th>Formule</th>
+        <th>Montant</th>
+        <th>Statut</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let a of historiquePage">
+        <td class="historique-table__ref">{{ a.reference }}</td>
+        <td>{{ formatDateCourte(a.createdAt) }}</td>
+        <td>{{ a.cycle === 'ANNUEL' ? 'Annuel' : 'Mensuel' }} {{ nomFormuleAffiche(a.formule) }}</td>
+        <td>{{ a.montant | number:'1.0-0' }} frs</td>
+        <td><span class="badge" [ngClass]="classeStatut(a.statut)">{{ libelleStatut(a.statut) }}</span></td>
+      </tr>
+      <tr *ngIf="!historique.length">
+        <td colspan="5" class="historique-table__vide">Aucun paiement enregistré pour le moment.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="historique-pagination" *ngIf="historique.length > pageSize">
+    <button type="button" (click)="pagePrecedente()" [disabled]="currentPage === 1">Précédent</button>
+    <span>Page {{ currentPage }} / {{ totalPages }}</span>
+    <button type="button" (click)="pageSuivante()" [disabled]="currentPage === totalPages">Suivant</button>
+  </div>
+</div>
+</div>
+
+<div class="paiement-page__loading" *ngIf="loading">
+  <p>Chargement de votre abonnement...</p>
+</div>
+
+<div class="paiement-page__error" *ngIf="!loading && error">
+  <p>Impossible de charger votre abonnement. Merci de vous reconnecter.</p>
+</div>

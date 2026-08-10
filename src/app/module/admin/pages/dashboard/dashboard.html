@@ -1,0 +1,154 @@
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">LawConnect</div>
+    <div class="tagline">Portail Juridique</div>
+  </div>
+
+  <div class="search">
+    <input
+      type="text"
+      placeholder="Rechercher un dossier, un avocat ou un document..."
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="onSearch()" />
+  </div>
+
+  <div class="user">
+    <svg class="icon icon-btn" width="18" height="18"><use href="#i-bell"></use></svg>
+    <svg class="icon icon-btn" width="18" height="18"><use href="#i-help"></use></svg>
+
+    <!-- Dropdown trigger -->
+    <div class="user-menu">
+      <button class="user-trigger" (click)="toggleMenu($event)">
+        <div class="user-info">
+          <div class="name">{{ userName }}</div>
+          <div class="plan">{{ userPlan }}</div>
+        </div>
+        <div class="avatar">
+          <img *ngIf="avocatPhoto" [src]="avocatPhoto" [alt]="userName" />
+          <span *ngIf="!avocatPhoto">{{ getInitiales(userName.split(' ')[0], userName.split(' ')[1] || '') }}</span>
+        </div>
+        <svg
+          class="icon chevron"
+          [class.chevron--open]="menuOpen"
+          width="14" height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+
+      <ul class="dropdown" *ngIf="menuOpen">
+        <li *ngFor="let item of navItems" (click)="selectNav(item)">
+          <svg class="icon" width="16" height="16"><use [attr.href]="'#i-' + item.icon"></use></svg>
+          <span>{{ item.label }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<div class="dashboard">
+
+  <header class="dashboard__header">
+    <h1 class="dashboard__greeting">Bonjour, Maitre {{ adminNom }}</h1>
+    <button class="btn btn--primary" type="button">
+      <span class="btn__icon">+</span>
+      Nouveau Dossier
+    </button>
+  </header>
+
+  <section class="stats-row">
+    <div class="stat-card">
+      <span class="stat-card__label">Total nombre d'avocats</span>
+      <span class="stat-card__value">{{ stats.totalAvocats }}</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-card__label stat-card__label--orange">Revenu Mensuel</span>
+      <span class="stat-card__value">{{ formatFcfa(stats.revenuMensuelFcfa) }}</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-card__label stat-card__label--green">Abonnements Actifs</span>
+      <span class="stat-card__value stat-card__value--green">{{ stats.abonnementsActifs }}</span>
+      <span class="stat-card__sublabel">sur {{ stats.totalAvocats }} avocats</span>
+    </div>
+  </section>
+
+  <section class="dashboard__main-row">
+
+    <div class="panel panel--chart">
+      <div class="panel__header">
+        <h2 class="panel__title">Graphique des revenus</h2>
+        <span class="panel__subtitle">Abonnement avocats 5 dernier mois</span>
+      </div>
+
+      <div class="chart-container">
+        <canvas
+          baseChart
+          [data]="chartData"
+          [options]="chartOptions"
+          [type]="chartType">
+        </canvas>
+      </div>
+    </div>
+
+    <div class="panel panel--taches">
+      <h2 class="panel__title">A traiter</h2>
+
+      <ul class="taches-list">
+        <li class="taches-list__item" *ngFor="let tache of tachesATraiter">
+          <span class="taches-list__icon" [ngClass]="'taches-list__icon--' + tache.icon"></span>
+          <span class="taches-list__label">{{ tache.label }}</span>
+          <span class="taches-list__count">{{ tache.count }}</span>
+        </li>
+      </ul>
+    </div>
+
+  </section>
+
+  <section class="panel panel--validation">
+    <div class="panel__header">
+      <h2 class="panel__title">Validation Avocats</h2>
+      <span class="badge badge--pending">{{ nombreEnAttente }} en attente</span>
+    </div>
+
+    <table class="validation-table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Specialite</th>
+          <th>Document</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let avocat of avocatsAValider">
+          <td>
+            <div class="validation-table__nom">
+              <span class="avatar-initiales">{{ getInitiales(avocat.prenom, avocat.nom) }}</span>
+              <span>{{ avocat.prenom }} {{ avocat.nom }}</span>
+            </div>
+          </td>
+          <td>{{ getSpecialitesLabel(avocat) }}</td>
+          <td>{{ getDocumentNom(avocat) }}</td>
+          <td>
+            <div class="validation-table__actions">
+              <button class="btn btn--valider" type="button" (click)="onValider(avocat)">Valider</button>
+              <button class="btn btn--rejeter" type="button" (click)="onRejeter(avocat)">Rejeter</button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="avocatsAValider.length === 0">
+          <td colspan="4" class="validation-table__empty">Aucun avocat en attente de validation.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>

@@ -40,6 +40,7 @@ interface AvocatOption {
   initiales: string;
   color: string;
   specialite: string;
+  gereDisponibilites: boolean;
 }
 
 interface NouvelleConsultationForm {
@@ -98,6 +99,7 @@ export class ConsultationsComponent implements OnInit {
   creneauxError = false;
   creneauErreur: string | null = null;
   refuserEnCours: number | null = null;
+  avocatGereDisponibilites = true; // état de l'avocat actuellement sélectionné
 
   private allConsultations: ConsultationRow[] = [];
 
@@ -211,6 +213,7 @@ export class ConsultationsComponent implements OnInit {
             initiales,
             color: this.colorFor(initiales),
             specialite: a.specialites?.join(', ') ?? '',
+            gereDisponibilites: a.gereDisponibilites,
           };
         });
         this.loadingAvocats = false;
@@ -274,30 +277,30 @@ export class ConsultationsComponent implements OnInit {
   }
 
   canCancel(c: ConsultationRow): boolean {
-  return c.statut === 'EN_ATTENTE';
-}
+    return c.statut === 'EN_ATTENTE';
+  }
 
-refuserDemande(c: ConsultationRow): void {
-  if (c.statut !== 'EN_ATTENTE') return;
+  refuserDemande(c: ConsultationRow): void {
+    if (c.statut !== 'EN_ATTENTE') return;
 
-  this.refuserEnCours = c.id;
+    this.refuserEnCours = c.id;
 
-  this.consultationService.refuserDemande(c.id).subscribe({
-    next: () => {
-      this.refuserEnCours = null;
-      const consultation = this.allConsultations.find(x => x.id === c.id);
-      if (consultation) {
-        consultation.statut = 'ANNULEE';
-      }
-      this.cdr.detectChanges();
-    },
-    error: (err) => {
-      console.error('Erreur lors de l\'annulation de la consultation', err);
-      this.refuserEnCours = null;
-      this.cdr.detectChanges();
-    },
-  });
-}
+    this.consultationService.refuserDemande(c.id).subscribe({
+      next: () => {
+        this.refuserEnCours = null;
+        const consultation = this.allConsultations.find(x => x.id === c.id);
+        if (consultation) {
+          consultation.statut = 'ANNULEE';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erreur lors de l\'annulation de la consultation', err);
+        this.refuserEnCours = null;
+        this.cdr.detectChanges();
+      },
+    });
+  }
 
   get filtered(): ConsultationRow[] {
     const now = new Date();
@@ -410,8 +413,14 @@ refuserDemande(c: ConsultationRow): void {
     this.creneauSelectionne = null;
     this.creneauxDisponibles = [];
     this.creneauErreur = null;
-    if (this.form.avocatId) {
+
+    const avocat = this.avocats.find(a => a.id === this.form.avocatId);
+    this.avocatGereDisponibilites = avocat?.gereDisponibilites ?? true;
+
+    if (this.form.avocatId && this.avocatGereDisponibilites) {
       this.genererProchainsJours();
+    } else {
+      this.prochainsJours = [];
     }
   }
 
@@ -449,6 +458,7 @@ refuserDemande(c: ConsultationRow): void {
     this.showNouvelleModal = false;
     this.submitError = null;
     this.errors = {};
+    this.avocatGereDisponibilites = true;
     this.form = {
       avocatId: null,
       typePersonne: '',
@@ -502,7 +512,7 @@ refuserDemande(c: ConsultationRow): void {
     if (!this.form.contactPreference) errors.contactPreference = 'Ce champ est requis.';
     if (!this.form.mode) errors.mode = 'Veuillez choisir un mode de consultation.';
 
-    this.creneauErreur = (!this.jourSelectionne || !this.creneauSelectionne)
+    this.creneauErreur = (this.avocatGereDisponibilites && (!this.jourSelectionne || !this.creneauSelectionne))
       ? 'Veuillez choisir une date et une heure.'
       : null;
 
@@ -531,7 +541,9 @@ refuserDemande(c: ConsultationRow): void {
       ville: this.form.ville.trim(),
       contactPreference: this.form.contactPreference,
       modeConsultation: this.modeToBackend[this.form.mode as ConsultationMode],
-      dateRendezVous: `${this.jourSelectionne}T${this.creneauSelectionne}`,
+      dateRendezVous: this.avocatGereDisponibilites
+        ? `${this.jourSelectionne}T${this.creneauSelectionne}`
+        : null,
     };
 
     this.consultationService.envoyerDemande(payload).subscribe({

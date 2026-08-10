@@ -56,13 +56,16 @@
 
 <div class="user-menu">
 <button class="user-trigger" (click)="toggleMenu($event)">
-<div class="user-info">
-<div class="name">{{ userName }}</div>
-<div class="plan" *ngIf="userPlan">{{ userPlan }}</div>
-</div>
-<div class="avatar"></div>
-<svg class="icon" width="16" height="16"><use href="#i-chevron"></use></svg>
-</button>
+    <div class="user-info">
+      <div class="name">{{ userName }}</div>
+      <div class="plan" *ngIf="userPlan">{{ userPlan }}</div>
+    </div>
+    <div class="avatar">
+      <img *ngIf="userPhotoUrl" [src]="userPhotoUrl" [alt]="userName" />
+      <span *ngIf="!userPhotoUrl">{{ initials }}</span>
+    </div>
+    <svg class="icon" width="16" height="16"><use href="#i-chevron"></use></svg>
+  </button>
 
 <ul class="dropdown" *ngIf="menuOpen">
 <li *ngFor="let item of navItems" (click)="selectNav(item)">

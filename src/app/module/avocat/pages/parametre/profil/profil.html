@@ -219,9 +219,38 @@
       </div>
     </div>
 
-    <div class="parametre-content parametre-content--placeholder" *ngIf="activeTab !== 'profil' && activeTab !== 'documents' && activeTab !== 'securite'">
-      <p>Cette section sera bientot disponible.</p>
+    <div class="parametre-content" *ngIf="activeTab === 'facturation'">
+  <div class="profil-card">
+    <h2 class="profil-card__section-titre">Plan et facturation</h2>
+
+    <p class="profil-card__section-sous-titre" *ngIf="abonnementLoading">
+      Chargement de votre abonnement...
+    </p>
+
+    <div class="facturation-card" *ngIf="!abonnementLoading && abonnementActif">
+      <span class="facturation-card__eyebrow">Plan actuel</span>
+      <h3 class="facturation-card__nom">LawConnect {{ nomFormuleAffiche(abonnementActif.formule) }}</h3>
+      <p class="facturation-card__detail">
+        {{ abonnementActif.montant | number:'1.0-0' }}FCFA/{{ abonnementActif.cycle === 'ANNUEL' ? 'an' : 'mois' }}
+        &nbsp;renouvellement le {{ formatDateFr(abonnementActif.prochainRenouvellement) }}
+      </p>
+      <button type="button" class="profil-card__btn profil-card__btn--upload" (click)="allerVersPaiement()">
+        Changer le plan
+      </button>
     </div>
+
+    <div *ngIf="!abonnementLoading && !abonnementActif">
+      <p class="profil-card__section-sous-titre">Vous n'avez pas encore d'abonnement actif.</p>
+      <button type="button" class="profil-card__btn profil-card__btn--enregistrer" (click)="allerVersPaiement()">
+        Voir les formules
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="parametre-content parametre-content--placeholder" *ngIf="activeTab === 'cabinet' || activeTab === 'notifications'">
+  <p>Cette section sera bientot disponible.</p>
+</div>
   </div>
 </div>
 

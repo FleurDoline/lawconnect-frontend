@@ -439,6 +439,14 @@ app-city-autocomplete {
   gap: 6px;
 }
 
+.info-message {
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  color: #4b5563;
+  font-style: italic;
+}
 .results-count { font-size: 0.8rem; color: #6b7280; }
 
 .pagination { display: flex; align-items: center; gap: 6px; }

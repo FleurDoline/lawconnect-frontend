@@ -1,0 +1,59 @@
+<div class="verify-otp-page">
+  <div class="verify-otp-card">
+    <div class="icon-wrapper">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 4h16v16H4V4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <h1>Vérifiez votre compte</h1>
+    <p class="subtitle">
+      Un code à 6 chiffres a été envoyé à <strong>{{ email }}</strong>
+    </p>
+
+    <div class="otp-inputs" (paste)="onPaste($event)">
+      <input
+       *ngFor="let digit of digits; let i = index; trackBy: trackByIndex"
+        #otpInput
+        type="text"
+        inputmode="numeric"
+         maxlength="1"
+        class="otp-digit"
+       [class.error]="errorMessage"
+       (input)="onDigitInput(i, $event)"
+        (keydown)="onKeyDown(i, $event)"
+      />
+    </div>
+
+    <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+    <p class="success-message" *ngIf="successMessage && !errorMessage">{{ successMessage }}</p>
+
+    <button
+      class="btn-verify"
+      [disabled]="loading || otpCode.length !== 6"
+      (click)="onSubmit()"
+    >
+      <span *ngIf="!loading">Vérifier</span>
+      <span *ngIf="loading">Vérification...</span>
+    </button>
+
+    <div class="resend-section">
+      <span *ngIf="resendCooldown > 0">
+        Renvoyer le code dans {{ resendCooldown }}s
+      </span>
+      <button
+        *ngIf="resendCooldown === 0"
+        class="btn-resend"
+        [disabled]="resending"
+        (click)="resendCode()"
+      >
+        {{ resending ? 'Envoi...' : 'Renvoyer le code' }}
+      </button>
+    </div>
+
+    <button class="btn-back" (click)="goToSignup()">
+      ← Retour à l'inscription
+    </button>
+  </div>
+</div>

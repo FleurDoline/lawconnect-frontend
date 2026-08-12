@@ -32,6 +32,23 @@
   font-weight: 500;
 }
 
+.results__back-btn {
+  background: none;
+  border: none;
+  color: #1a2b4b;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .results__loading,
 .results__error,
 .results__empty {

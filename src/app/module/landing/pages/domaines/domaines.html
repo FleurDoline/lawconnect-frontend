@@ -10,16 +10,23 @@
   </div>
 
   <div class="domaines-page__grid">
-    <div class="domain__card" *ngFor="let item of allDomaines">
-      <div class="domain__icon-wrap">
-        <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{ icon: item.icon }"></ng-container>
-      </div>
-      <div class="domaine__card-content">
-        <h3 class="domaine__card-title">{{ item.title }}</h3>
-        <p class="domaine__card-desc">{{ item.description }}</p>
-      </div>
+  <div
+    class="domain__card"
+    *ngFor="let item of allDomaines"
+    (click)="goToAvocatsByDomaine(item)"
+    role="button"
+    tabindex="0"
+    (keyup.enter)="goToAvocatsByDomaine(item)"
+  >
+    <div class="domain__icon-wrap">
+      <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{ icon: item.icon }"></ng-container>
+    </div>
+    <div class="domaine__card-content">
+      <h3 class="domaine__card-title">{{ item.title }}</h3>
+      <p class="domaine__card-desc">{{ item.description }}</p>
     </div>
   </div>
+</div>
 </section>
 
 <ng-template #iconTpl let-icon="icon">

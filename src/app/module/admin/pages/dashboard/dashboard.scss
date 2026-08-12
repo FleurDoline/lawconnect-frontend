@@ -465,6 +465,12 @@ $bar-fill-hover: #aebfda;
   font-size: 0.8rem;
 }
 
+.btn--valider:disabled {
+  background: $text-muted;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .btn--rejeter {
   background: white;
   color: $danger;

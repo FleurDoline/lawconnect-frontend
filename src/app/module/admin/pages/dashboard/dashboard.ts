@@ -39,81 +39,84 @@ export class AdminDashboardComponent implements OnInit {
   searchQuery = '';
   menuOpen = false;
 
- navItems: UserMenuItem[] = [
-  { icon: 'dashboard', label: "Vue d'ensemble", route: '/admin/dashboard' },
-  { icon: 'users', label: 'Avocats', route: '/admin/avocats' },
-  { icon: 'users', label: 'Client', route: '/admin/clients' },
-  { icon: 'card', label: 'Paiement', route: '/admin/paiements' },
-  { icon: 'settings', label: 'Moderation', route: '/admin/moderation' },
-  { icon: 'settings', label: 'Paramètre', route: '/admin/parametres' },
-  { icon: 'logout', label: 'Déconnexion' }
-];
+  navItems: UserMenuItem[] = [
+    { icon: 'dashboard', label: "Vue d'ensemble", route: '/admin/dashboard' },
+    { icon: 'users', label: 'Avocats', route: '/admin/avocats' },
+    { icon: 'users', label: 'Client', route: '/admin/clients' },
+    { icon: 'card', label: 'Paiement', route: '/admin/paiements' },
+    { icon: 'settings', label: 'Moderation', route: '/admin/moderation' },
+    { icon: 'settings', label: 'Paramètre', route: '/admin/parametres' },
+    { icon: 'logout', label: 'Déconnexion' }
+  ];
+
   stats = {
     totalAvocats: 0,
     revenuMensuelFcfa: 0,
     abonnementsActifs: 0
   };
 
+  // NEW: needed by loadStats(), were missing before
+  statsLoading = false;
+  statsError: string | null = null;
+
   revenus: RevenuMensuel[] = [
-  { mois: 'JAN', montant: 120000 },
-  { mois: 'FEV', montant: 230000 },
-  { mois: 'MAR', montant: 310000 },
-  { mois: 'AVR', montant: 240000 },
-  { mois: 'MAI', montant: 190000 }
-];
+    { mois: 'JAN', montant: 120000 },
+    { mois: 'FEV', montant: 230000 },
+    { mois: 'MAR', montant: 310000 },
+    { mois: 'AVR', montant: 240000 },
+    { mois: 'MAI', montant: 190000 }
+  ];
 
-tachesATraiter: TacheATraiter[] = [
-  { icon: 'check', label: 'Avocats à vérifier', count: 7 },
-  { icon: 'clock', label: 'Litiges ouverts', count: 3 },
-  { icon: 'litige', label: 'Abonnement en attente', count: 12 },
-  { icon: 'flag', label: 'Avis signalées', count: 2 }
-];
+  tachesATraiter: TacheATraiter[] = [
+    { icon: 'check', label: 'Avocats à vérifier', count: 7 },
+    { icon: 'clock', label: 'Litiges ouverts', count: 3 },
+    { icon: 'litige', label: 'Abonnement en attente', count: 12 },
+    { icon: 'flag', label: 'Avis signalées', count: 2 }
+  ];
 
-// ...
+  chartType: 'bar' = 'bar';
 
-chartType: 'bar' = 'bar';
+  chartData: ChartData<'bar'> = {
+    labels: this.revenus.map(r => r.mois),
+    datasets: [
+      {
+        data: this.revenus.map(r => r.montant),
+        backgroundColor: '#c7d3e6',
+        hoverBackgroundColor: '#aebfda',
+        borderRadius: 6,
+        maxBarThickness: 64
+      }
+    ]
+  };
 
-chartData: ChartData<'bar'> = {
-  labels: this.revenus.map(r => r.mois),
-  datasets: [
-    {
-      data: this.revenus.map(r => r.montant),
-      backgroundColor: '#c7d3e6',
-      hoverBackgroundColor: '#aebfda',
-      borderRadius: 6,
-      maxBarThickness: 64
-    }
-  ]
-};
-
-chartOptions: ChartConfiguration<'bar'>['options'] = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      callbacks: {
-        label: (ctx: TooltipItem<'bar'>) => `${Number(ctx.parsed.y).toLocaleString('fr-FR')} FCFA`
+  chartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx: TooltipItem<'bar'>) => `${Number(ctx.parsed.y).toLocaleString('fr-FR')} FCFA`
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: '#7c8494', font: { size: 12 } }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 100000,
+          color: '#7c8494',
+          font: { size: 12 },
+          callback: (value: string | number) => `${Number(value) / 1000}k`
+        },
+        grid: { color: '#e6e8ec' }
       }
     }
-  },
-  scales: {
-    x: {
-      grid: { display: false },
-      ticks: { color: '#7c8494', font: { size: 12 } }
-    },
-    y: {
-      beginAtZero: true,
-      ticks: {
-        stepSize: 100000,
-        color: '#7c8494',
-        font: { size: 12 },
-        callback: (value: string | number) => `${Number(value) / 1000}k`
-      },
-      grid: { color: '#e6e8ec' }
-    }
-  }
-};
+  };
 
   avocatsAValider: AvocatSummaryResponse[] = [];
   avocatsLoading = false;
@@ -132,8 +135,27 @@ chartOptions: ChartConfiguration<'bar'>['options'] = {
 
   ngOnInit(): void {
     this.loadAvocatsEnAttente();
-    // this.adminApi.getStats().subscribe(...) -> pour une prochaine session
+    this.loadStats();
   }
+
+  loadStats(): void {
+  this.statsLoading = true;
+  this.statsError = null;
+
+  this.adminApi.getStats().subscribe({
+    next: (stats) => {
+      this.stats.totalAvocats = stats.totalAvocats;
+      this.stats.abonnementsActifs = stats.abonnementsActifs;
+      this.statsLoading = false;
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error('Erreur chargement stats admin', err);
+      this.statsError = 'Impossible de charger les statistiques.';
+      this.statsLoading = false;
+    }
+  });
+}
 
   loadAvocatsEnAttente(): void {
     this.avocatsLoading = true;
@@ -213,5 +235,9 @@ chartOptions: ChartConfiguration<'bar'>['options'] = {
 
   formatFcfa(montant: number): string {
     return `${montant.toLocaleString('fr-FR')} FCFA`;
+  }
+
+  hasDocument(avocat: AvocatSummaryResponse): boolean {
+    return !!(avocat.diplome || avocat.carteProfessionnel || avocat.pieceIdentite);
   }
 }

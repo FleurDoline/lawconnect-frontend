@@ -141,6 +141,11 @@
           </label>
         </div>
 
+        <p class="auth-form__error" *ngIf="errorMessage">
+           {{ errorMessage }}
+        </p>
+
+
         <!-- Submit Button -->
         <button type="submit" class="btn-primary" [disabled]="loading || !acceptTerms">
           {{ loading ? 'Création en cours...' : 'Créer mon compte' }}

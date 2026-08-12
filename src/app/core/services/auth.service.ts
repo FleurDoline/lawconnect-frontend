@@ -11,6 +11,11 @@ export interface AuthResponse {
   expiresIn: number;
 }
 
+export interface RegisterResponse {
+  email: string;
+  message: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private baseUrl = 'http://localhost:8081/api/auth';
@@ -29,15 +34,23 @@ export class AuthService {
       .pipe(tap(res => this.storeSession(res)));
   }
 
-  register(payload: { fullName: string; email: string; password: string; role: string }): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/register`, payload)
+  register(payload: { prenom: string; nom: string; email: string; password: string; role: string }): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.baseUrl}/register`, payload);
+  }
+
+  verifyOtp(email: string, code: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/verify-otp`, { email, code })
       .pipe(tap(res => this.storeSession(res)));
+  }
+
+  resendOtp(email: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/resend-otp`, { email });
   }
 
   googleLogin(idToken: string, role?: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/google`, { idToken, role })
-    .pipe(tap(res => this.storeSession(res)));
-}
+      .pipe(tap(res => this.storeSession(res)));
+  }
 
   private storeSession(res: AuthResponse): void {
     if (!this.isBrowser) return;
@@ -84,11 +97,10 @@ export class AuthService {
   }
 
   getUserId(): number | null {
-  const payload = this.getPayload();
-  return payload?.userId ?? null;
-}
+    const payload = this.getPayload();
+    return payload?.userId ?? null;
+  }
 
-  // ==== AJOUTS ====
   isLoggedIn(): boolean {
     if (!this.isBrowser) return false;
     return !!localStorage.getItem('accessToken');
@@ -97,7 +109,6 @@ export class AuthService {
   isClient(): boolean {
     return this.getRole() === 'CLIENT';
   }
-  // =================
 
   redirectByRole(): void {
     const role = this.getRole();
@@ -120,9 +131,10 @@ export class AuthService {
   }
 
   changePassword(userId: number, currentPassword: string, newPassword: string, confirmPassword: string): Observable<void> {
-  return this.http.put<void>(
-    `${environment.apiUrl}/users/${userId}/password`,
-    { currentPassword, newPassword, confirmPassword }
-  );
-}
+    return this.http.put<void>(
+      `${environment.apiUrl}/users/${userId}/password`,
+      { currentPassword, newPassword, confirmPassword }
+    );
+  }
+  
 }

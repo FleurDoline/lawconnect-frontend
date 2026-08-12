@@ -160,3 +160,23 @@
     padding: 16px;
   }
 }
+
+@media (max-width: 640px) {
+  .domain__header {
+    grid-template-columns: 1fr;
+    row-gap: 0.75rem;
+  }
+
+  .domain__header-left {
+    grid-column: 1;
+  }
+
+  .domain__link {
+    grid-column: 1;
+    justify-self: center;
+  }
+
+  .domain__eyebrow {
+    font-size: 1.7rem;
+  }
+}

@@ -29,15 +29,6 @@ interface NavItem {
   route?: string;
 }
 
-interface NouveauDossier {
-  clientNom: string;
-  typeAffaire: string;
-  description: string;
-  date: string;
-  heure: string;
-  mode: 'visioconférence' | 'présentiel' | '';
-}
-
 const STATUT_LABELS: Record<string, string> = {
   EN_ATTENTE: 'En attente',
   CONFIRMEE: 'Confirmé',
@@ -108,29 +99,6 @@ export class DashboardComponent implements OnInit {
   appointmentsError = false;
 
   disponibilites: Disponibilite[] = [];
-
-  // ---- Nouveau dossier modal state ----
-  showDossierModal = false;
-  dossierSubmitting = false;
-  dossierErrors: Partial<Record<keyof NouveauDossier, string>> = {};
-
-  dossier: NouveauDossier = {
-    clientNom: '',
-    typeAffaire: '',
-    description: '',
-    date: '',
-    heure: '',
-    mode: '',
-  };
-
-  affaireTypes = [
-    'Litige immobilier',
-    'Droit commercial',
-    'Droit de la famille',
-    'Droit du travail',
-    'Droit pénal',
-    'Autre',
-  ];
 
   // ---- Détails / Accepter modal state ----
   showDetailModal = false;
@@ -338,7 +306,6 @@ export class DashboardComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   onEscape() {
-    if (this.showDossierModal) this.closeDossierModal();
     if (this.showDetailModal) this.closeDetailModal();
   }
 
@@ -379,62 +346,6 @@ export class DashboardComponent implements OnInit {
         this.cdr.detectChanges();
       },
     });
-  }
-
-  // ---- Nouveau dossier modal actions ----
-  onNewDossier() {
-    this.showDossierModal = true;
-  }
-
-  closeDossierModal() {
-    this.showDossierModal = false;
-    this.dossierErrors = {};
-    this.dossier = {
-      clientNom: '',
-      typeAffaire: '',
-      description: '',
-      date: '',
-      heure: '',
-      mode: '',
-    };
-  }
-
-  private validateDossier(): boolean {
-    const errors: typeof this.dossierErrors = {};
-    if (!this.dossier.clientNom.trim()) errors.clientNom = 'Le nom du client est requis.';
-    if (!this.dossier.typeAffaire) errors.typeAffaire = "Le type d'affaire est requis.";
-
-    if (!this.dossier.date) {
-      errors.date = 'La date est requise.';
-    } else if (this.dossier.date < this.todayIso) {
-      errors.date = 'La date ne peut pas être dans le passé.';
-    }
-
-    if (!this.dossier.heure) {
-      errors.heure = "L'heure est requise.";
-    } else if (this.dossier.date === this.todayIso) {
-      const now = new Date();
-      const nowHm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      if (this.dossier.heure < nowHm) {
-        errors.heure = "L'heure ne peut pas être dans le passé.";
-      }
-    }
-
-    if (!this.dossier.mode) errors.mode = 'Le mode de consultation est requis.';
-    this.dossierErrors = errors;
-    return Object.keys(errors).length === 0;
-  }
-
-  submitDossier() {
-    if (!this.validateDossier()) return;
-
-    this.dossierSubmitting = true;
-    setTimeout(() => {
-      console.log('Nouveau dossier créé', this.dossier);
-      this.dossierSubmitting = false;
-      this.closeDossierModal();
-      this.cdr.detectChanges();
-    }, 600);
   }
 
   goToRendezVous(): void {

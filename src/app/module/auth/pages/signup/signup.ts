@@ -22,6 +22,7 @@ export class SignupComponent implements OnInit, AfterViewInit {
   acceptTerms = false;
   showPassword = false;
   loading = false;
+  errorMessage = '';
   role: 'CLIENT' | 'AVOCAT' = 'CLIENT';
   roleLockedByUrl = false;
 
@@ -58,6 +59,7 @@ export class SignupComponent implements OnInit, AfterViewInit {
   }
 
   handleGoogleResponse(response: any): void {
+    this.errorMessage = '';
     this.loading = true;
     this.authService.googleLogin(response.credential, this.role).subscribe({
       next: () => {
@@ -67,7 +69,7 @@ export class SignupComponent implements OnInit, AfterViewInit {
       error: (err) => {
         this.loading = false;
         console.error('Google signup failed', err);
-        alert(err?.error?.message || 'Erreur lors de la connexion avec Google');
+        this.errorMessage = this.extractErrorMessage(err, 'Erreur lors de la connexion avec Google');
       }
     });
   }
@@ -77,37 +79,60 @@ export class SignupComponent implements OnInit, AfterViewInit {
   }
 
   onSubmit(): void {
+    this.errorMessage = '';
+
     if (!this.prenom || !this.nom || !this.email || !this.password || !this.confirmPassword) {
-      alert('Veuillez remplir tous les champs obligatoires');
+      this.errorMessage = 'Veuillez remplir tous les champs obligatoires.';
       return;
     }
+
+    if (this.password.length < 6) {
+      this.errorMessage = 'Le mot de passe doit contenir au moins 6 caractères.';
+      return;
+    }
+
     if (this.password !== this.confirmPassword) {
-      alert('Les mots de passe ne correspondent pas');
+      this.errorMessage = 'Les mots de passe ne correspondent pas.';
       return;
     }
+
     if (!this.acceptTerms) {
-      alert('Veuillez accepter les conditions d\'utilisation');
+      this.errorMessage = 'Veuillez accepter les conditions d\'utilisation.';
       return;
     }
 
     this.loading = true;
 
     this.authService.register({
-      fullName: `${this.prenom} ${this.nom}`,
-      email: this.email,
-      password: this.password,
-      role: this.role
-    }).subscribe({
-      next: () => {
-        this.loading = false;
-        this.authService.redirectByRole();
-      },
-      error: (err) => {
-        this.loading = false;
-        console.error('Register failed', err);
-        alert(err?.error?.message || 'Erreur lors de la création du compte');
-      }
-    });
+     prenom: this.prenom,
+     nom: this.nom,
+     email: this.email,
+     password: this.password,
+     role: this.role
+   }).subscribe({
+    next: () => {
+      this.loading = false;
+      this.router.navigate(['/auth/verify-otp'], {
+        queryParams: { email: this.email }
+      });
+    },
+  error: (err) => {
+    this.loading = false;
+    console.error('Register failed', err);
+    this.errorMessage = this.extractErrorMessage(err, 'Erreur lors de la création du compte');
+  }
+});
+  }
+
+  private extractErrorMessage(err: any, fallback: string): string {
+    const msg = err?.error?.message;
+    if (typeof msg === 'string' && msg.trim()) {
+      return msg;
+    }
+    if (Array.isArray(msg) && msg.length) {
+      return msg.join(', ');
+    }
+    return fallback;
   }
 
   goToHome(): void {

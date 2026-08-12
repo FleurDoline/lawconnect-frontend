@@ -10,7 +10,6 @@ import { BesoinAvocatComponent } from './module/client/pages/besoin-avocat/besoi
 import { ConsultationsComponent } from './module/client/pages/consultation/consultations';
 import { AvocatProfileComponent } from './module/avocat/pages/profile/profile';
 
-
 const routes: Routes = [
   { path: '', component: Home },
   { path: 'home', component: Home },
@@ -44,11 +43,15 @@ const routes: Routes = [
     path: 'avocat/:id',
     loadComponent: () => import('./module/avocat/pages/profile/profile').then(m => m.AvocatProfileComponent)
   },
+  {
+    path: 'auth/verify-otp',
+    loadComponent: () => import('./module/auth/pages/verify-otp/verify-otp').then(m => m.VerifyOtpComponent)
+  },
   { path: 'client/consultations', component: ConsultationsComponent },
 ];
 
 @NgModule({
-imports: [RouterModule.forRoot(routes)],
-exports: [RouterModule]
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
 })
 export class AppRoutingModule { }

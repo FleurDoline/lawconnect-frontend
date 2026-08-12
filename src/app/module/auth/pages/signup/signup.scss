@@ -196,6 +196,16 @@ $radius-btn:   8px;
   }
 }
 
+.auth-form__error {
+  color: #dc2626;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+  margin: -0.5rem 0 0.25rem;
+}
+
 // ── Form ──────────────────────────────────────────────────────────────────────
 .auth-form {
   display: flex;

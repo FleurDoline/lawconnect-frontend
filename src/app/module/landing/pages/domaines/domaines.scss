@@ -64,6 +64,7 @@
 }
 
 .domain__card {
+  cursor: pointer;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
@@ -76,7 +77,6 @@
     border-color: #d1d5db;
   }
 }
-
 .domain__icon-wrap {
   width: 48px;
   height: 48px;

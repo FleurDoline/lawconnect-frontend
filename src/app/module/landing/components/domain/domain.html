@@ -8,7 +8,14 @@
   </div>
 
   <div class="domain__grid">
-    <div class="domain__card" *ngFor="let item of domaines">
+    <div
+      class="domain__card"
+      *ngFor="let item of domaines"
+      (click)="goToAvocatsByDomaine(item)"
+      role="button"
+      tabindex="0"
+      (keyup.enter)="goToAvocatsByDomaine(item)"
+    >
       <div class="domain__icon-wrap">
         <ng-container [ngSwitch]="item.icon">
           <svg *ngSwitchCase="'family'" viewBox="0 0 24 24" fill="none" aria-hidden="true">

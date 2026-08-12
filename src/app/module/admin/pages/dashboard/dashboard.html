@@ -138,7 +138,14 @@
           <td>{{ getDocumentNom(avocat) }}</td>
           <td>
             <div class="validation-table__actions">
-              <button class="btn btn--valider" type="button" (click)="onValider(avocat)">Valider</button>
+              <button
+  class="btn btn--valider"
+  type="button"
+  [disabled]="!hasDocument(avocat)"
+  [title]="!hasDocument(avocat) ? 'Aucun document fourni' : ''"
+  (click)="onValider(avocat)">
+  Valider
+</button>
               <button class="btn btn--rejeter" type="button" (click)="onRejeter(avocat)">Rejeter</button>
             </div>
           </td>

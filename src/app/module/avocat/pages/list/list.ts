@@ -6,11 +6,12 @@ import { Avocat, AvocatFilters } from '../../../../core/models/avocat.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ContactAvocatModalComponent } from '../../../../shared/contact-avocat-modal/contact-avocat-modal';
 import { environment } from '../../../../../environments/environment';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-list-avocats',
   standalone: true,
-  imports: [CommonModule, ContactAvocatModalComponent],
+  imports: [CommonModule, ContactAvocatModalComponent, RouterLink],
   templateUrl: './list.html',
   styleUrls: ['./list.scss']
 })

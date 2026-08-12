@@ -69,4 +69,5 @@ export interface AdminStatsResponse {
   avocatsValides: number;
   avocatsEnAttente: number;
   tauxConversion: number;
+  abonnementsActifs: number;
 }

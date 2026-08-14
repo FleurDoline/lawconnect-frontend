@@ -1,11 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AvocatService } from '../../../../../core/services/avocat.service';
+import { AvocatService, TypePieceIdentite } from '../../../../../core/services/avocat.service';
 import { AuthService } from '../../../../../core/services/auth.service';
 import { ConsultationService } from '../../../../../core/services/consultation.service';
-import { AvocatUpdateRequest } from '../../../../../core/models/avocat.model';
+import { AvocatUpdateRequest, SpecialiteDroit } from '../../../../../core/models/avocat.model';
 import { TopbarComponent, TopbarNavItem } from '../../../../../shared/components/topbar/topbar';
 import { environment } from '../../../../../../environments/environment';
 import { AbonnementService, Abonnement } from '../../../../../core/services/abonnement.service';
@@ -23,6 +23,8 @@ interface ParametreTab {
   styleUrl: './profil.scss'
 })
 export class AvocatParametreProfilComponent implements OnInit {
+  @ViewChild('pieceIdentiteInput') pieceIdentiteInput!: ElementRef<HTMLInputElement>;
+
   form!: FormGroup;
 
   passwordForm!: FormGroup;
@@ -32,6 +34,11 @@ export class AvocatParametreProfilComponent implements OnInit {
 
   photoBaseUrl = environment.apiUrl.replace('/api/v1', '');
   progression = 0;
+
+  // --- Spécialités : liste complète + sélection en cours ---
+  specialitesDisponibles: SpecialiteDroit[] = [];
+  selectedSpecialiteIds: number[] = [];
+  showSpecialiteSelector = false;
 
   // true si l'avocat gère ses créneaux sur la plateforme (via Disponibilite).
   // false => il gère son agenda en externe => lienAgenda devient obligatoire.
@@ -48,7 +55,17 @@ export class AvocatParametreProfilComponent implements OnInit {
   photo: string | null = null;
   carteProfessionnel: string | null = null;
   diplome: string | null = null;
-  pieceIdentite: string | null = null;
+
+  // Pièce d'identité : recto/verso séparés + type choisi
+  pieceIdentiteRecto: string | null = null;
+  pieceIdentiteVerso: string | null = null;
+  typePieceIdentite: TypePieceIdentite | null = null;
+
+  // Sélecteur de type de pièce (affiché avant d'ouvrir l'explorateur de fichiers)
+  showTypeSelector = false;
+  // Segment en cours d'upload : 'RECTO' ou 'VERSO' (pour savoir quel input déclencher / quel type envoyer)
+  private uploadEnCours: 'RECTO' | 'VERSO' | null = null;
+
   specialitesActuelles: string[] = [];
   barreau: string | null = null;
 
@@ -119,6 +136,7 @@ export class AvocatParametreProfilComponent implements OnInit {
       this.userName = fullName;
     }
 
+    this.chargerSpecialitesDisponibles();
     this.chargerProfil();
   }
 
@@ -140,7 +158,11 @@ export class AvocatParametreProfilComponent implements OnInit {
         this.progression = avocat.progression ?? 0;
         this.carteProfessionnel = avocat.carteProfessionnel || null;
         this.diplome = avocat.diplome || null;
-        this.pieceIdentite = avocat.pieceIdentite || null;
+        this.pieceIdentiteRecto = avocat.pieceIdentiteRecto || null;
+        this.pieceIdentiteVerso = avocat.pieceIdentiteVerso || null;
+        this.typePieceIdentite = avocat.typePieceIdentite || null;
+
+        this.syncSelectedSpecialiteIds();
 
         const nomComplet = avocat.fullName?.trim()
           || [avocat.prenom, avocat.nom].filter(Boolean).join(' ').trim();
@@ -186,6 +208,47 @@ export class AvocatParametreProfilComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // --- Spécialités : chargement de la liste + sélection ---
+
+  private chargerSpecialitesDisponibles(): void {
+    this.avocatService.getSpecialites().subscribe({
+      next: (specialites) => {
+        this.specialitesDisponibles = specialites;
+        this.syncSelectedSpecialiteIds();
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Erreur chargement specialites', err)
+    });
+  }
+
+  private syncSelectedSpecialiteIds(): void {
+    if (!this.specialitesDisponibles.length || !this.specialitesActuelles.length) return;
+    this.selectedSpecialiteIds = this.specialitesDisponibles
+      .filter(s => this.specialitesActuelles.includes(s.nom))
+      .map(s => s.id);
+  }
+
+  ouvrirSpecialiteSelector(): void {
+    this.showSpecialiteSelector = true;
+  }
+
+  fermerSpecialiteSelector(): void {
+    this.showSpecialiteSelector = false;
+  }
+
+  toggleSpecialite(id: number): void {
+    const idx = this.selectedSpecialiteIds.indexOf(id);
+    if (idx > -1) {
+      this.selectedSpecialiteIds.splice(idx, 1);
+    } else {
+      this.selectedSpecialiteIds.push(id);
+    }
+  }
+
+  isSpecialiteSelected(id: number): boolean {
+    return this.selectedSpecialiteIds.includes(id);
   }
 
   private chargerAbonnement(): void {
@@ -264,7 +327,8 @@ allerVersPaiement(): void {
     const payload: AvocatUpdateRequest = {
       fullName: this.form.value.fullName,
       telephone: this.form.value.telephone,
-      lienAgenda: this.form.value.lienAgenda
+      lienAgenda: this.form.value.lienAgenda,
+      specialiteIds: this.selectedSpecialiteIds
     };
 
     this.avocatService.update(this.avocatId, payload).subscribe({
@@ -272,6 +336,8 @@ allerVersPaiement(): void {
         this.saving = false;
         this.saveSuccess = true;
         this.progression = avocat.progression ?? this.progression;
+        this.specialitesActuelles = avocat.specialites || this.specialitesActuelles;
+        this.syncSelectedSpecialiteIds();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -305,7 +371,7 @@ allerVersPaiement(): void {
     input.value = '';
   }
 
-  onDocumentSelected(event: Event, type: 'CARTE_PROFESSIONNELLE' | 'DIPLOME' | 'PIECE_IDENTITE'): void {
+  onDocumentSelected(event: Event, type: 'CARTE_PROFESSIONNELLE' | 'DIPLOME'): void {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length || !this.avocatId) return;
 
@@ -323,6 +389,61 @@ allerVersPaiement(): void {
       },
       error: (err) => {
         console.error(`Erreur upload document ${type}`, err);
+      }
+    });
+
+    input.value = '';
+  }
+
+  // --- Pièce d'identité : sélection du type puis upload recto/verso ---
+
+  /** Ouvre le sélecteur de type (CNI / Passeport / Permis) avant d'uploader le recto. */
+  onAjouterPieceIdentiteClick(): void {
+    this.showTypeSelector = true;
+  }
+
+  fermerTypeSelector(): void {
+    this.showTypeSelector = false;
+  }
+
+  /** L'avocat choisit CNI / Passeport / Permis : on déclenche l'explorateur de fichiers pour le recto. */
+  onTypeSelected(type: TypePieceIdentite): void {
+  this.typePieceIdentite = type;
+  this.showTypeSelector = false;
+  this.uploadEnCours = 'RECTO';
+  this.pieceIdentiteInput?.nativeElement.click();
+}
+
+  /** Déclenché par le bouton "Ajouter le verso" (uniquement visible si CNI). */
+  onAjouterVersoClick(): void {
+    this.uploadEnCours = 'VERSO';
+    this.pieceIdentiteInput?.nativeElement.click();
+  }
+
+  onPieceIdentiteSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length || !this.avocatId || !this.uploadEnCours) return;
+
+    const file = input.files[0];
+    const isValid = file.type.startsWith('image/') || file.type === 'application/pdf';
+
+    if (!isValid) {
+      console.error('Le fichier doit être une image ou un PDF');
+      input.value = '';
+      return;
+    }
+
+    const documentType = this.uploadEnCours === 'RECTO' ? 'PIECE_IDENTITE_RECTO' : 'PIECE_IDENTITE_VERSO';
+    const typePiece = this.uploadEnCours === 'RECTO' ? (this.typePieceIdentite ?? undefined) : undefined;
+
+    this.avocatService.uploadDocument(this.avocatId, documentType, file, typePiece).subscribe({
+      next: () => {
+        this.uploadEnCours = null;
+        this.chargerProfil();
+      },
+      error: (err) => {
+        console.error(`Erreur upload piece identite (${documentType})`, err);
+        this.uploadEnCours = null;
       }
     });
 

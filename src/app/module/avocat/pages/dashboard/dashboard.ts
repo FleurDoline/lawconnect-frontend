@@ -106,6 +106,7 @@ export class DashboardComponent implements OnInit {
   showDisponibiliteModal = false;
   acceptSubmitting = false;
   acceptApiError = '';
+  disponibilitesSubmitting = false;
 
   constructor(
     private host: ElementRef,
@@ -118,43 +119,55 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const fullName = this.authService.getFullName();
-    if (fullName) {
-      this.lawyerName = `Maître ${fullName}`;
-      this.userName = fullName;
-    }
-    this.cdr.detectChanges();
-    this.loadAvocatProfile();
-    this.loadProchainRendezVous();
-    this.loadDisponibilites();
+  const fullName = this.authService.getFullName();
+  if (fullName) {
+    this.lawyerName = `Maître ${fullName}`;
+    this.userName = fullName;
   }
+  this.cdr.detectChanges();
+  this.loadAvocatProfile();
+  this.loadProchainRendezVous();
+  this.loadDisponibilites();
 
+  // 👇 AJOUTER CE DIAGNOSTIC ICI
+  this.consultationService.getMesDemandes().subscribe({
+    next: (demandes) => {
+      demandes.forEach(d => {
+        console.log('🔍 Vérification mode:');
+        console.log('  ID:', d.id);
+        console.log('  modeConsultation:', d.modeConsultation);
+        console.log('  Toutes les clés:', Object.keys(d));
+        console.log('📦 Objet complet:', JSON.stringify(d, null, 2));
+      });
+    },
+  });
+}
  private loadProchainRendezVous(): void {
   this.appointmentsLoading = true;
   this.appointmentsError = false;
 
-  // Used by the detail modal (onDetails) to look up full data by id —
-  // still needs the full list, so we keep this call.
+  // Récupérer toutes les demandes
   this.consultationService.getMesDemandes().subscribe({
     next: (demandes) => {
       this.demandes = demandes;
-      this.cdr.detectChanges();
-    },
-    error: (err) => {
-      console.error('Erreur lors du chargement des demandes de consultation', err);
-      this.demandes = [];
-    },
-  });
 
-  // Prochain(s) rendez-vous : filtré côté backend sur statut CONFIRMEE + date future
-  this.consultationService.getProchainsRendezVous().subscribe({
-    next: (prochains) => {
-      this.appointments = prochains.slice(0, 3).map((d) => this.toAppointment(d));
+      demandes.forEach(d => {
+      console.log(`📌 Demande ${d.id}: modeConsultation =`, d.modeConsultation);
+    });
+      
+      // Filtrer pour garder les rendez-vous avec date (EN_ATTENTE ou CONFIRMEE)
+      const prochains = demandes
+        .filter(d => d.dateRendezVous && (d.statut === 'EN_ATTENTE' || d.statut === 'CONFIRMEE'))
+        .slice(0, 3)
+        .map(d => this.toAppointment(d));
+      
+      this.appointments = prochains;
       this.appointmentsLoading = false;
+      console.log('📅 Rendez-vous affichés:', this.appointments);
       this.cdr.detectChanges();
     },
     error: (err) => {
-      console.error('Erreur lors du chargement du prochain rendez-vous', err);
+      console.error('Erreur lors du chargement des demandes', err);
       this.appointments = [];
       this.appointmentsLoading = false;
       this.appointmentsError = true;
@@ -241,17 +254,23 @@ export class DashboardComponent implements OnInit {
   }
 
   enregistrerDisponibilites(): void {
-    this.disponibiliteService.enregistrerDisponibilites(this.disponibilites).subscribe({
-      next: (disponibilites) => {
-        this.disponibilites = disponibilites;
-        this.showDisponibiliteModal = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Erreur lors de l\'enregistrement des disponibilités', err);
-      }
-    });
-  }
+  if (this.disponibilitesSubmitting) return;
+  this.disponibilitesSubmitting = true;
+
+  this.disponibiliteService.enregistrerDisponibilites(this.disponibilites).subscribe({
+    next: (disponibilites) => {
+      this.disponibilites = disponibilites;
+      this.showDisponibiliteModal = false;
+      this.disponibilitesSubmitting = false;
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error('Erreur lors de l\'enregistrement des disponibilités', err);
+      this.disponibilitesSubmitting = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   private formatDayLabel(date: Date): string {
     const today = new Date();

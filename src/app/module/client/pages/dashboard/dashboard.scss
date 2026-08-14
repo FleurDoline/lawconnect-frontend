@@ -510,6 +510,8 @@ $text-muted: #6b7280;
 
 .btn-search {
   box-sizing: border-box;
+  display: inline-flex;
+  gap: 6px;
   height: 42px;
   background: $gold;
   color: $navy-dark;

@@ -30,6 +30,7 @@ export interface Avocat {
   carteProfessionnel?: string | null;
   diplome?: string | null;
   pieceIdentite?: string | null;
+  gereDisponibilites?: boolean; 
 }
 
 export interface AvocatPageResponse {

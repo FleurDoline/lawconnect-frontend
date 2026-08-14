@@ -6,6 +6,7 @@ import { AvocatService } from '../../../../core/services/avocat.service';
 import { ConsultationService, ConsultationCreateRequest } from '../../../../core/services/consultation.service';
 import { CityAutocompleteComponent } from '../../../../../app/shared/components/city-autocomplete/city-autocomplete';
 import { City } from '../../../../core/models/city.model';
+import { AuthService } from '../../../../core/services/auth.service';
 
 interface CountryCode {
   name: string;
@@ -28,6 +29,10 @@ export class BesoinAvocatComponent implements OnInit {
   flowType: 'message' | 'consultation' = 'message';
   avocatId!: string;
   isLoading = true;
+  estConnecte: boolean = false;
+  creneauxDisponibles: string[] = [];   // ex: ["09:00", "10:00", "11:00"]
+  isLoadingCreneaux = false;
+  errorMessage: string | null = null;
 
   // Gestion des étapes
   // 'confirmation' est un état terminal, il n'entre pas dans le calcul de la barre de progression
@@ -73,12 +78,6 @@ export class BesoinAvocatComponent implements OnInit {
   modeConsultation: ModeConsultation | null = null;
   dateRendezVousJour: string = '';   // "YYYY-MM-DD" (ex: valeur d'un <input type="date">)
   dateRendezVousHeure: string = '';  // "HH:mm" (ex: valeur d'un <input type="time">)
-
-  private readonly modeToBackend: Record<ModeConsultation, string> = {
-    visio: 'visioconférence',
-    telephone: 'téléphone',
-    cabinet: 'présentiel',
-  };
 
   // --- Sélecteur d'indicatif téléphonique ---
   isCountryDropdownOpen = false;
@@ -130,11 +129,20 @@ export class BesoinAvocatComponent implements OnInit {
     private router: Router,
     private avocatService: AvocatService,
     private consultationService: ConsultationService,
+    private authService: AuthService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+   this.estConnecte = this.authService.isLoggedIn() && this.authService.isClient();
+  
+  if (this.estConnecte) {
+    const nomComplet = this.authService.getFullName();
+    if (nomComplet) {
+      this.nomComplet = nomComplet;
+    }
+  }
     this.avocatId = this.route.snapshot.paramMap.get('id')!;
     this.flowType = (this.route.snapshot.queryParamMap.get('type') as 'message' | 'consultation') || 'message';
 
@@ -143,10 +151,6 @@ export class BesoinAvocatComponent implements OnInit {
         this.ngZone.run(() => {
           this.avocat = data;
           this.isLoading = false;
-          if (data?.ville) {
-            this.ville = data.ville;
-            this.villesOptions = [data.ville];
-          }
           this.cdr.detectChanges();
         });
       },
@@ -244,77 +248,83 @@ export class BesoinAvocatComponent implements OnInit {
   }
 
   isRendezVousValid(): boolean {
-    return !!this.modeConsultation
-      && !!this.dateRendezVousJour
-      && !!this.dateRendezVousHeure;
+  if (!this.avocat?.gereDisponibilites) {
+    return true; // avocat ne gère pas ses créneaux sur la plateforme → pas requis
   }
+  return !!this.modeConsultation
+    && !!this.dateRendezVousJour
+    && !!this.dateRendezVousHeure;
+}
 
   isCoordonneesValid(): boolean {
-    return !!this.nomComplet.trim()
-      && this.isTelephoneValid()
-      && this.isEmailValid()
-      && !!this.ville
-      && this.isRendezVousValid();
-  }
+  return !!this.nomComplet.trim()
+    && this.isTelephoneValid()
+    && this.isEmailValid()
+    && !!this.ville
+    && this.isRendezVousValid()
+    && !!this.modeConsultation;
+}
 
   isSubmitting = false;
 
-  private buildDateRendezVous(): string {
-    // dateRendezVousJour: "YYYY-MM-DD", dateRendezVousHeure: "HH:mm"
-    // Backend expects a LocalDateTime-compatible string, e.g. "2026-08-05T14:00:00"
-    const heure = this.dateRendezVousHeure.length === 5
-      ? `${this.dateRendezVousHeure}:00`
-      : this.dateRendezVousHeure;
-    return `${this.dateRendezVousJour}T${heure}`;
+  private buildDateRendezVous(): string | null {
+  if (!this.dateRendezVousJour || !this.dateRendezVousHeure) {
+    return null;
   }
+  const heure = this.dateRendezVousHeure.length === 5
+    ? `${this.dateRendezVousHeure}:00`
+    : this.dateRendezVousHeure;
+  return `${this.dateRendezVousJour}T${heure}`;
+}
 
   onSuivantCoordonnees(): void {
-    if (!this.isCoordonneesValid() || this.isSubmitting) return;
+  if (!this.isCoordonneesValid() || this.isSubmitting) return;
 
-    const payload: ConsultationCreateRequest = {
-      avocatId: Number(this.avocatId),
-      flowType: this.flowType,
-      eligibilite: this.eligibiliteChoice,
-      typePersonne: this.typePersonne,
-      mission: this.mission,
-      attentes: this.attentes,
-      urgent: this.urgent,
-      situation: this.situation,
-      nomComplet: this.nomComplet,
-      telephone: `${this.indicatifTelephone} ${this.telephone}`,
-      email: this.email,
-      ville: this.ville,
-      contactPreference: this.contactPreference,
-      dateRendezVous: this.buildDateRendezVous(),
-      modeConsultation: this.modeToBackend[this.modeConsultation as ModeConsultation],
-    };
+  this.errorMessage = null;
 
-    this.isSubmitting = true;
+  const payload: ConsultationCreateRequest = {
+    avocatId: Number(this.avocatId),
+    flowType: this.flowType,
+    eligibilite: this.eligibiliteChoice,
+    typePersonne: this.typePersonne,
+    mission: this.mission,
+    attentes: this.attentes,
+    urgent: this.urgent,
+    situation: this.situation,
+    nomComplet: this.nomComplet,
+    telephone: `${this.indicatifTelephone} ${this.telephone}`,
+    email: this.email,
+    ville: this.ville,
+    contactPreference: this.contactPreference,
+    dateRendezVous: this.buildDateRendezVous(),
+    modeConsultation: this.modeConsultation as string,
+  };
 
-    this.consultationService.envoyerDemande(payload).subscribe({
-      next: () => {
-        this.ngZone.run(() => {
-          this.isSubmitting = false;
-          this.step = 'confirmation';
-          this.cdr.detectChanges();
-        });
-      },
-      error: (err) => {
-        this.ngZone.run(() => {
-          console.error('Erreur envoi demande:', err);
-          this.isSubmitting = false;
-          // TODO: afficher un message d'erreur à l'utilisateur
-          this.cdr.detectChanges();
-        });
-      }
-    });
-  }
+  this.isSubmitting = true;
+
+  this.consultationService.envoyerDemande(payload).subscribe({
+    next: () => {
+      this.ngZone.run(() => {
+        this.isSubmitting = false;
+        this.step = 'confirmation';
+        this.cdr.detectChanges();
+      });
+    },
+    error: (err) => {
+      this.ngZone.run(() => {
+        console.error('Erreur envoi demande:', err);
+        this.isSubmitting = false;
+        this.errorMessage = err?.error?.message
+          || 'Ce créneau n\'est plus disponible. Merci de choisir une autre date ou heure.';
+        this.cdr.detectChanges();
+      });
+    }
+  });
+}
 
   // --- Étape 5 : Confirmation ---
   onContacterAutresAvocats(): void {
-    this.router.navigate(['/avocats'], {
-      queryParams: this.ville ? { ville: this.ville } : {}
-    });
+    this.router.navigate(['/avocat'], );
   }
 
   onRetourDashboard(): void {
@@ -333,4 +343,37 @@ export class BesoinAvocatComponent implements OnInit {
       window.history.back();
     }
   }
+
+  onDateRendezVousChange(): void {
+  this.dateRendezVousHeure = '';
+  this.creneauxDisponibles = [];
+
+  if (!this.dateRendezVousJour || !this.avocat?.gereDisponibilites) {
+    return;
+  }
+
+  this.isLoadingCreneaux = true;
+  this.consultationService.getCreneauxDisponibles(Number(this.avocatId), this.dateRendezVousJour)
+    .subscribe({
+      next: (creneaux) => {
+        this.ngZone.run(() => {
+          this.creneauxDisponibles = creneaux;
+          this.isLoadingCreneaux = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        this.ngZone.run(() => {
+          console.error('Erreur chargement créneaux:', err);
+          this.creneauxDisponibles = [];
+          this.isLoadingCreneaux = false;
+          this.cdr.detectChanges();
+        });
+      }
+    });
+}
+
+get minDateRendezVous(): string {
+  return new Date().toISOString().split('T')[0];
+}
 }

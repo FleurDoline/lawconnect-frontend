@@ -97,9 +97,14 @@
           </div>
 
           <div class="profil-card__field profil-card__field--specialite">
-            <label>Specialite</label>
-            <input type="text" [value]="specialitesActuelles.join(', ') || 'Aucune specialite renseignee'" readonly />
-          </div>
+  <label>Specialite</label>
+  <div class="profil-card__row" style="align-items:center; gap: 12px;">
+    <input type="text" [value]="specialitesActuelles.join(', ') || 'Aucune specialite renseignee'" readonly style="flex:1" />
+    <button type="button" class="profil-card__btn profil-card__btn--upload" (click)="ouvrirSpecialiteSelector()">
+      Modifier
+    </button>
+  </div>
+</div>
 
           <p class="profil-card__message profil-card__message--success" *ngIf="saveSuccess">
             Profil mis a jour avec succes.
@@ -155,17 +160,38 @@
           </button>
         </div>
 
+        <!-- Piece d'identite : recto -->
         <div class="profil-card__document">
           <div class="profil-card__document-info">
-            <span class="profil-card__document-label">Piece d'identite</span>
-            <a *ngIf="pieceIdentite" [href]="photoBaseUrl + pieceIdentite" target="_blank" class="profil-card__document-lien">
-              Voir le document
+            <span class="profil-card__document-label">
+              Piece d'identite
+              <span *ngIf="typePieceIdentite" class="profil-card__document-badge">{{ typePieceIdentite }}</span>
+            </span>
+            <a *ngIf="pieceIdentiteRecto" [href]="photoBaseUrl + pieceIdentiteRecto" target="_blank" class="profil-card__document-lien">
+              Voir le recto
             </a>
-            <span *ngIf="!pieceIdentite" class="profil-card__document-vide">Aucun document ajoute</span>
+            <span *ngIf="!pieceIdentiteRecto" class="profil-card__document-vide">Aucun document ajoute</span>
           </div>
-          <input #pieceIdentiteInput type="file" accept="image/*,application/pdf" hidden (change)="onDocumentSelected($event, 'PIECE_IDENTITE')" />
-          <button type="button" class="profil-card__btn profil-card__btn--upload" (click)="pieceIdentiteInput.click()">
-            {{ pieceIdentite ? 'Remplacer' : 'Ajouter' }}
+
+          <!-- input unique reutilise pour recto puis verso -->
+          <input #pieceIdentiteInput type="file" accept="image/*,application/pdf" hidden (change)="onPieceIdentiteSelected($event)" />
+
+          <button type="button" class="profil-card__btn profil-card__btn--upload" (click)="onAjouterPieceIdentiteClick()">
+            {{ pieceIdentiteRecto ? 'Remplacer' : 'Ajouter' }}
+          </button>
+        </div>
+
+        <!-- Piece d'identite : verso (uniquement pour une CNI) -->
+        <div class="profil-card__document" *ngIf="typePieceIdentite === 'CNI'">
+          <div class="profil-card__document-info">
+            <span class="profil-card__document-label">Piece d'identite (verso)</span>
+            <a *ngIf="pieceIdentiteVerso" [href]="photoBaseUrl + pieceIdentiteVerso" target="_blank" class="profil-card__document-lien">
+              Voir le verso
+            </a>
+            <span *ngIf="!pieceIdentiteVerso" class="profil-card__document-vide">Aucun document ajoute</span>
+          </div>
+          <button type="button" class="profil-card__btn profil-card__btn--upload" (click)="onAjouterVersoClick()">
+            {{ pieceIdentiteVerso ? 'Remplacer' : 'Ajouter le verso' }}
           </button>
         </div>
       </div>
@@ -260,4 +286,54 @@
 
 <div class="parametre-page__error" *ngIf="!loading && error">
   <p>Impossible de charger votre profil. Merci de vous reconnecter.</p>
+</div>
+
+<div class="type-piece-overlay" *ngIf="showSpecialiteSelector" (click)="fermerSpecialiteSelector()">
+  <div class="type-piece-modal" (click)="$event.stopPropagation()">
+    <h3 class="type-piece-modal__titre">Choisissez vos spécialités</h3>
+    <p class="type-piece-modal__sous-titre">
+      Sélectionnez une ou plusieurs spécialités puis cliquez sur "Enregistrer" dans l'onglet Profil pour confirmer.
+    </p>
+
+    <div class="type-piece-modal__options" style="max-height: 300px; overflow-y: auto;">
+      <label *ngFor="let s of specialitesDisponibles"
+             class="type-piece-modal__option"
+             style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+        <input type="checkbox"
+               [checked]="isSpecialiteSelected(s.id)"
+               (change)="toggleSpecialite(s.id)" />
+        {{ s.nom }}
+      </label>
+    </div>
+
+    <button type="button" class="type-piece-modal__annuler" (click)="fermerSpecialiteSelector()">
+      Fermer
+    </button>
+  </div>
+</div>
+
+<!-- Modale : choix du type de piece d'identite avant upload du recto -->
+<div class="type-piece-overlay" *ngIf="showTypeSelector" (click)="fermerTypeSelector()">
+  <div class="type-piece-modal" (click)="$event.stopPropagation()">
+    <h3 class="type-piece-modal__titre">Quel type de piece d'identite ?</h3>
+    <p class="type-piece-modal__sous-titre">
+      La CNI necessite un recto et un verso. Le passeport et le permis ne necessitent qu'un seul document.
+    </p>
+
+    <div class="type-piece-modal__options">
+      <button type="button" class="type-piece-modal__option" (click)="onTypeSelected('CNI')">
+        Carte Nationale d'Identite
+      </button>
+      <button type="button" class="type-piece-modal__option" (click)="onTypeSelected('PASSEPORT')">
+        Passeport
+      </button>
+      <button type="button" class="type-piece-modal__option" (click)="onTypeSelected('PERMIS_CONDUIRE')">
+        Permis de conduire
+      </button>
+    </div>
+
+    <button type="button" class="type-piece-modal__annuler" (click)="fermerTypeSelector()">
+      Annuler
+    </button>
+  </div>
 </div>

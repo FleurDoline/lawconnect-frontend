@@ -224,7 +224,9 @@
 
     <div class="modal-footer">
       <button type="button" class="btn-outline" (click)="closeDisponibiliteModal()">Annuler</button>
-      <button type="button" class="btn-primary" (click)="enregistrerDisponibilites()">Enregistrer</button>
+      <button type="button" class="btn-primary" [disabled]="disponibilitesSubmitting" (click)="enregistrerDisponibilites()">
+  {{ disponibilitesSubmitting ? 'Enregistrement...' : 'Enregistrer' }}
+</button>
     </div>
   </div>
 </div>

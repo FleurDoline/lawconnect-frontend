@@ -64,8 +64,8 @@
             </td>
             <td class="type">{{ c.mission }}</td>
             <td>
-              <span class="mode-badge" [attr.data-mode]="c.modeConsultation">
-                {{ modeLabels[c.modeConsultation] }}
+              <span class="mode-badge" [attr.data-mode]="modeKey(c.modeConsultation)">
+                      {{ modeLabel(c.modeConsultation) }}
               </span>
             </td>
             <td>
@@ -142,7 +142,7 @@
 
         <div class="detail-row">
           <span class="detail-row__label">Mode</span>
-          <span class="detail-row__value">{{ modeLabels[c.modeConsultation] || 'Non renseigné' }}</span>
+          <span class="detail-row__value">{{ modeLabel(c.modeConsultation) }}</span>
         </div>
 
         <div class="detail-row">

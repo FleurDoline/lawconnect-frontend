@@ -9,9 +9,9 @@
     <div class="besoin-page__card">
       <div class="avocat-card">
         <div class="avocat-card__avatar">
-  <img *ngIf="hasValidPhoto()" [src]="avocat.photo" alt="{{ avocat?.nom }}" (error)="onImageError($event)" />
-  <img *ngIf="!hasValidPhoto()" [src]="fallbackPhoto" alt="{{ avocat?.nom }}" />
-</div>
+          <img *ngIf="hasValidPhoto()" [src]="avocat.photo" alt="{{ avocat?.nom }}" (error)="onImageError($event)" />
+          <img *ngIf="!hasValidPhoto()" [src]="fallbackPhoto" alt="{{ avocat?.nom }}" />
+        </div>
         <h2 class="avocat-card__name">Maître {{ avocat?.nom }}</h2>
         <div class="avocat-card__badges">
           <span class="badge badge--rating">⭐ {{ avocat?.noteMoyenne || 5 }}</span>
@@ -133,7 +133,8 @@
     <div class="besoin-page__coordonnees" *ngIf="step === 'coordonnees'">
       <h2 class="besoin-page__title">Vos coordonnées</h2>
 
-      <div class="form-group">
+      <!-- Nom complet - pré-rempli si connecté -->
+      <div class="form-group" *ngIf="!estConnecte">
         <input
           type="text"
           class="coordonnees-input"
@@ -143,44 +144,55 @@
         />
       </div>
 
+      <div class="form-group" *ngIf="estConnecte">
+        <label class="form-label">Nom complet</label>
+        <div class="coordonnees-readonly">{{ nomComplet }}</div>
+        <small style="display:block; font-size:12px; color:#4CAF50; margin-top:4px;">
+          ✓ Récupéré depuis votre profil
+        </small>
+      </div>
+
+      <!-- Téléphone -->
       <div class="form-group">
-  <div class="phone-input-group" (clickOutside)="closeCountryDropdown()">
-    <button type="button" class="phone-input-group__selector" (click)="toggleCountryDropdown()">
-      <span class="phone-input-group__flag">{{ selectedCountry.flag }}</span>
-      <span class="phone-input-group__caret">▾</span>
-    </button>
+        <div class="phone-input-group" (clickOutside)="closeCountryDropdown()">
+          <button type="button" class="phone-input-group__selector" (click)="toggleCountryDropdown()">
+            <span class="phone-input-group__flag">{{ selectedCountry.flag }}</span>
+            <span class="phone-input-group__caret">▾</span>
+          </button>
 
-    <input
-      type="tel"
-      class="phone-input-group__input"
-      [(ngModel)]="telephone"
-      name="telephone"
-      placeholder="Numéro de téléphone"
-    />
+          <input
+            type="tel"
+            class="phone-input-group__input"
+            [(ngModel)]="telephone"
+            name="telephone"
+            placeholder="Numéro de téléphone"
+          />
 
-    <div class="country-dropdown" *ngIf="isCountryDropdownOpen">
-      <input
-        type="text"
-        class="country-dropdown__search"
-        [(ngModel)]="countrySearch"
-        name="countrySearch"
-        placeholder="Rechercher un pays"
-        autofocus
-      />
-      <ul class="country-dropdown__list">
-        <li
-          class="country-dropdown__item"
-          *ngFor="let country of filteredCountries"
-          (click)="selectCountry(country)"
-        >
-          <span class="country-dropdown__flag">{{ country.flag }}</span>
-          <span class="country-dropdown__name">{{ country.name }}</span>
-          <span class="country-dropdown__dial">({{ country.dial }})</span>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
+          <div class="country-dropdown" *ngIf="isCountryDropdownOpen">
+            <input
+              type="text"
+              class="country-dropdown__search"
+              [(ngModel)]="countrySearch"
+              name="countrySearch"
+              placeholder="Rechercher un pays"
+              autofocus
+            />
+            <ul class="country-dropdown__list">
+              <li
+                class="country-dropdown__item"
+                *ngFor="let country of filteredCountries"
+                (click)="selectCountry(country)"
+              >
+                <span class="country-dropdown__flag">{{ country.flag }}</span>
+                <span class="country-dropdown__name">{{ country.name }}</span>
+                <span class="country-dropdown__dial">({{ country.dial }})</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email -->
       <div class="form-group">
         <input
           type="email"
@@ -191,15 +203,66 @@
         />
       </div>
 
+      <!-- Ville -->
       <div class="form-group">
-  <label class="form-label">Votre ville ?</label>
-  <app-city-autocomplete
-    placeholder="Sélectionnez votre ville"
-    [initialValue]="ville"
-    (citySelected)="onCitySelected($event)"
-  ></app-city-autocomplete>
-</div>
+        <label class="form-label">Votre ville ?</label>
+        <app-city-autocomplete
+          placeholder="Sélectionnez votre ville"
+          [initialValue]="ville"
+          (citySelected)="onCitySelected($event)"
+        ></app-city-autocomplete>
+      </div>
 
+      <!-- Mode de consultation -->
+      <div class="form-group">
+        <label class="form-label">Mode de consultation *</label>
+        <div class="radio-row">
+          <label class="radio-option">
+            <input type="radio" name="modeConsultation" value="visio" [(ngModel)]="modeConsultation" />
+            Visioconférence
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="modeConsultation" value="telephone" [(ngModel)]="modeConsultation" />
+            Téléphone
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="modeConsultation" value="cabinet" [(ngModel)]="modeConsultation" />
+            Au cabinet
+          </label>
+        </div>
+      </div>
+
+      <!-- Date et heure (optionnel - uniquement si avocat gère ses disponibilités) -->
+      <div class="form-group" *ngIf="avocat?.gereDisponibilites">
+        <label class="form-label">Date et heure du rendez-vous</label>
+        <div class="radio-row">
+          <input
+            type="date"
+            class="coordonnees-input"
+            [(ngModel)]="dateRendezVousJour"
+            name="dateRendezVousJour"
+            [min]="minDateRendezVous"
+            (ngModelChange)="onDateRendezVousChange()"
+          />
+
+          <select
+            class="coordonnees-input"
+            [(ngModel)]="dateRendezVousHeure"
+            name="dateRendezVousHeure"
+            [disabled]="!dateRendezVousJour || isLoadingCreneaux || creneauxDisponibles.length === 0"
+          >
+            <option value="" disabled selected>
+              {{ isLoadingCreneaux ? 'Chargement...' : 'Choisir une heure' }}
+            </option>
+            <option *ngFor="let heure of creneauxDisponibles" [value]="heure">{{ heure }}</option>
+          </select>
+        </div>
+        <p class="situation-note" *ngIf="dateRendezVousJour && !isLoadingCreneaux && creneauxDisponibles.length === 0">
+          Aucun créneau disponible à cette date. Merci de choisir un autre jour.
+        </p>
+      </div>
+
+      <!-- Préférence de contact -->
       <div class="form-group">
         <label class="form-label">Je souhaite que Maître {{ avocat?.nom }} me contacte par :</label>
         <div class="radio-row radio-row--contact">
@@ -218,6 +281,9 @@
         </div>
       </div>
 
+      <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+      <!-- BOUTONS - UN SEUL BLOC -->
       <div class="form-actions">
         <button class="btn-precedent" (click)="onPrecedent()">Précédent</button>
         <button class="btn-suivant" [disabled]="!isCoordonneesValid() || isSubmitting" (click)="onSuivantCoordonnees()">

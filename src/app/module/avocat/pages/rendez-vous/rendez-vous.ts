@@ -133,11 +133,26 @@ export class RendezVousComponent implements OnInit {
     this.pageActuelle.set(1);
   }
 
+  private normalizeMode(mode: string | null | undefined): string {
+      if (!mode) return '';
+     return mode
+       .toLowerCase()
+       .normalize('NFD')
+       .replace(/[\u0300-\u036f]/g, ''); 
+  }
+
+  modeLabel(mode: string | null | undefined): string {
+     const key = this.normalizeMode(mode);
+    return this.modeLabels[key] ?? 'Non renseigné';
+  }
   onSearchChange(value: string): void {
     this.searchTerm.set(value);
     this.pageActuelle.set(1);
   }
 
+  modeKey(mode: string | null | undefined): string {
+  return this.normalizeMode(mode);
+}
   pagePrecedente(): void {
     if (this.pageActuelle() > 1) this.pageActuelle.update((p) => p - 1);
   }

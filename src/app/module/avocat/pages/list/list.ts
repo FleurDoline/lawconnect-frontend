@@ -44,7 +44,7 @@ export class ListeAvocatsComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       console.log('queryParams fired:', params);
       this.filters = {
-        specialite: params['specialites'] || undefined,
+        specialite: params['specialite'] || undefined,
         ville: params['ville'] || undefined,
         type: params['type'] || undefined
       };
@@ -144,5 +144,8 @@ toggleBio(id: number): void {
 
 isBioLong(bio: string | undefined): boolean {
   return !!bio && bio.length > 140;
+}
+retourDashboard(): void {
+  this.router.navigate(['/client/dashboard']);
 }
 }

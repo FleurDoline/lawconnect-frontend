@@ -13,6 +13,7 @@ import {
 } from '../../../../core/services/abonnement.service';
 import { TopbarComponent, TopbarNavItem } from '../../../../shared/components/topbar/topbar';
 import { environment } from '../../../../../environments/environment';
+import { format } from 'node:path';
 
 
 interface PlanDefinition {
@@ -330,6 +331,8 @@ export class PaiementComponent implements OnInit {
     channel: this.channelSelectionne,
     phone: '+237' + localNumber
   };
+
+ // console.log("payload d'avant declenchement", payload);
 
   this.abonnementService.checkout(payload).subscribe({
     next: (res) => {

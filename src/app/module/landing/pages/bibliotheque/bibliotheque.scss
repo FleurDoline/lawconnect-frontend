@@ -1,0 +1,206 @@
+// ── Tokens ──────────────────────────────────────────────────────────────────
+$navy:       #1a2744;
+$navy-light: #243358;
+$gold:       #b8972a;
+$gold-light: #c9a84c;
+$blue-card:  #3d5a8a;
+$coral:      #e05a4e;
+$white:      #ffffff;
+$text-light: rgba(255, 255, 255, 0.75);
+$badge-bg:   rgba(255, 255, 255, 0.15);
+
+$font-sans:  'Inter', 'Segoe UI', sans-serif;
+$radius-card: 12px;
+$radius-btn:  8px;
+
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+.bibliotheque-page {
+  background-color: $navy;
+  font-family: $font-sans;
+  padding: 40px 40px 64px;
+  min-height: 100vh;
+
+  @media (max-width: 768px) {
+    padding: 28px 20px 48px;
+  }
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 28px;
+  color: $white;
+  opacity: 0.8;
+  text-decoration: none;
+  font-size: 0.95rem;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: $text-light;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $white;
+  margin: 0 0 10px;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: $text-light;
+  margin: 0 0 36px;
+}
+
+// ── Grid ────────────────────────────────────────────────────────────────────
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Card (identique à la home) ─────────────────────────────────────────────
+.book-card {
+  border-radius: $radius-card;
+  padding: 18px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: $navy-light;
+  color: $white;
+  cursor: pointer;
+
+  &--navy   { background-color: $navy-light; }
+  &--blue   { background-color: $blue-card; }
+  &--gold   { background-color: $gold; }
+  &--coral  { background-color: $coral; }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__badge {
+    display: inline-block;
+    background-color: $badge-bg;
+    color: $white;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+  }
+
+  &__icon {
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 4px 0 0;
+    line-height: 1.3;
+    color: $white;
+  }
+
+  &__body {
+    flex: 1;
+  }
+
+  &__author {
+    font-size: 12px;
+    color: $text-light;
+    margin: 0 0 4px;
+  }
+
+  &__description {
+    font-size: 13px;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: $gold-light;
+    cursor: pointer;
+    margin-top: 4px;
+    text-decoration: none;
+    transition: gap 0.15s;
+
+    .book-card--gold &,
+    .book-card--coral & {
+      color: $white;
+    }
+
+    &:hover {
+      gap: 8px;
+    }
+  }
+}
+
+// ── Pagination ──────────────────────────────────────────────────────────────
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+
+  &__btn {
+    padding: 10px 18px;
+    border-radius: $radius-btn;
+    background-color: $navy-light;
+    color: $white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+
+    &:hover:not(:disabled) {
+      background-color: lighten($navy-light, 5%);
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &__info {
+    font-size: 13px;
+    color: $text-light;
+  }
+}
+
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  color: $text-light;
+  font-size: 0.95rem;
+}

@@ -32,6 +32,10 @@ const routes: Routes = [
     loadComponent: () => import('./module/landing/pages/domaines/domaines').then(m => m.DomainesPage)
   },
   {
+  path: 'bibliotheque',
+  loadComponent: () => import('./module/landing/pages/bibliotheque/bibliotheque').then(m => m.BibliothequePage)
+},
+  {
     path: 'avocat/paiement',
     loadComponent: () => import('./module/avocat/pages/paiement/paiement').then(m => m.PaiementComponent)
   },

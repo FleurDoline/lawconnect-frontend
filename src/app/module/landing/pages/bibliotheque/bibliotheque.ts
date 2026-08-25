@@ -1,23 +1,27 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   RessourceJuridiqueService,
   RessourceJuridique
 } from '../../../../core/services/ressource-juridique.service';
 
 @Component({
-  selector: 'app-library',
+  selector: 'app-bibliotheque-page',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './library.html',
-  styleUrls: ['./library.scss'],
+  imports: [CommonModule, RouterLink],
+  templateUrl: './bibliotheque.html',
+  styleUrl: './bibliotheque.scss'
 })
-export class LibraryComponent implements OnInit {
-
+export class BibliothequePage implements OnInit {
   ressources: RessourceJuridique[] = [];
   loading = true;
   loadError = false;
+
+  pageNumber = 0;
+  pageSize = 12;
+  totalPages = 0;
+  totalElements = 0;
 
   private readonly colorPalette: Array<'navy' | 'blue' | 'gold' | 'coral'> = ['navy', 'blue', 'gold', 'coral'];
 
@@ -35,10 +39,11 @@ export class LibraryComponent implements OnInit {
     this.loading = true;
     this.loadError = false;
 
-    // 6 ressources max sur la landing — la page dédiée /bibliotheque affichera tout, paginé
-    this.ressourceService.getAll(undefined, 0, 6).subscribe({
+    this.ressourceService.getAll(undefined, this.pageNumber, this.pageSize).subscribe({
       next: (res) => {
         this.ressources = res.content;
+        this.totalPages = res.totalPages;
+        this.totalElements = res.totalElements;
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -56,20 +61,17 @@ export class LibraryComponent implements OnInit {
     return this.colorPalette[index % this.colorPalette.length];
   }
 
-  onViewLibrary(): void {
-    this.router.navigate(['/bibliotheque']);
+  goToPage(page: number): void {
+    if (page < 0 || page >= this.totalPages || page === this.pageNumber) {
+      return;
+    }
+    this.pageNumber = page;
+    this.chargerRessources();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   onReadExtract(ressource: RessourceJuridique): void {
     const url = this.ressourceService.getFichierUrl(ressource.cheminFichier);
     window.open(url, '_blank');
-  }
-
-  onCreateAccount(): void {
-    this.router.navigate(['/auth/inscription'], { queryParams: { role: 'client' } });
-  }
-
-  onLawyerSpace(): void {
-    this.router.navigate(['/auth/inscription'], { queryParams: { role: 'avocat' } });
   }
 }

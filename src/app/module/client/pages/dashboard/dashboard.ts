@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -14,6 +14,7 @@ import { TopbarComponent, TopbarNavItem } from '../../../../shared/components/to
 import { CityAutocompleteComponent } from '../../../../shared/components/city-autocomplete/city-autocomplete';
 import { City } from '../../../../core/models/city.model';
 import { AuthService } from '../../../../core/services/auth.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 import {
   SpecialiteService,
   SpecialiteDroit
@@ -46,25 +47,25 @@ interface SpecialiteQuery {
   styleUrls: ['./dashboard.scss']
 })
 export class ClientDashboardComponent implements OnInit, OnDestroy {
+  @ViewChild('topbar') topbar!: TopbarComponent;
 
    navItems: TopbarNavItem[] = [
     { label: 'Dashboard',    icon: 'dashboard', route: '/client/dashboard' },
     { label: 'Mes dossiers', icon: 'folder',    route: '/client/dossiers' },
     { label: 'Consultation', icon: 'calendar',  route: '/client/consultations' },
     { label: 'Paramètre',    icon: 'settings',  route: '/client/parametres' },
-    { label: 'Deconnexion',  icon: 'logout' },
+    { label: 'Deconnexion',  icon: 'logout', route: '/client/deconnexion' },
   ];
 
   onNavSelect(item: TopbarNavItem): void {
-    if (item.label === 'Deconnexion') {
-      this.authService.logout(); // adjust to your actual AuthService method
-      this.router.navigate(['/login']);
-      return;
-    }
-    if (item.route) {
-      this.router.navigate([item.route]);
-    }
+  if (item.label === 'Deconnexion') {
+    this.authService.logout();
+    return;
   }
+  if (item.route) {
+    this.router.navigate([item.route]);
+  }
+}
 
 
   clientNom = '';
@@ -81,8 +82,8 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
   private inputToken = 0;
 private specialiteSub!: Subscription;
 
-  dossiersActifs = 0;
-  messagesNonLus = 0;
+  demandesEnAttente = 0;
+ notificationsNonLues = 0;
 
   prochaineConsultation: Consultation | null = null;
   consultationsRecentes: Consultation[] = [];
@@ -98,6 +99,7 @@ private specialiteSub!: Subscription;
     private router: Router,
     private authService: AuthService,
     private specialiteService: SpecialiteService,
+    private notificationService: NotificationService, 
     private consultationService: ConsultationService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -107,7 +109,7 @@ private specialiteSub!: Subscription;
     this.clientNom =
       this.authService.getFullName() || 'Client';
 
-    this.chargerStatsMock();
+    this.chargerNotifications();
     this.chargerConsultations();
 
     this.specialiteSub = this.specialiteInput$
@@ -197,41 +199,47 @@ private specialiteSub!: Subscription;
     }, 150);
 
   }
+  // remplace ouvrirNotifications() par :
+ouvrirNotifications(): void {
+  this.topbar.openNotifications();
+}
 
   // Dossiers actifs / messages non lus restent mockés pour l'instant —
   // aucun endpoint backend disponible pour ces deux valeurs à ce jour.
-  private chargerStatsMock(): void {
-
-    setTimeout(() => {
-
-      this.dossiersActifs = 4;
-      this.messagesNonLus = 7;
-
+  // remplace chargerStatsMock() entièrement par :
+private chargerNotifications(): void {
+  this.notificationService.getUnreadCount().subscribe({
+    next: (res) => {
+      this.notificationsNonLues = res.count;
       this.cdr.detectChanges();
-
-    }, 400);
-
-  }
+    },
+    error: (err) => {
+      console.error('Erreur chargement notifications:', err);
+      this.notificationsNonLues = 0;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   private chargerConsultations(): void {
-
-    this.consultationService.getMesConsultations().subscribe({
-      next: (data: ConsultationSummary[]) => {
-        this.consultationsRecentes = data;
-        this.prochaineConsultation = this.calculerProchaineConsultation(data);
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Erreur chargement consultations:', err);
-        this.consultationsRecentes = [];
-        this.prochaineConsultation = null;
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
-
-  }
+  this.consultationService.getMesConsultations().subscribe({
+    next: (data: ConsultationSummary[]) => {
+      this.consultationsRecentes = data;
+      this.prochaineConsultation = this.calculerProchaineConsultation(data);
+      this.demandesEnAttente = data.filter(c => c.statut === 'EN_ATTENTE').length; // ajouté
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error('Erreur chargement consultations:', err);
+      this.consultationsRecentes = [];
+      this.prochaineConsultation = null;
+      this.demandesEnAttente = 0; // ajouté
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   private calculerProchaineConsultation(data: ConsultationSummary[]): Consultation | null {
     const now = new Date();
@@ -294,28 +302,17 @@ private specialiteSub!: Subscription;
 
   }
 
-  ouvrirDossier(id: number): void {
-
-    this.router.navigate([
-      '/client/dossiers',
-      id
-    ]);
-
-  }
+  ouvrirDemandesEnAttente(): void {
+  this.router.navigate(['/client/consultations'], {
+    queryParams: { statut: 'EN_ATTENTE' }
+  });
+}
 
   rejoindreConsultation(id: number): void {
 
     this.router.navigate([
       '/client/consultations',
       id
-    ]);
-
-  }
-
-  ouvrirMessagerie(): void {
-
-    this.router.navigate([
-      '/client/messagerie'
     ]);
 
   }
@@ -344,9 +341,9 @@ private specialiteSub!: Subscription;
     this.selectedConsultation = null;
   }
 
-  ouvrirDossiers(): void {
-    this.router.navigate(['/client/dossiers']);
-  }
+  ouvrirDossier(id: number): void {
+  this.router.navigate(['/client/dossiers', id]);
+}
 
   nouvelleConsultation(): void {
 

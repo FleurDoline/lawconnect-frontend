@@ -1,10 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { TopbarComponent, TopbarNavItem } from '../../../../shared/components/topbar/topbar';
 import { CityAutocompleteComponent } from '../../../../shared/components/city-autocomplete/city-autocomplete';
+import { AvisService, AvisCreateRequest } from '../../../../core/services/avis.service';
+import { Router, ActivatedRoute } from '@angular/router';
 import { City } from '../../../../core/models/city.model';
 import {
   ConsultationService,
@@ -81,7 +82,7 @@ export class ConsultationsComponent implements OnInit {
     { label: 'Mes dossiers', icon: 'folder',    route: '/client/dossiers' },
     { label: 'Consultation', icon: 'calendar',  route: '/client/consultations' },
     { label: 'Paramètre',    icon: 'settings',  route: '/client/parametres' },
-    { label: 'Deconnexion',  icon: 'logout' },
+    { label: 'Deconnexion',  icon: 'logout', route: '/client/deconnexion' },
   ];
 
   activeTab: 'avenir' | 'passees' = 'avenir';
@@ -100,6 +101,9 @@ export class ConsultationsComponent implements OnInit {
   creneauErreur: string | null = null;
   refuserEnCours: number | null = null;
   avocatGereDisponibilites = true; // état de l'avocat actuellement sélectionné
+
+  filterStatut: ConsultationStatut | null = null;
+
 
   private allConsultations: ConsultationRow[] = [];
 
@@ -133,6 +137,15 @@ export class ConsultationsComponent implements OnInit {
   submitting = false;
   submitError: string | null = null;
 
+  // ---- Avis modal ----
+showAvisModal = false;
+selectedForAvis: ConsultationRow | null = null;
+avisNote = 0;
+avisCommentaire = '';
+avisSubmitting = false;
+avisSubmitError: string | null = null;
+avisDonnes = new Set<number>(); // ids de consultations pour lesquelles un avis a déjà été laissé (session courante)
+
   showDetailModal = false;
   selectedConsultation: ConsultationRow | null = null;
   errors: Partial<Record<keyof NouvelleConsultationForm, string>> = {};
@@ -165,16 +178,25 @@ export class ConsultationsComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService,
     private consultationService: ConsultationService,
+    private avisService: AvisService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.clientNom = this.authService.getFullName() || 'Client';
-    this.chargerConsultations();
-    this.chargerAvocats();
+  this.clientNom = this.authService.getFullName() || 'Client';
+
+  const statutParam = this.route.snapshot.queryParamMap.get('statut') as ConsultationStatut | null;
+  if (statutParam) {
+    this.filterStatut = statutParam;
+    this.activeTab = statutParam === 'EN_ATTENTE' ? 'passees' : 'avenir';
   }
+
+  this.chargerConsultations();
+  this.chargerAvocats();
+}
 
   private chargerConsultations(): void {
     this.loading = true;
@@ -280,6 +302,62 @@ export class ConsultationsComponent implements OnInit {
     return c.statut === 'EN_ATTENTE';
   }
 
+  canAvis(c: ConsultationRow): boolean {
+  return c.statut === 'TERMINEE' && !this.avisDonnes.has(c.id);
+}
+
+openAvisModal(c: ConsultationRow): void {
+  this.selectedForAvis = c;
+  this.avisNote = 0;
+  this.avisCommentaire = '';
+  this.avisSubmitError = null;
+  this.showAvisModal = true;
+}
+
+closeAvisModal(): void {
+  this.showAvisModal = false;
+  this.selectedForAvis = null;
+  this.avisNote = 0;
+  this.avisCommentaire = '';
+  this.avisSubmitError = null;
+}
+
+setAvisNote(note: number): void {
+  this.avisNote = note;
+}
+
+submitAvis(): void {
+  if (!this.selectedForAvis || this.avisNote < 1) {
+    this.avisSubmitError = 'Veuillez sélectionner une note.';
+    return;
+  }
+
+  this.avisSubmitting = true;
+  this.avisSubmitError = null;
+
+  const payload: AvisCreateRequest = {
+    consultationId: this.selectedForAvis.id,
+    note: this.avisNote,
+    commentaire: this.avisCommentaire.trim() || undefined,
+  };
+
+  this.avisService.creerAvis(payload).subscribe({
+    next: () => {
+      this.avisDonnes.add(this.selectedForAvis!.id);
+      this.avisSubmitting = false;
+      this.closeAvisModal();
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error('Erreur lors de l\'envoi de l\'avis', err);
+      this.avisSubmitting = false;
+      this.avisSubmitError =
+        err?.error?.message ?? "Impossible d'envoyer votre avis. Veuillez réessayer.";
+      this.cdr.detectChanges();
+    },
+  });
+}
+
   refuserDemande(c: ConsultationRow): void {
     if (c.statut !== 'EN_ATTENTE') return;
 
@@ -303,14 +381,15 @@ export class ConsultationsComponent implements OnInit {
   }
 
   get filtered(): ConsultationRow[] {
-    const now = new Date();
-    return this.allConsultations.filter(c => {
-      const rdvPasse = c.dateAfficheeIso ? new Date(c.dateAfficheeIso) < now : false;
-      const estTerminee = c.statut === 'TERMINEE' || c.statut === 'ANNULEE' || rdvPasse;
-      return this.activeTab === 'avenir' ? !estTerminee : estTerminee;
-    });
-  }
+  const now = new Date();
+  const base = this.allConsultations.filter(c => {
+    const rdvPasse = c.dateAfficheeIso ? new Date(c.dateAfficheeIso) < now : false;
+    const estTerminee = c.statut === 'TERMINEE' || c.statut === 'ANNULEE' || rdvPasse;
+    return this.activeTab === 'avenir' ? !estTerminee : estTerminee;
+  });
 
+  return this.filterStatut ? base.filter(c => c.statut === this.filterStatut) : base;
+}
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
   }

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export type FormuleAbonnement = 'BASIC' | 'STANDARD' | 'PREMIUM';
-export type CycleAbonnement = 'MENSUEL' | 'TRIMESTRIEL' | 'ANNUEL';
+export type CycleAbonnement = 'MENSUEL' | 'ANNUEL';
 export type StatutPaiement = 'EN_ATTENTE' | 'PAYE' | 'EXPIRE' | 'ANNULE' | 'ECHOUE';
 
 export interface Abonnement {
@@ -14,7 +14,7 @@ export interface Abonnement {
   cycle: CycleAbonnement;
   montant: number;
   statut: StatutPaiement;
-  prochainRenouvellement: string; // format ISO "2026-06-01"
+  prochainRenouvellement: string;
   createdAt: string;
   updatedAt: string;
   avocatId: number;
@@ -27,6 +27,23 @@ export interface AbonnementCreateRequest {
   cycle: CycleAbonnement;
   montant: number;
   avocatId: number;
+}
+
+export interface AbonnementCheckoutRequest {
+  formule: FormuleAbonnement;
+  cycle: CycleAbonnement;
+  montant: number;
+  avocatId: number;
+  channel: string;
+  phone: string;
+}
+
+export interface AbonnementCheckoutResponse {
+  status: string;
+  message: string;
+  abonnementReference: string;
+  notchpayReference: string;
+  notchpayDetails: any;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -45,5 +62,9 @@ export class AbonnementService {
 
   createAbonnement(payload: AbonnementCreateRequest): Observable<Abonnement> {
     return this.http.post<Abonnement>(this.baseUrl, payload);
+  }
+
+  checkout(payload: AbonnementCheckoutRequest): Observable<AbonnementCheckoutResponse> {
+    return this.http.post<AbonnementCheckoutResponse>(`${this.baseUrl}/checkout`, payload);
   }
 }

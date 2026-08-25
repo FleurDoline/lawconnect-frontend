@@ -1,10 +1,18 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AvocatService } from '../../../../core/services/avocat.service';
-import { AbonnementService, Abonnement, FormuleAbonnement, AbonnementCreateRequest } from '../../../../core/services/abonnement.service';
+import {
+  AbonnementService,
+  Abonnement,
+  FormuleAbonnement,
+  CycleAbonnement,
+  AbonnementCheckoutRequest
+} from '../../../../core/services/abonnement.service';
 import { TopbarComponent, TopbarNavItem } from '../../../../shared/components/topbar/topbar';
+import { environment } from '../../../../../environments/environment';
 
 
 interface PlanDefinition {
@@ -22,7 +30,7 @@ type CycleAffichage = 'MENSUEL' | 'ANNUEL';
 @Component({
   selector: 'app-avocat-paiement',
   standalone: true,
-  imports: [CommonModule, TopbarComponent],
+  imports: [CommonModule, FormsModule, TopbarComponent],
   templateUrl: './paiement.html',
   styleUrl: './paiement.scss'
 })
@@ -37,11 +45,11 @@ export class PaiementComponent implements OnInit {
   avocatId: number | null = null;
   userName = '';
   userPlan = 'AVOCAT';
+  avocatPhotoUrl: string | null = null;
 
   abonnementActif: Abonnement | null = null;
   historique: Abonnement[] = [];
   creationEnCours = false;
-  planEnCoursId: FormuleAbonnement | null = null;
   creationSuccessMessage = '';
   creationError = '';
 
@@ -49,6 +57,14 @@ export class PaiementComponent implements OnInit {
 
   joursRestants = 0;
   dateRenouvellementAffichee = '';
+
+  // ---- Modal Paiement Mobile Money ----
+  showPaiementModal = false;
+  planSelectionne: PlanDefinition | null = null;
+  channelSelectionne = 'cm.mtn';
+  phoneSaisi = '';
+  paiementEnCours = false;
+  paiementError = '';
 
   navItems: TopbarNavItem[] = [
     { label: 'Tableau de bord', icon: 'dashboard', route: '/avocat/dashboard' },
@@ -64,8 +80,8 @@ export class PaiementComponent implements OnInit {
       formule: 'BASIC',
       nomAffiche: 'Classique',
       tagline: "L'essentiel pour exercer sur LawConnect",
-      prixMensuel: 10000,
-      prixAnnuel: 100000,
+      prixMensuel: 5000,
+      prixAnnuel: 50000,
       recommande: false,
       features: [
         'Profil professionnel visible par tous les clients',
@@ -77,8 +93,8 @@ export class PaiementComponent implements OnInit {
       formule: 'STANDARD',
       nomAffiche: 'Pro',
       tagline: 'Plus de visibilité & meilleurs outils',
-      prixMensuel: 15000,
-      prixAnnuel: 150000,
+      prixMensuel: 7500,
+      prixAnnuel: 75000,
       recommande: false,
       features: [
         'Profil professionnel visible par tous les clients',
@@ -93,8 +109,8 @@ export class PaiementComponent implements OnInit {
       formule: 'PREMIUM',
       nomAffiche: 'Premium',
       tagline: 'Visibilité maximale & outils avancés',
-      prixMensuel: 25000,
-      prixAnnuel: 250000,
+      prixMensuel: 12500,
+      prixAnnuel: 125000,
       recommande: true,
       features: [
         'Profil professionnel visible par tous les clients',
@@ -132,6 +148,7 @@ export class PaiementComponent implements OnInit {
     this.avocatService.getByUserId(userId).subscribe({
       next: (avocat) => {
         this.avocatId = avocat.id;
+        this.avocatPhotoUrl = avocat.photo ? environment.fileBaseUrl + avocat.photo : null;
         this.chargerAbonnements();
       },
       error: () => {
@@ -152,7 +169,6 @@ export class PaiementComponent implements OnInit {
         this.chargerHistorique();
       },
       error: () => {
-        // Aucun abonnement actif (PAYE) — l'avocat n'a pas encore souscrit
         this.abonnementActif = null;
         this.chargerHistorique();
       }
@@ -217,11 +233,11 @@ export class PaiementComponent implements OnInit {
 
   libelleBouton(plan: PlanDefinition): string {
     if (this.estFormuleActuelle(plan)) return 'Formule actuelle';
-    if (this.creationEnCours && this.planEnCoursId === plan.formule) return 'Création...';
+    if (this.paiementEnCours && this.planSelectionne?.formule === plan.formule) return 'Traitement...';
     return plan.formule === 'PREMIUM' ? 'Passer Premium'
        : plan.formule === 'STANDARD' ? 'Passer Pro'
        : 'Choisir Classique';
-    }
+  }
 
   nomFormuleAffiche(formule: FormuleAbonnement | undefined): string {
     switch (formule) {
@@ -271,49 +287,66 @@ export class PaiementComponent implements OnInit {
     if (this.currentPage < this.totalPages) this.currentPage++;
   }
 
-  onChoisirFormule(plan: PlanDefinition): void {
-  if (this.estFormuleActuelle(plan) || this.creationEnCours) return;
+  // ---- Flow de paiement ----
 
-  if (this.abonnementActif) {
-    alert('Le changement de formule sera bientôt disponible. Contactez le support pour changer de plan pour le moment.');
+  onChoisirFormule(plan: PlanDefinition): void {
+    if (this.estFormuleActuelle(plan) || this.paiementEnCours) return;
+
+    if (this.abonnementActif) {
+      alert('Le changement de formule sera bientôt disponible. Contactez le support pour changer de plan pour le moment.');
+      return;
+    }
+
+    this.planSelectionne = plan;
+    this.channelSelectionne = 'cm.mtn';
+    this.phoneSaisi = '';
+    this.paiementError = '';
+    this.showPaiementModal = true;
+  }
+
+  fermerModalPaiement(): void {
+    if (this.paiementEnCours) return;
+    this.showPaiementModal = false;
+    this.planSelectionne = null;
+  }
+
+ confirmerPaiement(): void {
+  if (!this.avocatId || !this.planSelectionne || this.paiementEnCours) return;
+
+  const localNumber = this.phoneSaisi.trim().replace(/\D/g, '');
+  if (!localNumber || localNumber.length !== 9) {
+    this.paiementError = 'Veuillez saisir un numéro valide (9 chiffres, ex: 670000000).';
     return;
   }
 
-  this.creerAbonnement(plan);
-}
+  this.paiementEnCours = true;
+  this.paiementError = '';
 
-private creerAbonnement(plan: PlanDefinition): void {
-  if (!this.avocatId || this.creationEnCours) return;
-
-  this.creationEnCours = true;
-  this.planEnCoursId = plan.formule;
-  this.creationError = '';
-  this.creationSuccessMessage = '';
-
-  const payload: AbonnementCreateRequest = {
-    formule: plan.formule,
-    cycle: this.cycleAffichage === 'ANNUEL' ? 'ANNUEL' : 'MENSUEL',
-    montant: this.prixAffiche(plan),
-    avocatId: this.avocatId
+  const payload: AbonnementCheckoutRequest = {
+    formule: this.planSelectionne.formule,
+    cycle: (this.cycleAffichage === 'ANNUEL' ? 'ANNUEL' : 'MENSUEL') as CycleAbonnement,
+    montant: this.prixAffiche(this.planSelectionne),
+    avocatId: this.avocatId,
+    channel: this.channelSelectionne,
+    phone: '+237' + localNumber
   };
 
-  this.abonnementService.createAbonnement(payload).subscribe({
-    next: () => {
-      this.creationEnCours = false;
-      this.planEnCoursId = null;
-      this.creationSuccessMessage =
-        `Votre demande d'abonnement ${plan.nomAffiche} a été enregistrée. Statut : en attente de confirmation de paiement.`;
+  this.abonnementService.checkout(payload).subscribe({
+    next: (res) => {
+      this.paiementEnCours = false;
+      this.showPaiementModal = false;
+      this.planSelectionne = null;
+      this.creationSuccessMessage = res.message || 'Paiement initié. Veuillez valider le prompt USSD reçu sur votre téléphone.';
       this.chargerHistorique();
+      this.cdr.detectChanges();
     },
     error: (err) => {
-      this.creationEnCours = false;
-      this.planEnCoursId = null;
-      this.creationError = err.error?.message || "Une erreur est survenue lors de la création de l'abonnement.";
+      this.paiementEnCours = false;
+      this.paiementError = err.error?.message || "Une erreur est survenue lors du paiement.";
       this.cdr.detectChanges();
     }
   });
- }
-
+}
   onGererPaiement(): void {
     alert('La gestion du moyen de paiement arrive bientôt.');
   }

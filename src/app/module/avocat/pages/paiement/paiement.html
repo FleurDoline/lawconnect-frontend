@@ -1,6 +1,7 @@
 <app-topbar
   [userName]="userName"
   [userPlan]="userPlan"
+  [userPhotoUrl]="avocatPhotoUrl"
   [navItems]="navItems"
   (navSelect)="onNavSelect($event)">
 </app-topbar>
@@ -88,7 +89,7 @@
 
       <button type="button"
         class="plan-card__btn"
-        [disabled]="estFormuleActuelle(plan) || creationEnCours"
+        [disabled]="estFormuleActuelle(plan) || paiementEnCours"
         (click)="onChoisirFormule(plan)">
              {{ libelleBouton(plan) }}
       </button>
@@ -97,43 +98,45 @@
 
   <!-- Historique des paiements -->
   <div class="historique-card">
-  <div class="historique-card__header">
-    <div>
-      <h2>Historique des paiements</h2>
-      <p>Reçus de votre abonnement LawConnect</p>
+    <div class="historique-card__header">
+      <div>
+        <h2>Historique des paiements</h2>
+        <p>Reçus de votre abonnement LawConnect</p>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table class="historique-table">
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Date</th>
+            <th>Formule</th>
+            <th>Montant</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of historiquePage">
+            <td class="historique-table__ref" data-label="Référence">{{ a.reference }}</td>
+            <td data-label="Date">{{ formatDateCourte(a.createdAt) }}</td>
+            <td data-label="Formule">{{ a.cycle === 'ANNUEL' ? 'Annuel' : 'Mensuel' }} {{ nomFormuleAffiche(a.formule) }}</td>
+            <td data-label="Montant">{{ a.montant | number:'1.0-0' }} frs</td>
+            <td data-label="Statut"><span class="badge" [ngClass]="classeStatut(a.statut)">{{ libelleStatut(a.statut) }}</span></td>
+          </tr>
+          <tr *ngIf="!historique.length">
+            <td colspan="5" class="historique-table__vide">Aucun paiement enregistré pour le moment.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="historique-pagination" *ngIf="historique.length > pageSize">
+      <button type="button" (click)="pagePrecedente()" [disabled]="currentPage === 1">Précédent</button>
+      <span>Page {{ currentPage }} / {{ totalPages }}</span>
+      <button type="button" (click)="pageSuivante()" [disabled]="currentPage === totalPages">Suivant</button>
     </div>
   </div>
-
-  <table class="historique-table">
-    <thead>
-      <tr>
-        <th>Référence</th>
-        <th>Date</th>
-        <th>Formule</th>
-        <th>Montant</th>
-        <th>Statut</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let a of historiquePage">
-        <td class="historique-table__ref">{{ a.reference }}</td>
-        <td>{{ formatDateCourte(a.createdAt) }}</td>
-        <td>{{ a.cycle === 'ANNUEL' ? 'Annuel' : 'Mensuel' }} {{ nomFormuleAffiche(a.formule) }}</td>
-        <td>{{ a.montant | number:'1.0-0' }} frs</td>
-        <td><span class="badge" [ngClass]="classeStatut(a.statut)">{{ libelleStatut(a.statut) }}</span></td>
-      </tr>
-      <tr *ngIf="!historique.length">
-        <td colspan="5" class="historique-table__vide">Aucun paiement enregistré pour le moment.</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div class="historique-pagination" *ngIf="historique.length > pageSize">
-    <button type="button" (click)="pagePrecedente()" [disabled]="currentPage === 1">Précédent</button>
-    <span>Page {{ currentPage }} / {{ totalPages }}</span>
-    <button type="button" (click)="pageSuivante()" [disabled]="currentPage === totalPages">Suivant</button>
-  </div>
-</div>
 </div>
 
 <div class="paiement-page__loading" *ngIf="loading">
@@ -142,4 +145,49 @@
 
 <div class="paiement-page__error" *ngIf="!loading && error">
   <p>Impossible de charger votre abonnement. Merci de vous reconnecter.</p>
+</div>
+
+<!-- Modal Paiement Mobile Money -->
+<div class="modal-overlay" *ngIf="showPaiementModal" (click)="fermerModalPaiement()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <button class="modal-card__close" (click)="fermerModalPaiement()">&times;</button>
+
+    <h2 class="modal-card__title">Paiement Mobile Money</h2>
+    <p class="modal-card__specialite" *ngIf="planSelectionne">
+      {{ planSelectionne.nomAffiche }} — {{ prixAffiche(planSelectionne) | number:'1.0-0' }} frs / {{ cycleAffichage === 'MENSUEL' ? 'mois' : 'an' }}
+    </p>
+
+    <div class="modal-card__info">
+      <div class="modal-card__field">
+        <span class="modal-card__label">Opérateur</span>
+        <select [(ngModel)]="channelSelectionne" class="form-select">
+          <option value="cm.mtn">MTN Mobile Money</option>
+          <option value="cm.orange">Orange Money</option>
+        </select>
+      </div>
+
+      <div class="modal-card__field">
+        <span class="modal-card__label">Numéro de téléphone</span>
+        <div class="phone-input">
+          <span class="phone-input__prefix">🇨🇲 +237</span>
+          <input
+            type="tel"
+            [(ngModel)]="phoneSaisi"
+            placeholder="6XXXXXXXX"
+            maxlength="9"
+            class="phone-input__field"
+          />
+        </div>
+      </div>
+    </div>
+
+    <p class="form-message form-message--error" *ngIf="paiementError">{{ paiementError }}</p>
+
+    <button
+      class="btn-primary modal-card__close-btn"
+      [disabled]="paiementEnCours"
+      (click)="confirmerPaiement()">
+      {{ paiementEnCours ? 'Traitement...' : 'Payer maintenant' }}
+    </button>
+  </div>
 </div>

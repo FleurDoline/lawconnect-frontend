@@ -1,10 +1,12 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ConsultationService, DemandeConsultation } from '../../../../core/services/consultation.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { AvocatService } from '../../../../core/services/avocat.service';
 import { TopbarComponent, TopbarNavItem } from '../../../../shared/components/topbar/topbar';
+import { environment } from '../../../../../environments/environment';
 
 type ModeConsultation = 'visio' | 'telephone' | 'cabinet';
 type FiltreMode = 'tout' | ModeConsultation;
@@ -55,6 +57,7 @@ export class RendezVousComponent implements OnInit {
 
   userName = '';
   userPlan = 'AVOCAT';
+  avocatPhotoUrl: string | null = null;
 
   accepterApiError = signal<string | null>(null);
 
@@ -70,6 +73,8 @@ export class RendezVousComponent implements OnInit {
   constructor(
     private consultationService: ConsultationService,
     private authService: AuthService,
+    private avocatService: AvocatService,
+    private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
 
@@ -78,7 +83,21 @@ export class RendezVousComponent implements OnInit {
     if (fullName) {
       this.userName = fullName;
     }
+    this.chargerAvocatProfile();
     this.chargerConsultations();
+  }
+
+  private chargerAvocatProfile(): void {
+    const userId = this.authService.getUserId();
+    if (!userId) return;
+
+    this.avocatService.getByUserId(userId).subscribe({
+      next: (avocat) => {
+        this.avocatPhotoUrl = avocat.photo ? environment.fileBaseUrl + avocat.photo : null;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Erreur lors du chargement du profil avocat', err),
+    });
   }
 
   onNavSelect(item: TopbarNavItem): void {

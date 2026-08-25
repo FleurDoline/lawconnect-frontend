@@ -5,8 +5,7 @@
     [placeholder]="placeholder"
     [ngModel]="query"
     (ngModelChange)="onInput($event)"
-    (focus)="suggestions.length > 0 && (showDropdown = true)"
-    (blur)="onBlur()"
+    (focus)="onFocus()"    (blur)="onBlur()"
     autocomplete="off"
   />
 

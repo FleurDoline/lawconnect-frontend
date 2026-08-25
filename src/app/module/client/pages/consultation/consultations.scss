@@ -252,6 +252,30 @@
   &:hover { background: rgba(255, 255, 255, 0.25); color: #fff; }
 }
 
+.star-rating {
+  display: flex;
+  gap: 4px;
+
+  .star-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #d1d5db; // gris clair, étoile vide
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px;
+    transition: color 0.15s ease;
+
+    &.filled {
+      color: #f59e0b; // orange/doré, étoile remplie
+    }
+
+    &:hover {
+      color: #f59e0b;
+    }
+  }
+}
+
 .modal-body { padding: 24px 28px; }
 
 .section-card {

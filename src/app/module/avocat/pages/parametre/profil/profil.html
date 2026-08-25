@@ -1,6 +1,7 @@
 <app-topbar
   [userName]="userName"
   [userPlan]="userPlan"
+  [userPhotoUrl]="avocatPhotoUrl"
   [navItems]="navItems"
   (navSelect)="onNavSelect($event)">
 </app-topbar>
@@ -34,6 +35,10 @@
               {{ specialitesActuelles.join(' · ') }}
             </span>
 
+            <span class="profil-card__experience" *ngIf="form.value.anneesExperience">
+              {{ form.value.anneesExperience }} {{ form.value.anneesExperience > 1 ? "ans" : "an" }} d'expérience
+            </span>
+
             <div class="profil-card__progression">
               <div class="profil-card__progression-bar">
                 <div class="profil-card__progression-fill"
@@ -60,51 +65,72 @@
         </div>
 
         <form [formGroup]="form" (ngSubmit)="onEnregistrer()" class="profil-card__form">
-          <div class="profil-card__field">
-            <label for="fullName">Nom complet</label>
-            <input id="fullName" type="text" formControlName="fullName" />
-            <span class="profil-card__field-error" *ngIf="form.get('fullName')?.invalid && form.get('fullName')?.touched">
-              Le nom complet est requis
-            </span>
-          </div>
+          <div class="profil-card__form-grid">
+            <div class="profil-card__form-col">
+              <div class="profil-card__row">
+                <div class="profil-card__field">
+                  <label for="fullName">Nom complet</label>
+                  <input id="fullName" type="text" formControlName="fullName" />
+                  <span class="profil-card__field-error" *ngIf="form.get('fullName')?.invalid && form.get('fullName')?.touched">
+                    Le nom complet est requis
+                  </span>
+                </div>
 
-          <div class="profil-card__row">
-            <div class="profil-card__field">
-              <label for="email">Email</label>
-              <input id="email" type="email" formControlName="email" readonly />
+                <div class="profil-card__field" style="max-width: 200px;">
+                  <label for="anneesExperience">Années d'expérience</label>
+                  <input id="anneesExperience" type="number" min="0" max="60" formControlName="anneesExperience" placeholder="Ex: 5" />
+                  <span class="profil-card__field-error" *ngIf="form.get('anneesExperience')?.invalid && form.get('anneesExperience')?.touched">
+                    Valeur invalide (0 à 60)
+                  </span>
+                </div>
+              </div>
+
+              <div class="profil-card__row">
+                <div class="profil-card__field">
+                  <label for="email">Email</label>
+                  <input id="email" type="email" formControlName="email" readonly />
+                </div>
+
+                <div class="profil-card__field">
+                  <label for="telephone">Telephone</label>
+                  <input id="telephone" type="tel" formControlName="telephone" placeholder="+237 6XX XX XX XX" />
+                  <span class="profil-card__field-error" *ngIf="form.get('telephone')?.invalid && form.get('telephone')?.touched">
+                    Un numero de telephone valide est requis
+                  </span>
+                </div>
+              </div>
+
+              <div class="profil-card__field">
+                <label for="lienAgenda">Lien d'agenda</label>
+                <input
+                  id="lienAgenda"
+                  type="url"
+                  formControlName="lienAgenda"
+                  placeholder="https://calendly.com/votre-nom"
+                />
+                <span class="profil-card__field-error" *ngIf="form.get('lienAgenda')?.invalid && form.get('lienAgenda')?.touched">
+                  Veuillez renseigner un lien valide (ex: Calendly, Google Calendar)
+                </span>
+              </div>
             </div>
 
-            <div class="profil-card__field">
-              <label for="telephone">Telephone</label>
-              <input id="telephone" type="tel" formControlName="telephone" placeholder="+237 6XX XX XX XX" />
-              <span class="profil-card__field-error" *ngIf="form.get('telephone')?.invalid && form.get('telephone')?.touched">
-                Un numero de telephone valide est requis
-              </span>
+            <div class="profil-card__field profil-card__field--bio">
+              <label for="bio">Bio / Présentation</label>
+              <textarea id="bio" formControlName="bio" maxlength="500"
+                placeholder="Présentez votre parcours, votre expertise et votre approche..."></textarea>
+              <span class="profil-card__field-hint">{{ form.value.bio?.length || 0 }}/500</span>
             </div>
-          </div>
-
-          <div class="profil-card__field">
-            <label for="lienAgenda">Lien d'agenda</label>
-            <input
-              id="lienAgenda"
-              type="url"
-              formControlName="lienAgenda"
-              placeholder="https://calendly.com/votre-nom"
-            />
-            <span class="profil-card__field-error" *ngIf="form.get('lienAgenda')?.invalid && form.get('lienAgenda')?.touched">
-              Veuillez renseigner un lien valide (ex: Calendly, Google Calendar)
-            </span>
           </div>
 
           <div class="profil-card__field profil-card__field--specialite">
-  <label>Specialite</label>
-  <div class="profil-card__row" style="align-items:center; gap: 12px;">
-    <input type="text" [value]="specialitesActuelles.join(', ') || 'Aucune specialite renseignee'" readonly style="flex:1" />
-    <button type="button" class="profil-card__btn profil-card__btn--upload" (click)="ouvrirSpecialiteSelector()">
-      Modifier
-    </button>
-  </div>
-</div>
+            <label>Specialite</label>
+            <div class="profil-card__row" style="align-items:center; gap: 12px;">
+              <input type="text" [value]="specialitesActuelles.join(', ') || 'Aucune specialite renseignee'" readonly style="flex:1" />
+              <button type="button" class="profil-card__btn profil-card__btn--upload" (click)="ouvrirSpecialiteSelector()">
+                Modifier
+              </button>
+            </div>
+          </div>
 
           <p class="profil-card__message profil-card__message--success" *ngIf="saveSuccess">
             Profil mis a jour avec succes.

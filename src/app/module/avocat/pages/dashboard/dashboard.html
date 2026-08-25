@@ -1,39 +1,6 @@
-<!-- SVG icon sprite (all icons defined once, reused via <use>) -->
+<!-- SVG icon sprite (icônes propres au dashboard uniquement — le reste vient du sprite de app-topbar) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <symbol id="i-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/>
-      <rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
-    </symbol>
-    <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-      <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-    </symbol>
-    <symbol id="i-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-    </symbol>
-    <symbol id="i-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
-    </symbol>
-    <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-    </symbol>
-    <symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-      <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-    </symbol>
-    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-    </symbol>
-    <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-    </symbol>
-    <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="6 9 12 15 18 9"/>
-    </symbol>
     <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
     </symbol>
@@ -54,66 +21,89 @@
   </defs>
 </svg>
 
+<app-topbar
+  [userName]="userName"
+  [userPlan]="userPlan"
+  [userPhotoUrl]="avocatPhoto"
+  [navItems]="navItems"
+  (navSelect)="onNavSelect($event)">
+</app-topbar>
+
 <main class="main">
-  <!-- Header -->
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">LawConnect</div>
-      <div class="tagline">Portail Juridique</div>
-    </div>
-
-    <div class="search">
-      <input type="text" placeholder="Rechercher un dossier, un avocat ou un document..." />
-    </div>
-
-    <div class="user">
-      <svg class="icon icon-btn" width="18" height="18"><use href="#i-bell"></use></svg>
-      <svg class="icon icon-btn" width="18" height="18"><use href="#i-help"></use></svg>
-
-      <!-- Dropdown trigger -->
-      <div class="user-menu">
-        <button class="user-trigger" (click)="toggleMenu($event)">
-          <div class="user-info">
-            <div class="name">{{ userName }}</div>
-            <div class="plan">{{ userPlan }}</div>
-          </div>
-          <div class="avatar">
-  <img *ngIf="avocatPhoto" [src]="avocatPhoto" [alt]="userName" />
-  <span *ngIf="!avocatPhoto">{{ initiales(userName) }}</span>
-</div>
-          <svg class="icon" width="16" height="16"><use href="#i-chevron"></use></svg>
-        </button>
-
-        <ul class="dropdown" *ngIf="menuOpen">
-          <li *ngFor="let item of navItems" (click)="selectNav(item)">
-            <svg class="icon" width="16" height="16"><use [attr.href]="'#i-' + item.icon"></use></svg>
-            <span>{{ item.label }}</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </header>
-
   <!-- Greeting -->
   <section class="greeting">
     <h1>Bonjour, {{ lawyerName }}</h1>
   </section>
 
+  <!-- Profile completion banner -->
+  <section
+    class="profile-banner"
+    *ngIf="avocatProgression < 100"
+    [style.border-left-color]="progressionColor">
+    <div class="profile-banner__main">
+      <span
+        class="profile-banner__tag"
+        [style.background]="progressionColor + '1a'"
+        [style.color]="progressionColor">
+        {{ progressionStatutLabel }}
+      </span>
+      <div class="profile-banner__title">Complétez votre profil</div>
+      <p class="profile-banner__desc">
+        {{ profileMissingText }}
+        <span *ngIf="autresChampsRestants > 0">(+{{ autresChampsRestants }} autre{{ autresChampsRestants > 1 ? 's' : '' }})</span>
+        Un profil complet augmente vos chances d'être trouvé par des clients.
+      </p>
+      <div class="profile-banner__progress">
+        <div class="progress-track">
+          <div class="progress-fill" [style.width.%]="avocatProgression" [style.background-color]="progressionColor"></div>
+        </div>
+        <span class="progress-label">{{ avocatProgression }}% complété</span>
+      </div>
+    </div>
+    <button class="btn-primary btn-navy" (click)="goToParametres()">Compléter mon profil</button>
+  </section>
+
+  <!-- Subscription card -->
+  <section class="subscription-card subscription-card--vide" *ngIf="abonnementCardEtat === 'AUCUN'">
+    <div class="subscription-card__main">
+      <span class="subscription-card__tag subscription-card__tag--blue">Profil invisible</span>
+      <div class="subscription-card__title">Vos clients ne peuvent pas encore vous trouver</div>
+      <p class="subscription-card__desc">
+        Sans abonnement actif, votre profil n'apparaît pas dans les recherches ni auprès des clients. Activez une formule dès maintenant pour commencer à recevoir des demandes de consultation.
+      </p>
+    </div>
+    <button class="btn-primary btn-navy" (click)="goToPaiement()">Activer mon abonnement</button>
+  </section>
+
+  <section class="subscription-card subscription-card--premium" *ngIf="abonnementCardEtat === 'CLASSIQUE'">
+    <div class="subscription-card__main">
+      <span class="subscription-card__tag subscription-card__tag--gold">✨ Formule Classique</span>
+      <div class="subscription-card__title">Vous passez à côté de nombreux clients</div>
+      <p class="subscription-card__desc">
+        Les avocats Pro et Premium sont mis en avant dans les résultats de recherche et reçoivent davantage de demandes. Débloquez :
+      </p>
+      <ul class="subscription-card__features">
+        <li *ngFor="let f of premiumUpsellFeatures">{{ f }}</li>
+      </ul>
+    </div>
+    <button class="btn-primary btn-gold" (click)="goToPaiement()">Comparer Pro & Premium</button>
+  </section>
+
   <!-- Stats -->
   <section class="stats">
     <div class="stat-card dark">
-      <span class="tag"><svg class="icon" width="12" height="12"><use href="#i-wallet"></use></svg> PAYMENTS</span>
-      <div class="label">Revenus Totaux</div>
-      <div class="value">{{ stats.revenue }}</div>
+      <span class="tag"><svg class="icon" width="12" height="12"><use href="#i-plus"></use></svg> À TRAITER</span>
+      <div class="label">Demandes en attente</div>
+      <div class="value">{{ stats.demandesEnAttente }}</div>
     </div>
     <div class="stat-card">
-      <span class="tag orange"><svg class="icon" width="12" height="12"><use href="#i-users"></use></svg> Groups</span>
-      <div class="label">Consultation du Mois</div>
+      <span class="tag orange"><svg class="icon" width="12" height="12"><use href="#i-users"></use></svg> CONSULTATIONS</span>
+      <div class="label">Consultations du mois</div>
       <div class="value">{{ stats.consultations }}</div>
     </div>
     <div class="stat-card">
-      <span class="tag green"><svg class="icon" width="12" height="12"><use href="#i-star"></use></svg> STAR</span>
-      <div class="label">Note Moyenne</div>
+      <span class="tag green"><svg class="icon" width="12" height="12"><use href="#i-star"></use></svg> NOTE</span>
+      <div class="label">Note moyenne</div>
       <div class="value">{{ stats.rating }}</div>
     </div>
   </section>
@@ -126,28 +116,28 @@
     </div>
 
     <div class="appt" *ngFor="let a of appointments">
-  <div class="when">
-    <div class="day">{{ a.dayLabel }}</div>
-    <div class="time">{{ a.time }}</div>
-  </div>
-  <div class="info">
-    <div class="name">
-      {{ a.name }}
-      <span class="urgent-badge" *ngIf="a.urgent">Urgent</span>
+      <div class="when">
+        <div class="day">{{ a.dayLabel }}</div>
+        <div class="time">{{ a.time }}</div>
+      </div>
+      <div class="info">
+        <div class="name">
+          {{ a.name }}
+          <span class="urgent-badge" *ngIf="a.urgent">Urgent</span>
+        </div>
+        <div class="matter">{{ a.matter }}</div>
+        <div class="type" *ngIf="a.type">{{ a.type }}</div>
+      </div>
+      <div class="actions">
+        <button class="btn-outline" (click)="onDetails(a)">Details</button>
+        <button class="btn-primary" *ngIf="a.canJoin" (click)="onJoin(a)">
+          Rejoindre la Consultation
+        </button>
+      </div>
     </div>
-    <div class="matter">{{ a.matter }}</div>
-    <div class="type" *ngIf="a.type">{{ a.type }}</div>
-  </div>
-  <div class="actions">
-    <button class="btn-outline" (click)="onDetails(a)">Details</button>
-    <button class="btn-primary" *ngIf="a.canJoin" (click)="onJoin(a)">
-      Rejoindre la Consultation
-    </button>
-  </div>
-</div>
   </section>
 
- 
+
   <!-- Availability -->
   <section class="availability">
     <div class="section-header">
@@ -155,16 +145,16 @@
       <a href="#" (click)="openDisponibiliteModal(); $event.preventDefault()">Modifier les horaires</a>
     </div>
     <div class="days">
-     <div class="day-card" *ngFor="let d of disponibilites">
-       <div class="day">{{ d.jour }}</div>
-       <div class="hours">{{ d.heureDebut }} - {{ d.heureFin }}</div>
-     </div>
+      <div class="day-card" *ngFor="let d of disponibilites">
+        <div class="day">{{ d.jour }}</div>
+        <div class="hours">{{ d.heureDebut }} - {{ d.heureFin }}</div>
+      </div>
     </div>
-  <ul class="notes">
-    <li>Samedi/Dimanche: Ferme</li>
-    <li>Pause dejeuner: 12h30-13h30</li>
-  </ul>
-</section>
+    <ul class="notes">
+      <li>Samedi/Dimanche: Ferme</li>
+      <li>Pause dejeuner: 12h30-13h30</li>
+    </ul>
+  </section>
 </main>
 
 <!-- Disponibilités Modal -->
@@ -225,8 +215,8 @@
     <div class="modal-footer">
       <button type="button" class="btn-outline" (click)="closeDisponibiliteModal()">Annuler</button>
       <button type="button" class="btn-primary" [disabled]="disponibilitesSubmitting" (click)="enregistrerDisponibilites()">
-  {{ disponibilitesSubmitting ? 'Enregistrement...' : 'Enregistrer' }}
-</button>
+        {{ disponibilitesSubmitting ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
     </div>
   </div>
 </div>
@@ -305,9 +295,9 @@
       </div>
 
       <div class="detail-block">
-  <span class="detail-block__label">Situation décrite</span>
-  <textarea class="detail-block__box" readonly rows="3">{{ d.situation }}</textarea>
-</div>
+        <span class="detail-block__label">Situation décrite</span>
+        <textarea class="detail-block__box" readonly rows="3">{{ d.situation }}</textarea>
+      </div>
 
       <p class="field-error" *ngIf="acceptApiError">{{ acceptApiError }}</p>
 

@@ -1,6 +1,6 @@
 .parametre-page {
   padding: 1rem 2rem;
-  max-width: 1400px;
+  max-width: 1700px;
   box-sizing: border-box;
 
   @media (max-width: 768px) {
@@ -148,7 +148,7 @@
   background: #fff;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  padding: 2.5rem;
+  padding: 1.9rem 2.5rem;
   width: 100%;
   box-sizing: border-box;
 
@@ -211,6 +211,21 @@
     overflow-wrap: break-word;
   }
 
+  // ===== Badge Années d'expérience =====
+  &__experience {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1e3a5f;
+    background: #eef2ff;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    width: fit-content;
+    margin-top: 4px;
+  }
+
   &__changer-photo {
     background: none;
     border: none;
@@ -226,16 +241,35 @@
   &__form {
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
+    gap: 1.25rem;
 
     @media (max-width: 480px) {
-      gap: 1.25rem;
+      gap: 1rem;
     }
+  }
+
+  // ===== Grille 2 colonnes : infos (gauche) + bio (droite) =====
+  &__form-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2rem;
+    align-items: stretch;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__form-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
   }
 
   &__row {
     display: flex;
     gap: 3rem;
+    align-items: flex-start;
 
     @media (max-width: 640px) {
       flex-direction: column;
@@ -285,14 +319,86 @@
       }
     }
 
+    textarea {
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      font-size: 1rem;
+      color: #1a1a2e;
+      background: #f9fafb;
+      width: 100%;
+      box-sizing: border-box;
+      font-family: inherit;
+      line-height: 1.55;
+      resize: vertical;
+      min-height: 96px;
+
+      @media (max-width: 480px) {
+        padding: 0.75rem 0.9rem;
+        font-size: 0.95rem;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: #1e3a5f;
+        background: #fff;
+      }
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+    }
+
     &--specialite {
       max-width: 100%;
+    }
+
+    // ===== Bloc Bio : occupe toute la hauteur de la colonne gauche =====
+    &--bio {
+      background: #f8f9fc;
+      border: 1px solid #e8eaf0;
+      border-left: 3px solid #1e3a5f;
+      border-radius: 10px;
+      padding: 1.1rem 1.25rem 1rem;
+      gap: 0.6rem;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      box-sizing: border-box;
+
+      label {
+        color: #1e3a5f;
+      }
+
+      textarea {
+        background: #fff;
+        border-color: #dce1ea;
+        flex: 1;
+        min-height: 140px;
+        resize: none;
+      }
+
+      @media (max-width: 900px) {
+        height: auto;
+
+        textarea {
+          min-height: 110px;
+          resize: vertical;
+        }
+      }
     }
   }
 
   &__field-error {
     font-size: 0.75rem;
     color: #dc2626;
+  }
+
+  &__field-hint {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-align: right;
+    margin-top: -0.15rem;
   }
 
   &__message {
@@ -453,7 +559,7 @@
       color: #ffffff;
     }
   }
-} // <-- FIN de .profil-card (c'est ça qui manquait)
+} // <-- FIN de .profil-card
 
 // ===== Modale : selection type de piece d'identite =====
 // (en dehors de .profil-card, comme dans le HTML)

@@ -122,7 +122,9 @@ export class AvocatParametreProfilComponent implements OnInit {
       fullName: ['', Validators.required],
       email: [{ value: '', disabled: true }],
       telephone: ['', [Validators.required, Validators.pattern(/^[0-9+\s]{6,20}$/)]],
-      lienAgenda: ['', [Validators.pattern(/^https?:\/\/.+/)]]
+      lienAgenda: ['', [Validators.pattern(/^https?:\/\/.+/)]],
+      bio: ['', Validators.maxLength(500)],
+      anneesExperience: [null, [Validators.min(0), Validators.max(60)]]
     });
 
     this.passwordForm = this.fb.group({
@@ -171,7 +173,9 @@ export class AvocatParametreProfilComponent implements OnInit {
           fullName: nomComplet,
           email: avocat.email,
           telephone: avocat.telephone || '',
-          lienAgenda: avocat.lienAgenda || ''
+          lienAgenda: avocat.lienAgenda || '',
+          bio: avocat.bio || '',
+          anneesExperience: avocat.experience ?? null
         });
 
         // Détermine si le lien d'agenda doit être obligatoire :
@@ -286,6 +290,10 @@ formatDateFr(dateStr: string): string {
   return `${String(d.getDate()).padStart(2, '0')} ${mois[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+get avocatPhotoUrl(): string | null {
+  return this.photo ? this.photoBaseUrl + this.photo : null;
+}
+
 allerVersPaiement(): void {
   this.router.navigate(['/avocat/paiement']);
 }
@@ -328,6 +336,8 @@ allerVersPaiement(): void {
       fullName: this.form.value.fullName,
       telephone: this.form.value.telephone,
       lienAgenda: this.form.value.lienAgenda,
+      bio: this.form.value.bio,
+      experience: this.form.value.anneesExperience,
       specialiteIds: this.selectedSpecialiteIds
     };
 

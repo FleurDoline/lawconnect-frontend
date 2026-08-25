@@ -1,4 +1,5 @@
 <app-topbar
+  #topbar
   [userName]="clientNom"
   userPlan="Client"
   [navItems]="navItems"
@@ -112,6 +113,7 @@
       <svg width="16" height="16"><use href="#i-x"></use></svg>
     </button>
     <button *ngIf="canJoin(c)" class="btn-primary btn-small" (click)="rejoindre(c)">Rejoindre</button>
+    <button *ngIf="canAvis(c)" class="btn-outline btn-small" (click)="openAvisModal(c)">Laisser un avis</button>
   </div>
 </td>
         </tr>
@@ -521,6 +523,57 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Avis Modal -->
+  <div class="modal-backdrop" *ngIf="showAvisModal" (click)="closeAvisModal()">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="avis-title" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="avis-title">Laisser un avis</h2>
+        <button class="modal-close" type="button" (click)="closeAvisModal()" aria-label="Fermer">
+          <svg class="icon" width="18" height="18"><use href="#i-x"></use></svg>
+        </button>
+      </div>
+
+      <div class="modal-body" *ngIf="selectedForAvis as c">
+        <p class="modal-subtitle">Comment s'est passée votre consultation avec {{ c.avocatNom }} ?</p>
+
+        <div class="form-field">
+          <label>Votre note</label>
+          <div class="star-rating">
+            <button
+              type="button"
+              *ngFor="let star of [1,2,3,4,5]"
+              class="star-btn"
+              [class.filled]="star <= avisNote"
+              (click)="setAvisNote(star)"
+              [attr.aria-label]="star + ' étoile(s)'">
+              ★
+            </button>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="avisCommentaire">Commentaire (optionnel)</label>
+          <textarea
+            id="avisCommentaire"
+            name="avisCommentaire"
+            rows="3"
+            [(ngModel)]="avisCommentaire"
+            placeholder="Partagez votre expérience..."
+          ></textarea>
+        </div>
+
+        <div class="field-error" *ngIf="avisSubmitError">{{ avisSubmitError }}</div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-outline" (click)="closeAvisModal()">Annuler</button>
+        <button type="button" class="btn-primary" [disabled]="avisSubmitting" (click)="submitAvis()">
+          {{ avisSubmitting ? 'Envoi...' : 'Envoyer mon avis' }}
+        </button>
+      </div>
     </div>
   </div>
 

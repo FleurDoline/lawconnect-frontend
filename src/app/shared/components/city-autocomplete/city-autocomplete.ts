@@ -1,10 +1,15 @@
-import { Component, EventEmitter, Input, Output, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, Subscription, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, tap } from 'rxjs/operators';
 import { CityService } from '../../../core/services/city.service';
 import { City } from '../..//../core/models/city.model';
+
+interface CityQuery {
+  query: string;
+  token: number;
+}
 
 @Component({
   selector: 'app-city-autocomplete',
@@ -24,23 +29,50 @@ export class CityAutocompleteComponent implements OnDestroy {
   suggestions: City[] = [];
   showDropdown = false;
 
-  private search$ = new Subject<string>();
+  private search$ = new Subject<CityQuery>();
+  private inputToken = 0;
   private sub: Subscription;
 
-  constructor(private cityService: CityService) {
+  constructor(
+    private cityService: CityService,
+    private cdr: ChangeDetectorRef
+  ) {
     this.sub = this.search$.pipe(
       debounceTime(250),
-      distinctUntilChanged(),
-      switchMap(q => q.trim().length > 0 ? this.cityService.searchCities(q) : of([]))
+
+      distinctUntilChanged(
+        (a, b) => a.query === b.query && a.token === b.token
+      ),
+
+      switchMap(({ query }) =>
+        this.cityService.searchCities(query).pipe(
+          tap(results => console.log('[City] success', results)),
+
+          catchError(err => {
+            console.error(err);
+            return of([] as City[]);
+          })
+        )
+      )
     ).subscribe(results => {
-      this.suggestions = results;
-      this.showDropdown = results.length > 0;
+      this.suggestions = this.query.trim().length === 0
+        ? results.slice(0, 7)
+        : results;
+
+      this.showDropdown = this.suggestions.length > 0;
+
+      this.cdr.detectChanges();
     });
   }
 
   onInput(value: string): void {
     this.query = value;
-    this.search$.next(value);
+    this.search$.next({ query: value, token: this.inputToken });
+  }
+
+  onFocus(): void {
+    this.inputToken++;
+    this.search$.next({ query: this.query, token: this.inputToken });
   }
 
   selectCity(city: City): void {
@@ -50,7 +82,6 @@ export class CityAutocompleteComponent implements OnDestroy {
   }
 
   onBlur(): void {
-    // délai pour laisser le (click) sur une suggestion se déclencher avant de fermer
     setTimeout(() => (this.showDropdown = false), 150);
   }
 

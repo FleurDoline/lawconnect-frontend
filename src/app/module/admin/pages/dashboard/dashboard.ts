@@ -46,7 +46,7 @@ export class AdminDashboardComponent implements OnInit {
     { icon: 'card', label: 'Paiement', route: '/admin/paiements' },
     { icon: 'settings', label: 'Moderation', route: '/admin/moderation' },
     { icon: 'settings', label: 'Paramètre', route: '/admin/parametres' },
-    { icon: 'logout', label: 'Déconnexion' }
+    { icon: 'logout', label: 'Déconnexion' , route: '/avocat/deconnexion'}
   ];
 
   stats = {

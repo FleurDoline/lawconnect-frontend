@@ -23,54 +23,23 @@
     }
   }
 
-  &__selection {
-    flex: 1;
-    max-width: 640px;
-    background: #fff;
-    border-radius: 12px;
-    padding: 32px 40px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  &__selection,
+&__form,
+&__situation {
+  flex: 1;
+  max-width: 640px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 40px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 
-    @include respond(md) {
-      max-width: 100%;
-      width: 100%;
-      padding: 20px;
-      box-sizing: border-box;
-    }
+  @include respond(md) {
+    max-width: 100%;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
   }
-
-  &__form {
-    flex: 1;
-    max-width: 640px;
-    background: #fff;
-    border-radius: 12px;
-    padding: 32px 40px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-
-    @include respond(md) {
-      max-width: 100%;
-      width: 100%;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-  }
-
-  &__situation {
-    flex: 1;
-    max-width: 640px;
-    background: #fff;
-    border-radius: 12px;
-    padding: 32px 40px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-
-    @include respond(md) {
-      max-width: 100%;
-      width: 100%;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-  }
-
+}
   &__confirmation {
     flex: 1;
     max-width: 640px;

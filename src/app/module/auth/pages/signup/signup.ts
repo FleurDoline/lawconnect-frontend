@@ -26,7 +26,7 @@ export class SignupComponent implements OnInit, AfterViewInit {
   role: 'CLIENT' | 'AVOCAT' = 'CLIENT';
   roleLockedByUrl = false;
 
-  private readonly GOOGLE_CLIENT_ID = '281235908564-cj79femv17cdimi678nrur62qr09scik.apps.googleusercontent.com';
+  private readonly GOOGLE_CLIENT_ID = '281235908564-uih5e8998qdccbiqvnhajrrbur2vpusk.apps.googleusercontent.com';
 
   constructor(
     private router: Router,
